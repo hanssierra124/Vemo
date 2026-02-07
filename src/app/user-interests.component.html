@@ -1,0 +1,25 @@
+<div class="interests-container">
+  <div class="header">
+    <h1>¿Qué te mueve hoy?</h1>
+    <p>Selecciona tus gustos para que VELA te recomiende los mejores planes en Barranquilla.</p>
+  </div>
+
+  <div class="interests-grid">
+    <div 
+      *ngFor="let interes of interesesDisponibles" 
+      class="interest-pill" 
+      [class.active]="interes.seleccionado"
+      (click)="toggleInteres(interes)">
+      {{ interes.nombre }}
+    </div>
+  </div>
+
+  <div class="footer-actions">
+    <button 
+      class="btn-continue" 
+      [disabled]="loading" 
+      (click)="guardarIntereses()">
+      {{ loading ? 'Sincronizando...' : 'Continuar' }}
+    </button>
+  </div>
+</div>

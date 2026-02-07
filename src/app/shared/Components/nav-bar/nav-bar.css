@@ -1,0 +1,91 @@
+:root {
+    --vemo-glow: #FF4D80;      /* Coral Magenta */
+    --vemo-deep: #6A00FF;      /* Indigo Violet */
+    --asphalt-black: #121212;  /* Fondo Principal */
+    --gunmetal-grey: #252525;  /* Superficies */
+    --stardust-white: #F0F0F0; /* Texto */
+}
+
+.vemo-navbar {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    /* MISMO GRADIENTE QUE EL FONDO DE LA PÁGINA */
+    background-color: var(--asphalt-black);
+    background-image: radial-gradient(circle at 0% 0%, rgba(106, 0, 255, 0) 0%, transparent 50%);
+    backdrop-filter: blur(15px); /* Efecto cristal */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-container {
+    width: 90%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-logo {
+    width: 110px;
+    display: block;
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    align-items: center;
+}
+
+/* --- ESTILOS DE LOS ENLACES (INCLUIDO FAVORITOS) --- */
+.nav-link-item {
+    text-decoration: none;
+    font-family: 'Clash Display', sans-serif;
+    color: var(--stardust-white) !important; /* FORZAMOS BLANCO (quita el morado por defecto) */
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    transition: all 0.3s ease; /* Transición suave para color y efectos */
+    cursor: pointer;
+}
+
+/* EFECTO AL PASAR EL MOUSE (HOVER) */
+.nav-link-item:hover {
+    color: var(--vemo-glow) !important; /* Cambia a Magenta VEMO */
+    text-shadow: 0 0 8px rgba(255, 77, 128, 0.5); /* Agrega un pequeño brillo neon */
+    transform: translateY(-1px); /* Pequeña elevación */
+}
+
+/* ESTADO ACTIVO (CUANDO ESTÁS EN ESA PÁGINA) */
+.active-link {
+    color: var(--vemo-glow) !important;
+    font-weight: 700;
+}
+
+.profile-btn {
+    text-decoration: none;
+    font-family: 'Clash Display', sans-serif;
+    color: var(--stardust-white) !important;
+    background: var(--gunmetal-grey);
+    padding: 10px 20px;
+    border-radius: 100px;
+    border: 1px solid rgba(106, 0, 255, 0.3);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.profile-btn:hover {
+    background: var(--vemo-deep);
+    border-color: var(--vemo-glow);
+    box-shadow: 0 0 15px rgba(106, 0, 255, 0.4);
+}

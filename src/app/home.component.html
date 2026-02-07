@@ -1,0 +1,141 @@
+<div class="main-wrapper">
+  
+  <div class="city-glow-bg"></div>
+
+  <div class="main-content-wrapper" [class.is-blurred]="showMoodModal">
+    
+    <header class="vela-hero-section" *ngIf="!loading && currentUserMood">
+      <div class="central-content">
+        <div class="vela-avatar-brand">
+          <div class="vela-liquid-logo"></div>
+        </div>
+        
+        <h1 class="clash-display vela-message">{{ velaMessage }}</h1>
+        
+        <div class="vela-featured-container">
+          <div class="mini-glow-card featured" *ngFor="let event of recommendedEvents" (click)="goToDetail(event.id)">
+            <div class="featured-image-wrapper">
+              <img [src]="event.image_url" alt="Event" class="featured-img">
+              
+              <button class="btn-heart small" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">
+                 <span class="heart-icon">❤</span>
+              </button>
+
+              <div class="featured-overlay">
+                <span class="featured-badge">{{ event.emotions?.emoji }}</span>
+                <h4 class="clash-display">{{ event.title }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="map-viewport">
+      <div id="map"></div>
+      <div class="map-vignette"></div>
+    </section>
+
+    <main class="explorer-container">
+      <div class="explorer-header">
+        <span class="glow-dot"></span>
+        <h2 class="clash-display explorer-tag">MODO EXPLORADOR</h2>
+        <hr class="glow-line">
+      </div>
+
+      <div class="cards-grid" *ngIf="loading">
+        <div class="card skeleton" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+
+      <div class="cards-grid" *ngIf="!loading">
+        <div class="vemo-card" *ngFor="let event of explorerEvents" (click)="goToDetail(event.id)">
+          <div class="card-media">
+            <img [src]="event.image_url" alt="Event cover">
+            
+            <button class="btn-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">
+              <span class="heart-icon">❤</span>
+            </button>
+
+            <div class="card-badges">
+              <span class="category-pill">{{ event.categories[0]?.name }}</span>
+              <span class="mood-pill">{{ event.emotions?.emoji }}</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <h3 class="clash-display">{{ event.title }}</h3>
+            <div class="card-footer">
+              <span class="location">📍 {{ event.location_name }}</span>
+              <span class="date">{{ event.date_event | date:'MMM d' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="mood-overlay" *ngIf="showMoodModal && availableEmotions.length > 0">
+    <div class="mood-hero-content">
+      <div class="mood-text-wrapper">
+        <h2 class="clash-display hero-title">¿CÓMO TE SIENTES HOY?</h2>
+        <p class="hero-subtitle">Tu emoción es la brújula que abre la ciudad.</p>
+      </div>
+      
+      <div class="mood-chips-container">
+        <button 
+          *ngFor="let emotion of availableEmotions" 
+          class="mood-chip-btn" 
+          (click)="selectMood(emotion.id, emotion.name)"
+        >
+          <span class="emoji">{{ emotion.emoji }}</span>
+          <span class="emotion-name">{{ emotion.name }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="vela-chat-system" [class.is-open]="isChatOpen">
+    <div class="chat-glass-container" *ngIf="isChatOpen">
+      <header class="chat-header">
+        <div class="header-content">
+          <div class="vela-status">
+            <img src="/assets/vela.png" class="vela-header-icon" alt="Vela">
+            <span class="status-dot"></span>
+            <h3 class="clash-display">Vela Guide</h3>
+          </div>
+          <button class="close-chat-btn" (click)="toggleChat()">✕</button>
+        </div>
+        <div class="header-glow"></div>
+      </header>
+
+      <div class="messages-viewport" #chatContainer>
+        <div *ngFor="let msg of chatHistory" [ngClass]="['msg-wrapper', msg.role]">
+          <div class="message-bubble"><p>{{ msg.text }}</p></div>
+        </div>
+        <div *ngIf="isTyping" class="msg-wrapper vela">
+           <div class="message-bubble typing">...</div>
+        </div>
+      </div>
+
+      <footer class="chat-footer">
+        <div class="input-glow-wrapper">
+          <input 
+            type="text" 
+            [(ngModel)]="userInput" 
+            (keyup.enter)="sendMessage()" 
+            placeholder="Háblame..." 
+            class="vela-input"
+          >
+          <button class="send-action" (click)="sendMessage()" [disabled]="!userInput">→</button>
+        </div>
+      </footer>
+    </div>
+
+    <button class="vela-trigger" (click)="toggleChat()" [class.hidden]="isChatOpen">
+      <div class="pulse-container">
+        <div class="pulse"></div>
+        <div class="pulse delay"></div>
+      </div>
+      <img src="/assets/vela.png" alt="Vela" class="vela-custom-icon">
+    </button>
+  </div>
+</div>

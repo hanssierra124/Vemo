@@ -1,13 +1,17 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavBar } from "./shared/Components/nav-bar/nav-bar";
+import { NavBar } from './shared/Components/nav-bar/nav-bar';
+// Fíjate: Ya NO importamos Leaflet aquí
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavBar],
+  standalone: true,
+  imports: [RouterOutlet, NavBar], 
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('vemo');
+  title = 'vemo';
+  // ¡LISTO! Aquí borramos ngOnInit y initMap. 
+  // Ahora este archivo solo sirve de "contenedor" principal.
 }

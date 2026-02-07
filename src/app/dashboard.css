@@ -1,0 +1,9 @@
+.metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  transition: transform 0.3s ease;
+}
+.metric-card:hover { transform: translateY(-5px); border-color: #FF4D80; }
+.metric-value { font-size: 2.5rem; color: #fff; margin: 10px 0; font-family: 'Clash Display', sans-serif; }

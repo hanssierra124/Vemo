@@ -1,0 +1,112 @@
+<div class="event-detail-wrapper" *ngIf="event">
+  <div class="event-hero map-hero">
+    <div class="hero-overlay-top"></div>
+    <div id="singleEventMap" class="high-fidelity-map hero-map"></div>
+    <div class="hero-vignette"></div>
+  </div>
+
+  <div class="detail-content-container">
+    <header class="detail-header glass-effect-header">
+      <span class="category-pill">{{ event.categories[0]?.name || 'Experiencia' }}</span>
+      <h1 class="clash-display event-title-main">{{ event.title }}</h1>
+      
+      <div class="quick-meta-grid">
+        <div class="meta-card">
+          <span class="meta-icon">📅</span>
+          <div class="meta-texts">
+            <span class="meta-label">Cuándo</span>
+            <p class="meta-value">{{ event.date_event | date:'fullDate' }}</p>
+          </div>
+        </div>
+        <div class="meta-card">
+          <span class="meta-icon">📍</span>
+          <div class="meta-texts">
+            <span class="meta-label">Dónde</span>
+            <p class="meta-value">{{ event.location_name }}</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="info-grid">
+      <div class="description-column">
+        <div class="content-block glass-effect">
+          <h3 class="clash-display section-tag">El Momento</h3>
+          <p class="event-description-text">{{ event.description }}</p>
+          
+          <div class="organizer-badge-premium">
+            <div class="organizer-info">
+              <span class="small-tag">Curado por</span>
+              <p class="clash-display curator-name">{{ event.profiles?.username || 'Vemo Guide' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-block glass-effect">
+           <h3 class="clash-display section-tag">Agendar</h3>
+           <div class="calendar-btn-group">
+             <button class="calendar-chip" (click)="addToGoogleCalendar()">+ Google Calendar</button>
+             <button class="calendar-chip" (click)="downloadIcsFile()">+ Apple / Outlook</button>
+           </div>
+        </div>
+
+        <div class="content-block transport-card glass-effect">
+          <h3 class="clash-display section-tag">¿Cómo llegar?</h3>
+          <div class="bus-info-wrapper">
+            <div class="bus-route-detail">
+              <span class="bus-icon">🚌</span>
+              <div class="bus-texts">
+                <span class="meta-label">Transporte Público</span>
+                <p class="event-description-text">Rutas: <strong>{{ event.bus_routes || 'Ruta A8-1, U30' }}</strong></p>
+              </div>
+            </div>
+            
+            <button class="google-maps-btn-neon" (click)="openGoogleMaps()">
+              <span>NAVEGAR CON GOOGLE MAPS</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="content-block reviews-section glass-effect" *ngIf="isPostEvent()">
+          <h3 class="clash-display section-tag">Reseñas de la Comunidad</h3>
+          <div class="review-form" *ngIf="!hasReviewed">
+            <p class="small-tag">¿Cómo fue tu experiencia?</p>
+            <div class="star-rating">
+              <span *ngFor="let s of [1,2,3,4,5]" (click)="setRating(s)" [class.active]="userRating >= s">★</span>
+            </div>
+            <textarea [(ngModel)]="userComment" placeholder="Comentario opcional..."></textarea>
+            <button class="filter-chip active" (click)="submitReview()">Enviar Reseña</button>
+          </div>
+          
+          <div class="review-list">
+             <div class="review-item" *ngFor="let rev of event.reviews">
+                <div class="star-rating static">
+                  <span *ngFor="let s of [1,2,3,4,5]" [class.active]="rev.rating >= s">★</span>
+                </div>
+                <p class="meta-value">{{ rev.username }}</p>
+                <p class="event-description-text">{{ rev.comment }}</p>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="photo-column">
+        <div class="content-block glass-effect no-padding">
+          <h3 class="clash-display section-tag side-title">Referencia Visual</h3>
+          <div class="image-container-premium">
+            <img [src]="event.image_url" class="detail-side-img" alt="Referencia del evento">
+            <div class="image-gradient-shield"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+
+<ng-template #loadingState>
+  <div class="vemo-loader-container">
+    <div class="vela-liquid-loader"></div>
+    <p class="clash-display">Sincronizando la ciudad...</p>
+  </div>
+</ng-template>

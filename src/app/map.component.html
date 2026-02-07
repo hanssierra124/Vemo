@@ -1,0 +1,40 @@
+<div class="map-page-wrapper">
+  
+  <div class="map-controls-overlay">
+    <div class="filters-scroll">
+      <button 
+        class="filter-chip reset" 
+        [class.active]="!activeEmotionName" 
+        (click)="activeEmotionName = null; drawMapContent()">
+        TODO EL CAOS
+      </button>
+
+      <button 
+        *ngFor="let emotion of availableEmotions"
+        class="filter-chip"
+        [class.active]="activeEmotionName === emotion.name"
+        (click)="toggleEmotionFilter(emotion)">
+        <span class="emoji">{{ emotion.emoji }}</span>
+        <span class="label">{{ emotion.name }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="map-legend-box" *ngIf="!loading && availableEmotions.length > 0">
+    <h4 class="clash-display legend-title">Energía de la Ciudad</h4>
+    <div class="legend-grid">
+      <div class="legend-item" *ngFor="let emotion of availableEmotions">
+        <span class="color-dot" [style.background-color]="getColorForEmotion(emotion.name)"></span>
+        <span class="emotion-label">{{ emotion.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-map" class="full-screen-map"></div>
+
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <p class="clash-display">Sintonizando Barranquilla...</p>
+  </div>
+
+</div>

@@ -1,0 +1,30 @@
+<div class="onboarding-container">
+  <h2>Verificación de Identidad</h2>
+  <p class="subtitle">Para garantizar la seguridad, necesitamos validar que eres tú.</p>
+
+  <form (submit)="submitVerification()">
+    <div class="input-group">
+      <label>Nombre de la Empresa / Proyecto</label>
+      <input type="text" [(ngModel)]="companyName" name="company" placeholder="Ej. Eventos Barranquilla" required>
+    </div>
+
+    <div class="input-group">
+      <label>NIT (Opcional)</label>
+      <input type="text" [(ngModel)]="nit" name="nit" placeholder="Número de identificación tributaria">
+    </div>
+
+    <div class="upload-section">
+      <h3>Foto Cédula (Frente)</h3>
+      <input type="file" (change)="onFileSelected($event, 'front')" accept="image/*">
+    </div>
+
+    <div class="upload-section">
+      <h3>Foto Cédula (Reverso)</h3>
+      <input type="file" (change)="onFileSelected($event, 'back')" accept="image/*">
+    </div>
+
+    <button type="submit" class="primary-btn" [disabled]="isUploading">
+      {{ isUploading ? 'Subiendo...' : 'Solicitar Verificación' }}
+    </button>
+  </form>
+</div>

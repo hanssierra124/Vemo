@@ -1,0 +1,57 @@
+<div class="admin-page-wrapper">
+  <div class="brand-atmosphere"></div>
+
+  <div class="admin-main-container">
+    <header class="admin-central-header">
+      <h1 class="clash-display section-title">Central de Control</h1>
+      <p class="subtitle-tag">Verificación de Identidades VELA</p>
+      <div class="header-line"></div>
+    </header>
+
+    <div class="loading-state-centered" *ngIf="loading">
+      <div class="vela-liquid-loader"></div>
+      <p class="clash-display loader-text">Sincronizando Terminal...</p>
+    </div>
+
+    <div class="grid-requests-centered" *ngIf="!loading">
+      <div class="request-card-premium glass-panel" *ngFor="let req of pendingVerifications">
+        
+        <div class="request-inner-header">
+          <div class="user-id-box">
+            <h3 class="clash-display user-name">{{ req.username }}</h3>
+            <p class="company-sub">{{ req.company_name }} <span class="accent-dot">•</span> NIT {{ req.nit }}</p>
+          </div>
+          <div class="status-indicator">
+            <span class="pulse-dot"></span>
+            <span class="status-label">Pendiente</span>
+          </div>
+        </div>
+
+        <div class="id-visuals-grid">
+          <div class="visual-frame">
+            <span class="frame-tag">Frontal</span>
+            <img [src]="req.frontUrl" alt="ID Front">
+            <div class="frame-overlay"></div>
+          </div>
+          <div class="visual-frame">
+            <span class="frame-tag">Posterior</span>
+            <img [src]="req.backUrl" alt="ID Back">
+            <div class="frame-overlay"></div>
+          </div>
+        </div>
+
+        <div class="admin-button-group">
+          <button class="btn-action btn-reject" (click)="processDecision(req.id, 'rejected')">Rechazar</button>
+          <button class="btn-action btn-retry" (click)="processDecision(req.id, 'pending')">Reintentar</button>
+          <button class="btn-action btn-approve" (click)="processDecision(req.id, 'approved')">Aprobar Acceso</button>
+        </div>
+      </div>
+
+      <div class="empty-state-central glass-panel" *ngIf="pendingVerifications.length === 0">
+        <div class="success-icon-glow">✅</div>
+        <h2 class="clash-display">Terminal Despejada</h2>
+        <p>No hay identidades esperando validación. Todo está bajo control.</p>
+      </div>
+    </div>
+  </div>
+</div>

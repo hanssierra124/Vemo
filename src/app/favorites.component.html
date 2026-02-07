@@ -1,0 +1,47 @@
+<div class="favorites-page-wrapper">
+  
+  <div class="living-atmosphere">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+  </div>
+
+  <div class="favorites-container">
+    <header class="fav-header">
+      <h1 class="clash-display section-title">Mi Colección</h1>
+      <p class="section-subtitle">Las experiencias que hacen vibrar tu energía.</p>
+    </header>
+
+    <div class="empty-state" *ngIf="favEvents.length === 0">
+      <div class="empty-icon">💔</div>
+      <h3>Aún no tienes favoritos</h3>
+      <p>Explora el mapa y guarda lo que te inspire en Barranquilla.</p>
+      <a routerLink="/home" class="btn-explore">Ir a Explorar</a>
+    </div>
+
+    <div class="cards-grid" *ngIf="favEvents.length > 0">
+      <div class="vemo-card" *ngFor="let event of favEvents" (click)="goToDetail(event.id)">
+        <div class="card-media">
+          <img [src]="event.image_url || 'assets/placeholder.png'" alt="Event cover">
+          
+          <button class="btn-remove-fav" (click)="removeFav(event, $event)" title="Quitar de favoritos">
+            ✕
+          </button>
+
+          <div class="card-badges">
+            <span class="category-pill" *ngIf="event.categories && event.categories.length > 0">
+              {{ event.categories[0].name }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h3 class="clash-display">{{ event.title }}</h3>
+          <div class="card-footer">
+            <span class="location">📍 {{ event.location_name }}</span>
+            <span class="date">{{ event.date_event | date:'MMM d' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+<div class="admin-event-card" *ngFor="let event of pendingEvents">
+  <img [src]="event.image_url" class="event-thumb">
+  <div class="event-details">
+    <h3>{{ event.title }}</h3>
+    <p>{{ event.description }}</p>
+    <small>Organizador: {{ event.organizer_name }}</small>
+  </div>
+  
+  <div class="actions">
+    <button class="approve" (click)="decideEvent(event.id, 'approved', event.organizer_id)">✅ Aprobar</button>
+    <button class="edit" (click)="decideEvent(event.id, 'changes_requested', event.organizer_id)">✏️ Pedir Cambios</button>
+    <button class="deny" (click)="decideEvent(event.id, 'rejected', event.organizer_id)">❌ Rechazar y Bloquear</button>
+  </div>
+</div>

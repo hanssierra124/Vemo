@@ -1,0 +1,55 @@
+<div class="auth-container">
+  <div class="auth-card">
+    
+    <div class="tabs">
+      <button [class.active]="isLogin" (click)="isLogin = true">Ingresar</button>
+      <button [class.active]="!isLogin" (click)="isLogin = false">Registrarse</button>
+    </div>
+
+    <div *ngIf="isLogin">
+      <h2>Bienvenido de nuevo</h2>
+      <div class="input-group">
+        <label>Correo</label>
+        <input type="email" [(ngModel)]="email" name="emailLogin" placeholder="tu@correo.com">
+      </div>
+      <div class="input-group">
+        <label>Contraseña</label>
+        <input type="password" [(ngModel)]="password" name="passwordLogin" placeholder="******">
+      </div>
+      <button (click)="onLogin()" class="primary-btn">Iniciar Sesión</button>
+    </div>
+
+    <div *ngIf="!isLogin">
+      <h2>Crea tu cuenta</h2>
+      
+      <div class="role-selector">
+        <label [class.selected]="role === 'user'">
+          <input type="radio" name="role" [(ngModel)]="role" value="user">
+          👤 Usuario
+        </label>
+        <label [class.selected]="role === 'organizer'">
+          <input type="radio" name="role" [(ngModel)]="role" value="organizer">
+          🎉 Organizador
+        </label>
+      </div>
+
+      <div class="input-group">
+        <label>Usuario</label>
+        <input type="text" [(ngModel)]="username" name="username" placeholder="Tu nombre público">
+      </div>
+
+      <div class="input-group">
+        <label>Correo</label>
+        <input type="email" [(ngModel)]="email" name="emailRegister" placeholder="tu@correo.com">
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <input type="password" [(ngModel)]="password" name="passwordRegister" placeholder="Crea una contraseña">
+      </div>
+
+      <button (click)="onRegister()" class="primary-btn">Crear Cuenta</button>
+    </div>
+
+  </div>
+</div>

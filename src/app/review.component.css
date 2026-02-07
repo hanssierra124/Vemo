@@ -1,0 +1,12 @@
+.star-rating {
+  display: flex;
+  gap: 5px;
+  color: #FFD700; /* Oro para estrellas */
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4));
+}
+.review-item {
+  border-left: 2px solid #FF4D80;
+  padding-left: 15px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.02);
+}

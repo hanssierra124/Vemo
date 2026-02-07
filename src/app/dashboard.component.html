@@ -1,0 +1,63 @@
+<div class="admin-page-wrapper">
+  <div class="brand-atmosphere"></div>
+
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="header-text">
+        <h1 class="clash-display">🛡️ Centro de Verificación</h1>
+        <p class="admin-subtitle">Seguridad y Validación de Identidad VELA</p>
+      </div>
+      <div class="status-counter">
+        <span class="count-number clash-display">{{ pendingList.length }}</span>
+        <span class="count-label">Pendientes</span>
+      </div>
+    </header>
+
+    <div class="empty-state-card glass-panel" *ngIf="pendingList.length === 0">
+      <div class="success-icon-glow">✅</div>
+      <h2 class="clash-display">Red Asegurada</h2>
+      <p>No hay solicitudes pendientes de validación en este momento.</p>
+    </div>
+
+    <div class="verification-stream" *ngIf="pendingList.length > 0">
+      <div class="verification-card glass-panel" *ngFor="let org of pendingList">
+        
+        <div class="org-identity">
+          <h3 class="clash-display">{{ org.company_name }}</h3>
+          <div class="identity-tags">
+            <span class="nit-tag">NIT: {{ org.nit }}</span>
+            <span class="user-tag">UID: {{ org.username }}</span>
+          </div>
+        </div>
+
+        <div class="id-visual-center">
+          <div class="photo-frame" (click)="openImage(org.frontUrl)">
+            <span class="frame-label">Anverso</span>
+            <img [src]="org.frontUrl" alt="Frontal">
+            <div class="zoom-overlay">🔍</div>
+          </div>
+          <div class="photo-frame" (click)="openImage(org.backUrl)">
+            <span class="frame-label">Reverso</span>
+            <img [src]="org.backUrl" alt="Reverso">
+            <div class="zoom-overlay">🔍</div>
+          </div>
+        </div>
+
+        <div class="admin-actions-vertical">
+          <button class="btn-action-vemo approve" (click)="decide(org.id, 'approved')">
+            Aprobar Acceso
+          </button>
+          <div class="secondary-actions">
+            <button class="btn-action-minimal resubmit" (click)="decide(org.id, 'resubmit_required')">
+              Pedir Cambios
+            </button>
+            <button class="btn-action-minimal reject" (click)="decide(org.id, 'rejected')">
+              Rechazar
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

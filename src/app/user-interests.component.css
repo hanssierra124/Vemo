@@ -1,0 +1,51 @@
+.interests-container {
+  max-width: 500px;
+  margin: 80px auto;
+  padding: 20px;
+  text-align: center;
+  font-family: -apple-system, sans-serif;
+}
+
+.interests-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.interest-pill {
+  padding: 12px 24px;
+  border-radius: 30px;
+  background: #f5f5f7;
+  border: 1px solid #d2d2d7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+.interest-pill.active {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+  transform: scale(1.05);
+}
+
+.btn-continue {
+  width: 100%;
+  padding: 16px;
+  background: #0071e3;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-continue:disabled {
+  opacity: 0.5;
+  cursor: not-alllowed;
+}

@@ -1,0 +1,80 @@
+:host {
+  --v-glow: #FF4D80;
+  --v-deep: #6A00FF;
+  --v-black: #0A0A0A;
+  --v-white: #FFFFFF;
+}
+
+.favorites-page-wrapper {
+  background-color: var(--v-black);
+  min-height: 100vh;
+  padding: 120px 20px 50px; /* Padding top para no chocar con el navbar */
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Fondo */
+.living-atmosphere { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.glow-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3; }
+.orb-1 { width: 500px; height: 500px; background: var(--v-deep); top: -100px; left: 20%; }
+.orb-2 { width: 400px; height: 400px; background: var(--v-glow); bottom: -50px; right: 10%; }
+
+.favorites-container {
+  max-width: 1200px; margin: 0 auto; position: relative; z-index: 10;
+}
+
+.fav-header { text-align: center; margin-bottom: 60px; }
+.section-title { font-size: 3rem; color: var(--v-white); margin-bottom: 10px; }
+.section-subtitle { color: rgba(255,255,255,0.6); }
+
+.clash-display { font-family: 'Clash Display', sans-serif; text-transform: uppercase; }
+
+/* Empty State */
+.empty-state {
+  text-align: center; color: rgba(255,255,255,0.4);
+  padding: 60px; border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 24px; background: rgba(255,255,255,0.02);
+}
+.empty-icon { font-size: 50px; margin-bottom: 20px; opacity: 0.5; }
+.btn-explore {
+  display: inline-block; margin-top: 20px;
+  background: var(--v-white); color: black;
+  padding: 10px 24px; border-radius: 50px; text-decoration: none;
+  font-weight: bold; transition: transform 0.2s;
+}
+.btn-explore:hover { transform: scale(1.05); }
+
+/* Grid (Reutilizando tu estilo Neon) */
+.cards-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.vemo-card {
+  background: rgba(30,30,30,0.6); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 24px;
+  overflow: hidden; cursor: pointer; transition: all 0.3s;
+}
+.vemo-card:hover {
+  transform: translateY(-10px); border-color: var(--v-glow);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.card-media { height: 200px; position: relative; }
+.card-media img { width: 100%; height: 100%; object-fit: cover; }
+
+.btn-remove-fav {
+  position: absolute; top: 10px; right: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+  color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.btn-remove-fav:hover { background: #FF4D4D; border-color: #FF4D4D; }
+
+.card-body { padding: 20px; color: white; }
+.card-footer { 
+  display: flex; justify-content: space-between; 
+  font-size: 12px; opacity: 0.7; margin-top: 15px; 
+}

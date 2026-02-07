@@ -1,0 +1,539 @@
+.metrics-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.metric-mini-card {
+  background: rgba(255, 252, 252, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.metric-mini-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.m-icon { font-size: 24px; }
+.m-data { display: flex; flex-direction: column; }
+.m-label { font-size: 10px; text-transform: uppercase; opacity: 0.5; letter-spacing: 1px;  color: white; }
+.m-value { font-size: 20px; font-weight: 800; color: white; font-family: 'Clash Display', sans-serif; }
+
+.ev-stats-mini {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  opacity: 0.7;
+  background: rgba(0,0,0,0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin: 0 10px;
+}
+
+:host {
+  --v-glow: #FF4D80;
+  --v-deep: #6A00FF;
+  --v-black: #0A0A0A;
+  --v-surface: #1A1A1A;
+  --v-white: #FFFFFF;
+  --v-glass: rgba(255, 255, 255, 0.03);
+  --v-border: rgba(255, 255, 255, 0.08);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.profile-page-wrapper {
+  background-color: var(--v-black);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 100px 20px 150px;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Fondo con Orbes de Luz */
+.living-atmosphere {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+}
+.glow-orb {
+  position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.4;
+}
+.orb-1 {
+  width: 600px; height: 600px; background: var(--v-deep);
+  top: -200px; left: 50%; transform: translateX(-50%);
+}
+.orb-2 {
+  width: 400px; height: 400px; background: var(--v-glow);
+  bottom: -100px; right: -100px; opacity: 0.2;
+}
+
+/* Contenedor Principal */
+.profile-viewport {
+  width: 100%; max-width: 900px; z-index: 10;
+  display: flex; flex-direction: column; gap: 60px;
+  animation: fadeIn 0.6s var(--ease-out);
+}
+
+.clash-display {
+  font-family: 'Clash Display', sans-serif;
+  text-transform: uppercase; letter-spacing: -0.02em;
+}
+
+/* =========================================
+   2. PANTALLA DE CARGA Y ERROR
+   ========================================= */
+.loading-container {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; z-index: 20;
+}
+.spinner {
+  width: 50px; height: 50px;
+  border: 3px solid rgba(255, 77, 128, 0.2);
+  border-top-color: var(--v-glow);
+  border-radius: 50%; animation: spin-slow 0.8s linear infinite; margin-bottom: 20px;
+}
+.loading-text { color: rgba(255,255,255,0.6); letter-spacing: 2px; font-size: 14px; }
+
+.error-state {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center; color: white; z-index: 20; display: flex; flex-direction: column; gap: 20px;
+}
+
+/* =========================================
+   3. HERO (FOTO Y NOMBRE)
+   ========================================= */
+.identity-hero {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+
+.avatar-rig {
+  position: relative; width: 140px; height: 140px; margin-bottom: 30px;
+  cursor: pointer;
+}
+.avatar-core {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: var(--v-surface);
+  background-size: cover;
+  background-position: center;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; font-weight: 700; color: var(--v-white);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  position: relative; z-index: 2;
+  overflow: hidden;
+}
+
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.avatar-rig:hover .camera-overlay { opacity: 1; }
+.camera-icon { font-size: 24px; }
+
+.avatar-halo {
+  position: absolute; inset: -3px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--v-glow), var(--v-deep));
+  z-index: 1; opacity: 0.8;
+  animation: spin-slow 10s linear infinite;
+}
+
+.user-name {
+  font-size: 4rem; margin: 0 0 15px; line-height: 0.9;
+  color: #FFFFFF; /* Blanco sólido para legibilidad */
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+}
+
+/* Badges de Rol */
+.role-badge-container {
+  display: flex; align-items: center; gap: 12px; justify-content: center;
+}
+.vemo-role-pill {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 20px; border-radius: 100px;
+  font-family: 'Clash Display', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: 1px;
+}
+.vemo-role-pill.admin {
+  background: rgba(106, 0, 255, 0.15);
+  color: #A36AFF;
+  border-color: rgba(106, 0, 255, 0.3);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 0 20px rgba(106, 0, 255, 0.1);
+}
+.verified-tick { color: #00FF94; display: flex; filter: drop-shadow(0 0 8px rgba(0, 255, 148, 0.4)); }
+.icon-check { width: 24px; height: 24px; }
+
+/* =========================================
+   4. PANELES DE VIDRIO (GLASS)
+   ========================================= */
+.glass-panel {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(40px);
+  border: 1px solid var(--v-border);
+  border-radius: 32px;
+  padding: 40px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+  margin-bottom: 40px;
+}
+
+.deck-header { text-align: center; margin-bottom: 40px; }
+.section-title { font-size: 1.5rem; color: var(--v-white); margin-bottom: 8px; }
+.section-subtitle { color: rgba(255,255,255,0.4); font-size: 14px; }
+
+/* =========================================
+   5. SISTEMA DE TABS (ADMIN)
+   ========================================= */
+.tab-system {
+  background: rgba(0,0,0,0.3);
+  border-radius: 100px; padding: 6px;
+  display: inline-flex; position: relative;
+  margin: 0 auto 40px; left: 50%; transform: translateX(-50%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.tab-trigger {
+  background: transparent; border: none;
+  padding: 12px 32px; border-radius: 100px;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 600; font-size: 13px;
+  cursor: pointer; position: relative; z-index: 2;
+  transition: color 0.3s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.tab-trigger.active { color: var(--v-white); }
+
+.tab-glider {
+  position: absolute; top: 6px; bottom: 6px; width: 50%;
+  background: var(--v-surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px; z-index: 1;
+  transition: transform 0.4s var(--ease-out);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* =========================================
+   6. LISTAS Y TARJETAS ADMIN
+   ========================================= */
+.admin-list {
+  display: flex; flex-direction: column; gap: 15px; width: 100%;
+}
+
+.admin-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex; align-items: center; gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.admin-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--v-glow);
+  transform: translateX(5px);
+}
+
+.card-image-thumb {
+  width: 60px; height: 60px;
+  border-radius: 12px;
+  background-size: cover; background-position: center;
+  border: 1px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
+.card-info { flex: 1; text-align: left; overflow: hidden; }
+.card-info h4 { margin: 0 0 4px; font-size: 16px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nit-text, .organizer-ref, .date-ref { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; }
+
+.links-row { display: flex; gap: 10px; margin-top: 8px; }
+.doc-link { 
+  font-size: 11px; color: var(--v-black); 
+  background: var(--v-white); padding: 4px 10px; 
+  border-radius: 6px; border: none; cursor: pointer; 
+  font-weight: 600; transition: opacity 0.2s;
+}
+.doc-link:hover { opacity: 0.8; }
+
+.card-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.btn-action {
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  font-weight: bold; font-size: 16px; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-action:hover { transform: scale(1.1); }
+.btn-action.approve { background: #00FF94; color: black; box-shadow: 0 0 15px rgba(0,255,148,0.2); }
+.btn-action.reject { background: #FF4D4D; color: white; box-shadow: 0 0 15px rgba(255,77,77,0.2); }
+
+.empty-state-micro {
+  text-align: center; color: rgba(255,255,255,0.4); padding: 40px;
+  border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; width: 100%;
+}
+
+/* =========================================
+   7. ORGANIZADOR (BOTÓN Y EVENTOS)
+   ========================================= */
+.action-center {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 30px 0 50px; gap: 15px;
+}
+
+.btn-create-event {
+  background: linear-gradient(135deg, var(--v-glow), var(--v-deep));
+  border: none; border-radius: 16px;
+  padding: 20px 40px; width: 100%; max-width: 400px;
+  cursor: pointer; transition: all 0.4s var(--ease-out);
+  display: flex; align-items: center; justify-content: center;
+  gap: 15px; position: relative; overflow: hidden;
+  box-shadow: 0 10px 30px rgba(255, 77, 128, 0.3);
+}
+.btn-create-event:hover:not(:disabled) {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(106, 0, 255, 0.5);
+}
+.btn-create-event:disabled {
+  filter: grayscale(1); opacity: 0.5; cursor: not-allowed;
+}
+
+.glow-icon {
+  font-size: 24px; background: rgba(255,255,255,0.2);
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.btn-text {
+  color: white; font-family: 'Clash Display', sans-serif;
+  font-weight: 600; letter-spacing: 1px; font-size: 14px;
+}
+
+/* Avisos y Enlaces */
+.status-warning {
+  color: #FFC107; font-size: 12px;
+  background: rgba(255, 193, 7, 0.1); padding: 8px 16px; border-radius: 50px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+.btn-text-link { 
+  background: none; border: none; color: var(--v-glow); 
+  text-decoration: underline; cursor: pointer; margin-top: 5px; font-size: 13px;
+}
+
+/* Lista Mini de Eventos */
+.sub-header {
+  font-size: 18px; color: rgba(255,255,255,0.8);
+  margin-bottom: 20px; border-bottom: 1px solid var(--v-border);
+  padding-bottom: 10px;
+}
+
+.mini-events-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.mini-event-row { 
+    display: flex; align-items: center; gap: 15px; padding: 12px 15px;
+    background: rgba(255,255,255,0.03); border-radius: 12px; 
+    color: white; font-size: 14px; border: 1px solid transparent;
+}
+.mini-event-row:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); }
+
+.ev-status { font-size: 12px; }
+.ev-status.approved { color: #00FF94; }         /* Verde */
+.ev-status.pending_review { color: #FFC107; }  /* Amarillo */
+.ev-status.rejected { color: #FF4D4D; }        /* Rojo */
+.ev-title { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-date { opacity: 0.5; font-size: 12px; font-family: monospace; }
+
+.empty-events-placeholder {
+  text-align: center; padding: 40px;
+  border: 1px dashed var(--v-border);
+  border-radius: 20px; color: rgba(255,255,255,0.3);
+}
+.ghost-icon { font-size: 30px; display: block; margin-bottom: 10px; opacity: 0.5; }
+
+/* =========================================
+   8. FOOTER Y BOTONES GLOBALES
+   ========================================= */
+.profile-footer { text-align: center; margin-top: 20px; }
+.btn-disconnect {
+  background: transparent; border: 1px solid rgba(255, 77, 77, 0.2);
+  color: #FF4D4D; padding: 12px 24px; border-radius: 100px;
+  font-family: 'Clash Display', sans-serif; font-size: 12px;
+  cursor: pointer; transition: all 0.3s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-disconnect:hover {
+  background: rgba(255, 77, 77, 0.1); border-color: #FF4D4D;
+}
+
+/* =========================================
+   9. ANIMACIONES
+   ========================================= */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================
+   10. MODAL DE REVISIÓN Y BOTONES NUEVOS
+   ========================================= */
+
+/* Botón 'Revisar' en la tarjeta de admin */
+.btn-review-details {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s;
+  margin-left: auto;
+}
+.btn-review-details:hover {
+  background: var(--v-white);
+  color: var(--v-black);
+  transform: translateY(-2px);
+}
+
+/* El Fondo Oscuro (Backdrop) */
+.review-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); /* Muy oscuro para enfocar */
+  backdrop-filter: blur(10px);    /* Blur fuerte */
+  z-index: 9999;
+  display: flex; justify-content: center; align-items: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* El Contenedor del Modal */
+.review-modal-content {
+  background: #121212;
+  border: 1px solid rgba(255,255,255,0.1);
+  width: 100%; max-width: 500px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+  display: flex; flex-direction: column;
+  max-height: 90vh; /* Para que no se salga en pantallas pequeñas */
+}
+
+/* Cabecera con Imagen */
+.modal-image-header {
+  height: 200px;
+  background-size: cover; background-position: center;
+  position: relative;
+}
+.close-modal-btn {
+  position: absolute; top: 15px; right: 15px;
+  background: rgba(0,0,0,0.5); color: white;
+  border: none; width: 32px; height: 32px; border-radius: 50%;
+  cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.close-modal-btn:hover { background: rgba(0,0,0,0.8); }
+
+.modal-badge {
+  position: absolute; bottom: 15px; left: 15px;
+  background: var(--v-glow); color: black;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Cuerpo del Modal */
+.modal-body {
+  padding: 25px;
+  overflow-y: auto; /* Scroll si el contenido es largo */
+}
+
+.event-title-lg {
+  font-size: 24px; color: white; margin-bottom: 20px; line-height: 1.2;
+}
+
+/* Grid de Metadatos (Fecha, Hora, Lugar) */
+.meta-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+  margin-bottom: 25px;
+  background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.meta-item { display: flex; flex-direction: column; gap: 4px; }
+.meta-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+.meta-value { font-size: 13px; color: white; font-weight: 500; }
+
+/* Descripción */
+.description-box { margin-bottom: 30px; }
+.desc-label { font-size: 14px; color: var(--v-glow); margin-bottom: 8px; font-weight: bold; }
+.description-box p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); }
+
+/* Barra de Acciones Finales */
+.modal-actions-bar {
+  display: flex; gap: 10px; margin-top: auto;
+}
+.btn-decision {
+  flex: 1; padding: 15px; border: none; border-radius: 12px;
+  font-family: 'Clash Display', sans-serif; font-weight: 600; cursor: pointer;
+  font-size: 13px; transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-decision.approve { 
+  background: #00FF94; color: black; 
+  box-shadow: 0 0 20px rgba(0,255,148,0.2);
+}
+.btn-decision.reject { 
+  background: rgba(255, 77, 77, 0.1); color: #FF4D4D; 
+  border: 1px solid rgba(255, 77, 77, 0.3); 
+}
+.btn-decision:hover { transform: scale(1.02); }
+
+/* =========================================
+   11. PROMOCIÓN Y WOMPI (GOLD)
+   ========================================= */
+
+/* Botón de pago (Wompi) */
+.btn-promote {
+  background: linear-gradient(135deg, #FFD700, #FFA500); /* Dorado */
+  border: none;
+  border-radius: 50px;
+  padding: 6px 14px;
+  color: black;
+  font-weight: 800;
+  font-size: 11px;
+  font-family: 'Clash Display', sans-serif;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  margin-left: auto; /* Empuja el botón a la derecha */
+}
+
+.btn-promote:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  background: linear-gradient(135deg, #FFF, #FFD700);
+}
+
+/* Badge de evento ya promocionado */
+.badge-promoted {
+  background: #FFD700;
+  color: black;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: 8px;
+  vertical-align: middle;
+}

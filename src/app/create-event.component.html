@@ -1,0 +1,77 @@
+<div class="page-wrapper">
+  <div class="create-container">
+    <div class="header-section">
+      <h1>{{ isEditMode ? 'Editar Evento' : 'Crear Nuevo Evento' }}</h1>
+      <p>{{ isEditMode ? 'Corrige los detalles solicitados' : 'Comparte tu experiencia con Barranquilla' }}</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+         <label>Título del Evento</label>
+         <input type="text" [(ngModel)]="eventData.title" name="title" required placeholder="Ej: Festival de Jazz al Parque">
+      </div>
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea [(ngModel)]="eventData.description" name="description" rows="4" required placeholder="Cuéntanos de qué trata..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>¿Qué emoción define esta experiencia? <small>(Obligatorio)</small></label>
+        <div class="emotions-grid">
+          <div 
+            *ngFor="let emotion of availableEmotions" 
+            class="emotion-chip"
+            [class.selected]="eventData.main_emotion_id === emotion.id"
+            (click)="eventData.main_emotion_id = emotion.id">
+            <span class="emoji">{{ emotion.emoji }}</span>
+            <span class="emotion-name">{{ emotion.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Fecha y Hora</label>
+          <input type="datetime-local" [(ngModel)]="eventData.date_event" name="date" required>
+        </div>
+        <div class="form-group half">
+          <label>Ubicación (Nombre)</label>
+          <input type="text" [(ngModel)]="eventData.location_name" name="location" required placeholder="Ej: Gran Malecón">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Categorías <small>(Selecciona al menos una)</small></label>
+        <div class="cats-grid">
+          <div 
+            *ngFor="let cat of availableCategories" 
+            class="cat-pill" 
+            [class.active]="isSelected(cat.id)"
+            (click)="toggleCategory(cat.id)">
+            <span class="emoji">{{ cat.icon }}</span> {{ cat.name }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Imagen de Portada</label>
+        
+        <div *ngIf="isEditMode && currentImageUrl" style="margin-bottom: 15px; padding: 10px; background: #f5f5f7; border-radius: 12px; display: inline-block;">
+          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Imagen Actual:</p>
+          <img [src]="currentImageUrl" style="height: 100px; border-radius: 8px; display: block;">
+        </div>
+
+        <div class="file-input-wrapper">
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" [required]="!isEditMode">
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="loading || selectedCategories.length === 0 || !eventData.main_emotion_id" class="btn-submit">
+        {{ loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios' : 'Enviar a Revisión') }}
+      </button>
+
+    </form>
+  </div>
+</div>
