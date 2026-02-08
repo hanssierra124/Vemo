@@ -154,7 +154,7 @@ export class ProfileComponent implements OnInit {
   async savePromotionInBackend(eventId: string, transactionId: string) {
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     try {
-      await fetch('${environment.apiUrl}/api/organizer/promote-success', {
+      await fetch(`${environment.apiUrl}/api/organizer/promote-success`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ eventId, transactionId })
@@ -206,7 +206,7 @@ export class ProfileComponent implements OnInit {
 
   async loadMyEvents() {
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
-    const res = await fetch('${environment.apiUrl}/api/organizer/my-events', {
+    const res = await fetch(`${environment.apiUrl}/api/organizer/my-events`, {
        headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
@@ -228,7 +228,7 @@ export class ProfileComponent implements OnInit {
   }
 
   async loadAdminEvents() {
-    const res = await fetch('${environment.apiUrl}/api/admin/events-pending');
+    const res = await fetch(`${environment.apiUrl}/api/admin/events-pending`);
     if (res.ok) this.pendingEvents = await res.json();
   }
 
@@ -238,7 +238,7 @@ export class ProfileComponent implements OnInit {
     if(!confirm(`¿Desea ${status === 'approved' ? 'aprobar' : 'rechazar'} esta identidad?`)) return;
 
     try {
-      const res = await fetch('${environment.apiUrl}/api/admin/decision', {
+      const res = await fetch(`${environment.apiUrl}/api/admin/decision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ userId, status, reason })
@@ -254,7 +254,7 @@ export class ProfileComponent implements OnInit {
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     let reason = status === 'rejected' ? (prompt('Motivo:') || 'No cumple normas') : null;
     
-    await fetch('${environment.apiUrl}/api/admin/event-decision', {
+    await fetch(`${environment.apiUrl}/api/admin/event-decision`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ eventId, status, reason, organizerId })

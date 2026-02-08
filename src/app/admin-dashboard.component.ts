@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
+
+
 export class AdminDashboardComponent implements OnInit {
   pendingVerifications: any[] = [];
   loading = true;
@@ -20,7 +22,7 @@ export class AdminDashboardComponent implements OnInit {
 
   async loadVerifications() {
     try {
-      const res = await fetch('${environment.apiUrl}/api/admin/verifications');
+      const res = await fetch(`${environment.apiUrl}/api/admin/verifications`);
       this.pendingVerifications = await res.json();
     } catch (error) {
       console.error("Error cargando veríficaciones:", error);
@@ -40,12 +42,13 @@ async processDecision(userId: string, status: string) {
     if (!reason) return;
   }
   
-  try {
-    const res = await fetch('${environment.apiUrl}/api/admin/decision', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, status, reason })
-    });
+try {
+  // Nota las comillas inclinadas ` en lugar de '
+  const res = await fetch(`${environment.apiUrl}/api/admin/decision`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, status, reason })
+  });
 
     if (res.ok) {
       alert('Acción realizada con éxito');

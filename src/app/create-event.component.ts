@@ -50,12 +50,12 @@ export class CreateEventComponent implements OnInit {
   }
 
   async loadCategories() {
-    const res = await fetch('${environment.apiUrl}/api/categories');
+    const res = await fetch(`${environment.apiUrl}/api/categories`);
     if (res.ok) this.availableCategories = await res.json();
   }
 
   async loadEmotions() {
-    const res = await fetch('${environment.apiUrl}/api/emotions');
+    const res = await fetch(`${environment.apiUrl}/api/emotions`);
     if (res.ok) this.availableEmotions = await res.json();
   }
 
@@ -108,7 +108,7 @@ async onSubmit() {
     try {
       const url = this.isEditMode 
         ? `${environment.apiUrl}/api/events/update/${this.eventId}` 
-        : '${environment.apiUrl}/api/events/create';
+        : `${environment.apiUrl}/api/events/create`;
       
       const method = this.isEditMode ? 'PUT' : 'POST';
 

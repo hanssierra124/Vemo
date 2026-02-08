@@ -27,7 +27,7 @@ export class AuthComponent {
     console.log("Intentando Login con:", this.email); // CHISMOSO 1
     
     try {
-      const res = await fetch('${environment.apiUrl}/api/auth/login', {
+      const res = await fetch(`${environment.apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: this.email, password: this.password })
@@ -64,7 +64,7 @@ export class AuthComponent {
     }
 
     try {
-      const res = await fetch('${environment.apiUrl}/api/auth/signup', {
+      const res = await fetch(`${environment.apiUrl}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -93,7 +93,7 @@ export class AuthComponent {
 
   async autoLoginAfterRegister() {
     // Reutilizamos la lógica de login
-    const res = await fetch('${environment.apiUrl}/api/auth/login', {
+    const res = await fetch(`${environment.apiUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: this.email, password: this.password })

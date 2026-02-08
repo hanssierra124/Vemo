@@ -42,7 +42,7 @@ export class UserInterestsComponent {
     const token = localStorage.getItem('vemo_token');
 
     try {
-      const res = await fetch('${environment.apiUrl}/api/auth/update-profile', {
+      const res = await fetch(`${environment.apiUrl}/api/auth/update-profile`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -48,7 +48,7 @@ export class OrganizerVerifyComponent {
       formData.append('back', this.backIdFile);   // Archivo binario
 
       // 3. Enviamos al endpoint ESPECIAL de organizadores
-      const res = await fetch('${environment.apiUrl}/api/organizer/verify', {
+      const res = await fetch(`${environment.apiUrl}/api/organizer/verify`, {
         method: 'POST',
         headers: { 
           // IMPORTANTE: NO poner 'Content-Type': 'application/json'

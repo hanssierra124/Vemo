@@ -37,7 +37,7 @@ export class BlockedPageComponent implements OnInit {
     if (!token) { this.router.navigate(['/auth']); return; }
 
     // Traemos el motivo real desde la base de datos para mostrarlo aquí
-    const res = await fetch('${environment.apiUrl}/api/auth/profile');
+    const res = await fetch(`${environment.apiUrl}/api/auth/profile`);
     const data = await res.json();
     this.reason = data.user?.rejection_reason || 'Incumplimiento de términos de verificación.';
   }

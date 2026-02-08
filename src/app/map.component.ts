@@ -55,8 +55,8 @@ export class MapComponent implements OnInit, AfterViewInit {
       const headers: any = token ? { 'Authorization': `Bearer ${token}` } : {};
 
       const [eventsRes, emotionsRes] = await Promise.all([
-        fetch('${environment.apiUrl}/api/events', { headers }),
-        fetch('${environment.apiUrl}/api/emotions', { headers })
+        fetch(`${environment.apiUrl}/api/events`, { headers }),
+        fetch(`${environment.apiUrl}/api/emotions`, { headers })
       ]);
 
       if (eventsRes.ok) this.events = await eventsRes.json();

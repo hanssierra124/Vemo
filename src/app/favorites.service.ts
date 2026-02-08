@@ -41,7 +41,7 @@ export class FavoritesService {
     if (!token) return;
 
     try {
-      const res = await fetch('${environment.apiUrl}/api/user/favorites', {
+      const res = await fetch(`${environment.apiUrl}/api/user/favorites`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

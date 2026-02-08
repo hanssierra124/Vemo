@@ -18,14 +18,14 @@ export class AdminDashboardComponent implements OnInit {
 
   async loadVerifications() {
     // Nota: Aquí deberías validar que eres admin antes de llamar
-    const res = await fetch('${environment.apiUrl}/api/admin/verifications');
+    const res = await fetch(`${environment.apiUrl}/api/admin/verifications`);
     this.pendingList = await res.json();
   }
 
   async decide(userId: string, status: string) {
     if(!confirm(`¿Seguro que quieres marcar como ${status}?`)) return;
 
-    await fetch('${environment.apiUrl}/api/admin/decision', {
+    await fetch(`${environment.apiUrl}/api/admin/decision`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, status })
