@@ -1,19 +1,14 @@
 <div class="map-page-wrapper">
-  
+
   <div class="map-controls-overlay">
     <div class="filters-scroll">
-      <button 
-        class="filter-chip reset" 
-        [class.active]="!activeEmotionName" 
+      <button class="filter-chip reset" [class.active]="!activeEmotionName"
         (click)="activeEmotionName = null; drawMapContent()">
         TODO EL CAOS
       </button>
 
-      <button 
-        *ngFor="let emotion of availableEmotions"
-        class="filter-chip"
-        [class.active]="activeEmotionName === emotion.name"
-        (click)="toggleEmotionFilter(emotion)">
+      <button *ngFor="let emotion of availableEmotions" class="filter-chip"
+        [class.active]="activeEmotionName === emotion.name" (click)="toggleEmotionFilter(emotion)">
         <span class="emoji">{{ emotion.emoji }}</span>
         <span class="label">{{ emotion.name }}</span>
       </button>

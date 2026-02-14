@@ -1,24 +1,122 @@
 <div class="main-wrapper">
-  
+
   <div class="city-glow-bg"></div>
 
   <div class="main-content-wrapper" [class.is-blurred]="showMoodModal">
-    
+
+    <main class="hero-container">
+      <div class="content-wrapper">
+
+        <div class="text-section">
+          <div class="badge-pill">
+            <span>✨ Vive Barranquilla</span>
+          </div>
+
+          <h1 class="main-title">
+            De la pantalla a la acción:<br>
+            <span class="gradient-text">Conectamos tu vibra.</span>
+          </h1>
+
+          <p class="description">
+            En VEMO no solo buscas planes, encuentras tu próxima gran historia.
+            Filtra por tu estado de ánimo y descubre qué está pasando ahora mismo.
+          </p>
+
+          <div class="button-group">
+            <button class="btn-primary" routerLink="/explora">Explorar Eventos</button>
+            <button class="btn-secondary">Preguntar a VELA</button>
+          </div>
+        </div>
+
+        <div class="image-grid">
+          <div class="grid-item item-1">
+            <img src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80"
+              alt="Cultura">
+            <div class="label">Cultura</div>
+          </div>
+
+          <div class="grid-item item-2">
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80"
+              alt="Concierto">
+            <div class="label">Concierto en vivo</div>
+          </div>
+
+          <div class="grid-item item-3">
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80"
+              alt="Foodies">
+            <div class="label">Foodies</div>
+          </div>
+
+          <div class="stats-card">
+            <h2>+50</h2>
+            <p>Eventos esta semana</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <section class="services-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="subtitle">Lo que hacemos</span>
+          <h2 class="title">Vive Barranquilla a tu manera</h2>
+        </div>
+
+        <div class="services-grid">
+          <div class="service-card">
+            <div class="icon-box color-1">
+              <i class="bi bi-geo-alt-fill"></i> <span class="emoji">📍</span>
+            </div>
+            <h3>Descubre tu ciudad</h3>
+            <p>Conectamos personas con experiencias reales y curadas en Barranquilla, organizadas por lo que importa: tu
+              ubicación y tu vibra.</p>
+            <div class="card-footer">
+              <span class="tag">Curaduría local</span>
+            </div>
+          </div>
+
+          <div class="service-card">
+            <div class="icon-box color-2">
+              <span class="emoji">🚀</span>
+            </div>
+            <h3>Impulsa tu evento</h3>
+            <p>Damos voz a los creadores locales. Si eres organizador o artista, Vemo es tu vitrina para encontrar
+              nuevas audiencias apasionadas.</p>
+            <div class="card-footer">
+              <span class="tag">Para creadores</span>
+            </div>
+          </div>
+
+          <div class="service-card">
+            <div class="icon-box color-3">
+              <span class="emoji">🎭</span>
+            </div>
+            <h3>Siente la experiencia</h3>
+            <p>No solo listamos eventos; te proponemos vivir la ciudad desde tus emociones: inspiración, calma,
+              diversión o aprendizaje.</p>
+            <div class="card-footer">
+              <span class="tag">Basado en emociones</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <header class="vela-hero-section" *ngIf="!loading && currentUserMood">
       <div class="central-content">
         <div class="vela-avatar-brand">
           <div class="vela-liquid-logo"></div>
         </div>
-        
+
         <h1 class="clash-display vela-message">{{ velaMessage }}</h1>
-        
+
         <div class="vela-featured-container">
           <div class="mini-glow-card featured" *ngFor="let event of recommendedEvents" (click)="goToDetail(event.id)">
             <div class="featured-image-wrapper">
               <img [src]="event.image_url" alt="Event" class="featured-img">
-              
+
               <button class="btn-heart small" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">
-                 <span class="heart-icon">❤</span>
+                <span class="heart-icon">❤</span>
               </button>
 
               <div class="featured-overlay">
@@ -31,10 +129,10 @@
       </div>
     </header>
 
-<section class="map-viewport" style="display: block; width: 100%; height: 450px; position: relative;">
-  <div id="map-home" style="width: 100%; height: 100%; min-height: 450px; background-color: #f0f0f0;"></div>
-  <div class="map-vignette"></div>
-</section>
+    <!--     <section class="map-viewport" style="display: block;  height: 450px; position: relative;">
+      <div id="map-home" style="width: 100%; height: 100%; min-height: 450px; background-color: #f0f0f0;"></div>
+      <div class="map-vignette"></div>
+    </section> -->
 
     <main class="explorer-container">
       <div class="explorer-header">
@@ -51,7 +149,7 @@
         <div class="vemo-card" *ngFor="let event of explorerEvents" (click)="goToDetail(event.id)">
           <div class="card-media">
             <img [src]="event.image_url" alt="Event cover">
-            
+
             <button class="btn-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">
               <span class="heart-icon">❤</span>
             </button>
@@ -79,13 +177,10 @@
         <h2 class="clash-display hero-title">¿CÓMO TE SIENTES HOY?</h2>
         <p class="hero-subtitle">Tu emoción es la brújula que abre la ciudad.</p>
       </div>
-      
+
       <div class="mood-chips-container">
-        <button 
-          *ngFor="let emotion of availableEmotions" 
-          class="mood-chip-btn" 
-          (click)="selectMood(emotion.id, emotion.name)"
-        >
+        <button *ngFor="let emotion of availableEmotions" class="mood-chip-btn"
+          (click)="selectMood(emotion.id, emotion.name)">
           <span class="emoji">{{ emotion.emoji }}</span>
           <span class="emotion-name">{{ emotion.name }}</span>
         </button>
@@ -109,22 +204,19 @@
 
       <div class="messages-viewport" #chatContainer>
         <div *ngFor="let msg of chatHistory" [ngClass]="['msg-wrapper', msg.role]">
-          <div class="message-bubble"><p>{{ msg.text }}</p></div>
+          <div class="message-bubble">
+            <p>{{ msg.text }}</p>
+          </div>
         </div>
         <div *ngIf="isTyping" class="msg-wrapper vela">
-           <div class="message-bubble typing">...</div>
+          <div class="message-bubble typing">...</div>
         </div>
       </div>
 
       <footer class="chat-footer">
         <div class="input-glow-wrapper">
-          <input 
-            type="text" 
-            [(ngModel)]="userInput" 
-            (keyup.enter)="sendMessage()" 
-            placeholder="Háblame..." 
-            class="vela-input"
-          >
+          <input type="text" [(ngModel)]="userInput" (keyup.enter)="sendMessage()" placeholder="Háblame..."
+            class="vela-input">
           <button class="send-action" (click)="sendMessage()" [disabled]="!userInput">→</button>
         </div>
       </footer>
@@ -139,3 +231,49 @@
     </button>
   </div>
 </div>
+<footer class="vemo-footer">
+  <div class="footer-content">
+
+    <div class="footer-brand">
+      <div class="logo-container">
+        <img src="assets/logo-vemo.png" alt="VEMO Logo" class="footer-logo">
+        <span class="brand-name">VEMO</span>
+      </div>
+      <p class="brand-tagline">Conectando la vibra de Barranquilla, un evento a la vez.</p>
+      <div class="social-links">
+        <a href="#" class="social-icon">ig</a>
+        <a href="#" class="social-icon">tw</a>
+        <a href="#" class="social-icon">tk</a>
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <h4>Explorar</h4>
+      <ul>
+        <li><a routerLink="/explora">Todos los eventos</a></li>
+        <li><a routerLink="/categorias">Categorías</a></li>
+        <li><a routerLink="/mapa">Mapa en vivo</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-links">
+      <h4>Comunidad</h4>
+      <ul>
+        <li><a routerLink="/organizador">Ser organizador</a></li>
+        <li><a routerLink="/ayuda">Ayuda con VELA</a></li>
+        <li><a routerLink="/terminos">Privacidad</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-cta">
+      <h4>¿No sabes qué hacer?</h4>
+      <p>Deja que VELA te sugiera un plan ideal para hoy.</p>
+      <button class="btn-footer-chat">Chatear con VELA</button>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2026 VEMO App. Hecho con amor en Barranquilla.</p>
+  </div>
+</footer>

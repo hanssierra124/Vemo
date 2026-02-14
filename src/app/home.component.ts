@@ -39,6 +39,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
     private router: Router,
     public favService: FavoritesService // Inyectamos el servicio público para usarlo en el HTML
   ) {}
+  
+  totalEventos: number = 0;
+
+  openVelaChat() {
+    // Lógica para abrir el modal o scroll al chatbot VELA
+  }
+  
 
   ngOnInit() {
     this.loadEvents();

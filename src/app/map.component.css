@@ -3,7 +3,7 @@
    ========================================= */
 :host {
   display: block; 
-  height: 100vh;
+  height: 91.2vh;
   width: 100%;
   background: #121212;
 }
@@ -128,7 +128,7 @@
    4. LEYENDA (GUÍA DE COLORES)
    ========================================= */
 .map-legend-box {
-  position: absolute;
+  position: fixed;
   bottom: 30px;
   left: 20px;
   z-index: 1000;
