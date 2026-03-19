@@ -1,279 +1,525 @@
-<div class="main-wrapper">
+<div class="vemo-universe">
 
-  <div class="city-glow-bg"></div>
+  <!-- ═══════════════════════════════════════════
+       CAPA DE ATMÓSFERA GLOBAL (fixed, z:0)
+       ═══════════════════════════════════════════ -->
+  <canvas class="noise-canvas" id="noiseCanvas"></canvas>
+  <div class="scanline-grid"></div>
+  <div class="horizon-glow"></div>
+  <div class="mouse-glow" id="mouseGlow"></div>
 
-  <div class="main-content-wrapper" [class.is-blurred]="showMoodModal">
+  <!-- ═══════════════════════════════════════════
+       ONBOARDING OVERLAY CINEMATOGRÁFICO
+       ═══════════════════════════════════════════ -->
+  <div class="onboarding-overlay" *ngIf="showOnboarding" [class.closing]="closingOnboarding">
+    <canvas class="ob-noise"></canvas>
+    <div class="ob-particles">
+      <span *ngFor="let p of particles" class="ob-particle"
+        [style.left]="p.x + '%'" [style.top]="p.y + '%'"
+        [style.width]="p.size + 'px'" [style.height]="p.size + 'px'"
+        [style.animationDelay]="p.delay + 's'" [style.animationDuration]="p.duration + 's'">
+      </span>
+    </div>
+    <div class="ob-light-sweep"></div>
 
-    <main class="hero-container">
-      <div class="content-wrapper">
+    <div class="ob-stage">
+      <div class="ob-brand-mark">VEMO</div>
 
-        <div class="text-section">
-          <div class="badge-pill">
-            <span>✨ Vive Barranquilla</span>
-          </div>
-
-          <h1 class="main-title">
-            De la pantalla a la acción:<br>
-            <span class="gradient-text">Conectamos tu vibra.</span>
-          </h1>
-
-          <p class="description">
-            En VEMO no solo buscas planes, encuentras tu próxima gran historia.
-            Filtra por tu estado de ánimo y descubre qué está pasando ahora mismo.
-          </p>
-
-          <div class="button-group">
-            <button class="btn-primary" routerLink="/explora">Explorar Eventos</button>
-            <button class="btn-secondary">Preguntar a VELA</button>
-          </div>
+      <!-- Indicador de pasos -->
+      <div class="step-track">
+        <div class="step-node" [class.active]="onboardingStep >= 1" [class.past]="onboardingStep > 1">
+          <span>01</span>
         </div>
-
-        <div class="image-grid">
-          <div class="grid-item item-1">
-            <img src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80"
-              alt="Cultura">
-            <div class="label">Cultura</div>
-          </div>
-
-          <div class="grid-item item-2">
-            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80"
-              alt="Concierto">
-            <div class="label">Concierto en vivo</div>
-          </div>
-
-          <div class="grid-item item-3">
-            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80"
-              alt="Foodies">
-            <div class="label">Foodies</div>
-          </div>
-
-          <div class="stats-card">
-            <h2>+50</h2>
-            <p>Eventos esta semana</p>
-          </div>
+        <div class="step-rail" [class.lit]="onboardingStep > 1"></div>
+        <div class="step-node" [class.active]="onboardingStep >= 2" [class.past]="onboardingStep > 2">
+          <span>02</span>
         </div>
-
-      </div>
-    </main>
-
-    <section class="services-section">
-      <div class="container">
-        <div class="section-header">
-          <span class="subtitle">Lo que hacemos</span>
-          <h2 class="title">Vive Barranquilla a tu manera</h2>
-        </div>
-
-        <div class="services-grid">
-          <div class="service-card">
-            <div class="icon-box color-1">
-              <i class="bi bi-geo-alt-fill"></i> <span class="emoji">📍</span>
-            </div>
-            <h3>Descubre tu ciudad</h3>
-            <p>Conectamos personas con experiencias reales y curadas en Barranquilla, organizadas por lo que importa: tu
-              ubicación y tu vibra.</p>
-            <div class="card-footer">
-              <span class="tag">Curaduría local</span>
-            </div>
-          </div>
-
-          <div class="service-card">
-            <div class="icon-box color-2">
-              <span class="emoji">🚀</span>
-            </div>
-            <h3>Impulsa tu evento</h3>
-            <p>Damos voz a los creadores locales. Si eres organizador o artista, Vemo es tu vitrina para encontrar
-              nuevas audiencias apasionadas.</p>
-            <div class="card-footer">
-              <span class="tag">Para creadores</span>
-            </div>
-          </div>
-
-          <div class="service-card">
-            <div class="icon-box color-3">
-              <span class="emoji">🎭</span>
-            </div>
-            <h3>Siente la experiencia</h3>
-            <p>No solo listamos eventos; te proponemos vivir la ciudad desde tus emociones: inspiración, calma,
-              diversión o aprendizaje.</p>
-            <div class="card-footer">
-              <span class="tag">Basado en emociones</span>
-            </div>
-          </div>
+        <div class="step-rail" [class.lit]="onboardingStep > 2"></div>
+        <div class="step-node" [class.active]="onboardingStep >= 3">
+          <span>03</span>
         </div>
       </div>
-    </section>
-    <header class="vela-hero-section" *ngIf="!loading && currentUserMood">
-      <div class="central-content">
-        <div class="vela-avatar-brand">
-          <div class="vela-liquid-logo"></div>
+
+      <!-- PASO 1 -->
+      <div class="ob-scene" *ngIf="onboardingStep === 1">
+        <div class="ob-chapter">CAPÍTULO I</div>
+        <h2 class="ob-headline">¿Cómo quieres<br><em>sentirte</em> hoy?</h2>
+        <p class="ob-body">Tu emoción calibra la ciudad a tu frecuencia.</p>
+        <div class="emotion-matrix">
+          <button *ngFor="let emotion of availableEmotions" class="emo-cell"
+            [class.chosen]="selectedEmotion?.id === emotion.id"
+            (click)="selectEmotion(emotion)">
+            <div class="emo-glyph">{{ emotion.emoji }}</div>
+            <div class="emo-label">{{ emotion.name }}</div>
+            <div class="emo-scan"></div>
+          </button>
         </div>
+        <button class="ob-advance" [disabled]="!selectedEmotion" (click)="nextStep()">
+          <span class="adv-text">Continuar</span>
+          <span class="adv-arrow">→</span>
+        </button>
+      </div>
 
-        <h1 class="clash-display vela-message">{{ velaMessage }}</h1>
-
-        <div class="vela-featured-container">
-          <div class="mini-glow-card featured" *ngFor="let event of recommendedEvents" (click)="goToDetail(event.id)">
-            <div class="featured-image-wrapper">
-              <img [src]="event.image_url" alt="Event" class="featured-img">
-
-              <button class="btn-heart small" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">
-                <span class="heart-icon">❤</span>
-              </button>
-
-              <div class="featured-overlay">
-                <span class="featured-badge">{{ event.emotions?.emoji }}</span>
-                <h4 class="clash-display">{{ event.title }}</h4>
-              </div>
-            </div>
-          </div>
+      <!-- PASO 2 -->
+      <div class="ob-scene" *ngIf="onboardingStep === 2">
+        <div class="ob-chapter">CAPÍTULO II</div>
+        <h2 class="ob-headline">¿Tendrás<br><em>compañía?</em></h2>
+        <p class="ob-body">La ciudad se descifra diferente según quién te acompaña.</p>
+        <div class="company-matrix">
+          <button *ngFor="let opt of companyOptions" class="company-cell"
+            [class.chosen]="selectedCompany === opt.value"
+            (click)="selectedCompany = opt.value">
+            <span class="cc-icon">{{ opt.icon }}</span>
+            <span class="cc-label">{{ opt.label }}</span>
+            <div class="cc-corner tl"></div>
+            <div class="cc-corner tr"></div>
+            <div class="cc-corner bl"></div>
+            <div class="cc-corner br"></div>
+          </button>
         </div>
-      </div>
-    </header>
-
-    <!--     <section class="map-viewport" style="display: block;  height: 450px; position: relative;">
-      <div id="map-home" style="width: 100%; height: 100%; min-height: 450px; background-color: #f0f0f0;"></div>
-      <div class="map-vignette"></div>
-    </section> -->
-
-    <main class="explorer-container">
-      <div class="explorer-header">
-        <span class="glow-dot"></span>
-        <h2 class="clash-display explorer-tag">MODO EXPLORADOR</h2>
-        <hr class="glow-line">
-      </div>
-
-      <div class="cards-grid" *ngIf="loading">
-        <div class="card skeleton" *ngFor="let i of [1,2,3,4]"></div>
-      </div>
-
-      <div class="cards-grid" *ngIf="!loading">
-        <div class="vemo-card" *ngFor="let event of explorerEvents" (click)="goToDetail(event.id)">
-          <div class="card-media">
-            <img [src]="event.image_url" alt="Event cover">
-
-            <button class="btn-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">
-              <span class="heart-icon">❤</span>
-            </button>
-
-            <div class="card-badges">
-              <span class="category-pill">{{ event.categories[0]?.name }}</span>
-              <span class="mood-pill">{{ event.emotions?.emoji }}</span>
-            </div>
-          </div>
-          <div class="card-body">
-            <h3 class="clash-display">{{ event.title }}</h3>
-            <div class="card-footer">
-              <span class="location">📍 {{ event.location_name }}</span>
-              <span class="date">{{ event.date_event | date:'MMM d' }}</span>
-            </div>
-          </div>
+        <div class="ob-nav-row">
+          <button class="ob-retreat" (click)="prevStep()">← Atrás</button>
+          <button class="ob-advance" [disabled]="!selectedCompany" (click)="nextStep()">
+            <span class="adv-text">Continuar</span>
+            <span class="adv-arrow">→</span>
+          </button>
         </div>
       </div>
-    </main>
+
+      <!-- PASO 3 -->
+      <div class="ob-scene" *ngIf="onboardingStep === 3">
+        <div class="ob-chapter">CAPÍTULO III</div>
+        <h2 class="ob-headline">¿Cuánto tiempo<br><em>tienes?</em></h2>
+        <p class="ob-body">Calibramos la experiencia a la duración perfecta.</p>
+        <div class="time-matrix">
+          <button *ngFor="let t of timeOptions" class="time-cell"
+            [class.chosen]="selectedTime === t.value"
+            (click)="selectedTime = t.value">
+            <span class="tc-icon">{{ t.icon }}</span>
+            <div class="tc-info">
+              <span class="tc-label">{{ t.label }}</span>
+              <span class="tc-sub">{{ t.desc }}</span>
+            </div>
+            <div class="tc-bar"></div>
+          </button>
+        </div>
+        <div class="ob-nav-row">
+          <button class="ob-retreat" (click)="prevStep()">← Atrás</button>
+          <button class="ob-advance ob-final" [disabled]="!selectedTime" (click)="finishOnboarding()">
+            <span class="adv-text">Descubrir Barranquilla</span>
+            <span class="adv-spark">✦</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
   </div>
+  <!-- /ONBOARDING -->
 
-  <div class="mood-overlay" *ngIf="showMoodModal && availableEmotions.length > 0">
-    <div class="mood-hero-content">
-      <div class="mood-text-wrapper">
-        <h2 class="clash-display hero-title">¿CÓMO TE SIENTES HOY?</h2>
-        <p class="hero-subtitle">Tu emoción es la brújula que abre la ciudad.</p>
+
+  <!-- ═══════════════════════════════════════════
+       MAPA VIVO — PRIMERA SECCIÓN INMERSIVA
+       ═══════════════════════════════════════════ -->
+  <section class="map-act">
+
+    <!-- El mapa ocupa TODA la sección como fondo -->
+    <div class="map-full-canvas">
+      <div id="map-home" class="map-home-el"></div>
+      <div class="map-vig-bottom"></div>
+      <div class="map-vig-left"></div>
+      <div class="map-vig-right"></div>
+      <div class="map-scanlines"></div>
+    </div>
+
+    <!-- HUD flotante: CENTRO del mapa -->
+    <div class="map-hud-center" [class.hud-hidden]="hudHidden">
+
+      <!-- Badge LIVE -->
+      <div class="map-live-badge">
+        <span class="map-live-dot"></span>
+        <span class="map-live-ring"></span>
+        <span class="mlb-text">EN VIVO · BARRANQUILLA</span>
+        <div class="mlb-sep"></div>
+        <span class="mlb-count">{{ mapMarkers.length }} experiencias</span>
       </div>
 
-      <div class="mood-chips-container">
-        <button *ngFor="let emotion of availableEmotions" class="mood-chip-btn"
+      <!-- Título épico -->
+      <h2 class="map-hud-h2">
+        <span class="mhh-line mhh-l1">La ciudad</span>
+        <span class="mhh-line mhh-l2"><em>en tiempo real.</em></span>
+      </h2>
+
+      <p class="map-hud-sub">Cada punto, una experiencia esperándote.</p>
+
+      <!-- CTA -->
+      <button class="map-hud-cta" (click)="scrollToExplorer()">
+        <span>Explorar eventos</span>
+        <span class="mhc-arrow">↓</span>
+      </button>
+    </div>
+
+    <!-- Botón toggle HUD — siempre visible -->
+    <button class="map-hud-toggle" (click)="hudHidden = !hudHidden" [title]="hudHidden ? 'Mostrar info' : 'Ver solo mapa'">
+      <span class="mht-icon" *ngIf="!hudHidden">⊡</span>
+      <span class="mht-icon" *ngIf="hudHidden">⊞</span>
+      <span class="mht-label">{{ hudHidden ? 'Mostrar' : 'Ocultar' }}</span>
+    </button>
+
+    <!-- HUD flotante: filtros (bottom) -->
+    <div class="map-hud-filters">
+      <div class="map-filters-track">
+        <button class="mf-chip" [class.active]="!activeEmotionName"
+          (click)="activeEmotionName = null; drawHomeMap()">
+          <span class="mfc-glyph">✦</span>
+          <span>TODO</span>
+        </button>
+        <button *ngFor="let emotion of availableEmotions" class="mf-chip"
+          [class.active]="activeEmotionName === emotion.name"
+          (click)="toggleHomeEmotionFilter(emotion)">
+          <span class="mfc-glyph">{{ emotion.emoji }}</span>
+          <span>{{ emotion.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading HUD radar -->
+    <div class="map-loading-hud" *ngIf="mapLoading">
+      <div class="mlh-inner">
+        <div class="mlh-radar">
+          <div class="mlh-radar-ring r1"></div>
+          <div class="mlh-radar-ring r2"></div>
+          <div class="mlh-radar-ring r3"></div>
+          <div class="mlh-radar-sweep"></div>
+          <div class="mlh-radar-dot"></div>
+        </div>
+        <div class="mlh-text">
+          <span class="mlh-label">SINTONIZANDO</span>
+          <span class="mlh-sub">Barranquilla · Colombia</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+ <!-- ═══════════════════════════════════════════
+       VELA RECOMMENDATIONS (primero)
+       ═══════════════════════════════════════════ -->
+  <section class="vela-act" *ngIf="!loading && currentUserMood">
+    <div class="vela-bg-grid"></div>
+    <div class="vela-inner">
+      <div class="vela-header-block">
+        <div class="vela-sigil">
+          <div class="vs-core"></div>
+          <div class="vs-ring vs-ring-1"></div>
+          <div class="vs-ring vs-ring-2"></div>
+        </div>
+        <div class="vela-text">
+          <div class="vela-eyebrow">IA · Recomendaciones personalizadas</div>
+          <p class="vela-message-text">{{ velaMessage }}</p>
+        </div>
+      </div>
+
+      <div class="vela-cards-row">
+        <div class="vela-event-card" *ngFor="let event of recommendedEvents; let i = index"
+          (click)="goToDetail(event.id)"
+          [style.animationDelay]="(i * 0.15) + 's'">
+          <div class="vec-image">
+            <img [src]="event.image_url" alt="Event">
+            <div class="vec-overlay"></div>
+            <button class="vec-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">❤</button>
+            <div class="vec-emotion-badge">{{ event.emotions?.emoji }}</div>
+          </div>
+          <div class="vec-body">
+            <div class="vec-index">0{{ i + 1 }}</div>
+            <h3 class="vec-title">{{ event.title }}</h3>
+            <div class="vec-meta">
+              <span>{{ event.date_event | date:'d MMM' }}</span>
+              <span class="vec-dot">·</span>
+              <span>{{ event.location_name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       HERO — OBERTURA ÉPICA
+       ═══════════════════════════════════════════ -->
+  <section class="hero-act">
+
+    <!-- Fondo visual del hero -->
+    <div class="hero-bg">
+      <div class="hero-orb hero-orb-a"></div>
+      <div class="hero-orb hero-orb-b"></div>
+      <div class="hero-orb hero-orb-c"></div>
+      <div class="hero-film-grain"></div>
+    </div>
+
+    <div class="hero-stage">
+
+      <!-- TEXTO PRINCIPAL -->
+      <div class="hero-text-block">
+
+        <div class="hero-overline">
+          <div class="overline-tick"></div>
+          <span>Barranquilla · Colombia · 2026</span>
+        </div>
+
+        <h1 class="hero-title">
+          <span class="ht-line ht-line-1">Cada</span>
+          <span class="ht-line ht-line-2">momento</span>
+          <span class="ht-line ht-line-3">te<em> espera.</em></span>
+        </h1>
+
+        <p class="hero-descriptor">
+          En VEMO no buscas planes — los planes te encuentran a ti.<br>
+          Filtra por emoción. Vive sin excusas.
+        </p>
+
+        <div class="hero-cta-row">
+          <button class="cta-primary" (click)="scrollToExplorer()">
+            <span>Explorar Ahora</span>
+            <div class="cta-glow-ring"></div>
+          </button>
+          <button class="cta-ghost" (click)="abrirChatDirecto()">
+            <img src="/assets/vela.png" alt="" class="cta-vela-icon">
+            <span>Hablar con Vela</span>
+          </button>
+        </div>
+
+        <!-- Moodtag actual -->
+        <div class="hero-mood-tag" *ngIf="currentUserMood">
+          <span class="mood-label">Tu vibra hoy:</span>
+          <span class="mood-value">{{ currentUserMood }}</span>
+        </div>
+
+      </div>
+
+      <!-- GRID VISUAL ROTANTE -->
+      <div class="hero-visual">
+        <div class="visual-orbit-ring ring-outer"></div>
+        <div class="visual-orbit-ring ring-inner"></div>
+        <div class="visual-core-grid">
+          <div class="vcg-item vcg-1">
+            <img src="https://ecoturismocienagademallorquin.com/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-22-at-19.35.08-e1705970345137.jpeg" alt="Cultura">
+            <div class="vcg-label">Cultura</div>
+          </div>
+          <div class="vcg-item vcg-2">
+            <img src="https://carnavaldebarranquilla.org/wp-content/uploads/2025/02/Foto-macrofiguras.jpeg" alt="Carnaval">
+            <div class="vcg-label">Carnaval</div>
+          </div>
+          <div class="vcg-item vcg-3">
+            <img src="https://miredvista.co/wp-content/uploads/2021/10/aleta-del-tiburon.jpg" alt="Gastronomía">
+            <div class="vcg-label">Gastronomía</div>
+          </div>
+          <div class="vcg-item vcg-4">
+            <img src="https://imagenes2.eltiempo.com/files/image_1200_535/uploads/2025/07/21/687e66b547ef8.jpeg" alt="Vida nocturna">
+            <div class="vcg-label">Noche</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-beacon">
+      <div class="sb-line"></div>
+      <span>Scroll</span>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       MANIFIESTO — al final, antes del explorador
+       ═══════════════════════════════════════════ -->
+  <section class="manifesto-act">
+    <div class="manifesto-inner">
+      <div class="manifesto-label">Lo que hacemos</div>
+      <h2 class="manifesto-title">
+        La ciudad tiene una<br>frecuencia.<br>
+        <span class="mt-accent">Nosotros la sintonizamos.</span>
+      </h2>
+      <div class="manifesto-cards">
+
+        <div class="mf-card">
+          <div class="mfc-number">01</div>
+          <div class="mfc-icon-wrap">
+            <img src="https://colombiaone.com/wp-content/uploads/2023/08/Window_World_Monument_Barranquilla_credit_PrimeroBarranquilla_-Facebook-696x522.jpg" class="mfc-img" alt="">
+            <div class="mfc-ring"></div>
+          </div>
+          <h3 class="mfc-title">Descubre tu ciudad</h3>
+          <p class="mfc-body">Experiencias reales, curadas por emoción y ubicación. No algoritmos — curaduría humana.</p>
+          <span class="mfc-tag">Curaduría local</span>
+        </div>
+
+        <div class="mf-card mf-card--featured">
+          <div class="mfc-number">02</div>
+          <div class="mfc-icon-wrap">
+            <img src="https://barranquilla.gov.co/wp-content/uploads/2022/07/8b63c6bd-a614-4523-9458-834345d4629c.jpeg" class="mfc-img" alt="">
+            <div class="mfc-ring"></div>
+          </div>
+          <h3 class="mfc-title">Impulsa tu evento</h3>
+          <p class="mfc-body">Tu vitrina para audiencias apasionadas. Si creas cultura, Vemo amplifica tu señal.</p>
+          <span class="mfc-tag">Para creadores</span>
+        </div>
+
+        <div class="mf-card">
+          <div class="mfc-number">03</div>
+          <div class="mfc-icon-wrap">
+            <img src="https://colombia.travel/sites/default/files/inline-images/Arriba%20Sexteto%20Foto%20Charlie%20Cordero%20Cortes%C3%ADa%20Carnaval%20de%20Barranquilla%20S.A.S.%20_0.jpg" class="mfc-img" alt="">
+            <div class="mfc-ring"></div>
+          </div>
+          <h3 class="mfc-title">Siente la experiencia</h3>
+          <p class="mfc-body">Inspiración, calma, diversión, aprendizaje. La ciudad filtrada por lo que sientes.</p>
+          <span class="mfc-tag">Basado en emociones</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       EXPLORADOR — MODO OSCURO ÉPICO
+       ═══════════════════════════════════════════ -->
+  <section class="explorer-act" id="seccion-explorador">
+    <div class="exp-header">
+      <div class="exp-header-left">
+        <div class="exp-pulse-dot"></div>
+        <div class="exp-title-block">
+          <span class="exp-overline">En tiempo real</span>
+          <h2 class="exp-title">MODO<br>EXPLORADOR</h2>
+        </div>
+      </div>
+      <div class="exp-divider"></div>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="exp-grid" *ngIf="loading">
+      <div class="exp-card exp-skeleton" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+
+    <!-- Cards reales -->
+    <div class="exp-grid" *ngIf="!loading">
+      <article class="exp-card" *ngFor="let event of explorerEvents; let i = index"
+        (click)="goToDetail(event.id)"
+        [style.animationDelay]="(i * 0.07) + 's'">
+        <div class="ec-media">
+          <img [src]="event.image_url" alt="Event cover" loading="lazy">
+          <div class="ec-media-overlay"></div>
+          <button class="ec-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">❤</button>
+          <div class="ec-badges">
+            <span class="ec-cat">{{ event.categories?.[0]?.name }}</span>
+            <span class="ec-mood">{{ event.emotions?.emoji }}</span>
+          </div>
+          <div class="ec-index">{{ (i + 1).toString().padStart(2, '0') }}</div>
+        </div>
+        <div class="ec-body">
+          <h3 class="ec-title">{{ event.title }}</h3>
+          <div class="ec-footer">
+            <span class="ec-location">{{ event.location_name }}</span>
+            <span class="ec-date">{{ event.date_event | date:'MMM d' }}</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       MOOD MODAL LEGACY (fallback)
+       ═══════════════════════════════════════════ -->
+  <div class="mood-overlay" *ngIf="showMoodModal && availableEmotions.length > 0">
+    <div class="mood-inner">
+      <h2 class="mood-title">¿Cómo quieres sentirte hoy?</h2>
+      <p class="mood-sub">Tu emoción es la brújula que abre la ciudad.</p>
+      <div class="mood-chips">
+        <button *ngFor="let emotion of availableEmotions" class="mood-chip"
           (click)="selectMood(emotion.id, emotion.name)">
-          <span class="emoji">{{ emotion.emoji }}</span>
-          <span class="emotion-name">{{ emotion.name }}</span>
+          <span>{{ emotion.emoji }}</span>
+          <span>{{ emotion.name }}</span>
         </button>
       </div>
     </div>
   </div>
 
-  <div class="vela-chat-system" [class.is-open]="isChatOpen">
-    <div class="chat-glass-container" *ngIf="isChatOpen">
-      <header class="chat-header">
-        <div class="header-content">
-          <div class="vela-status">
-            <img src="/assets/vela.png" class="vela-header-icon" alt="Vela">
-            <span class="status-dot"></span>
-            <h3 class="clash-display">Vela Guide</h3>
-          </div>
-          <button class="close-chat-btn" (click)="toggleChat()">✕</button>
-        </div>
-        <div class="header-glow"></div>
-      </header>
 
-      <div class="messages-viewport" #chatContainer>
-        <div *ngFor="let msg of chatHistory" [ngClass]="['msg-wrapper', msg.role]">
-          <div class="message-bubble">
-            <p>{{ msg.text }}</p>
-          </div>
+  <!-- ═══════════════════════════════════════════
+       VELA CHAT
+       ═══════════════════════════════════════════ -->
+  <div class="vela-chat-dock" [class.open]="isChatOpen">
+    <div class="vcd-window" *ngIf="isChatOpen">
+      <header class="vcd-header">
+        <div class="vcd-identity">
+          <img src="/assets/vela.png" class="vcd-avatar" alt="Vela">
+          <div class="vcd-status-dot"></div>
+          <div class="vcd-name">VELA <span>Guide</span></div>
         </div>
-        <div *ngIf="isTyping" class="msg-wrapper vela">
-          <div class="message-bubble typing">...</div>
+        <button class="vcd-close" (click)="toggleChat()">✕</button>
+      </header>
+      <div class="vcd-messages" #chatContainer>
+        <div *ngFor="let msg of chatHistory" class="vcd-msg" [class.user]="msg.role === 'user'" [class.vela]="msg.role === 'vela'">
+          <div class="vcd-bubble"><p>{{ msg.text }}</p></div>
+        </div>
+        <div *ngIf="isTyping" class="vcd-msg vela">
+          <div class="vcd-bubble typing"><span></span><span></span><span></span></div>
         </div>
       </div>
-
-      <footer class="chat-footer">
-        <div class="input-glow-wrapper">
-          <input type="text" [(ngModel)]="userInput" (keyup.enter)="sendMessage()" placeholder="Háblame..."
-            class="vela-input">
-          <button class="send-action" (click)="sendMessage()" [disabled]="!userInput">→</button>
+      <footer class="vcd-footer">
+        <div class="vcd-input-wrap">
+          <input type="text" [(ngModel)]="userInput" (keyup.enter)="sendMessage()" placeholder="Pregunta algo..." class="vcd-input">
+          <button class="vcd-send" (click)="sendMessage()" [disabled]="!userInput">→</button>
         </div>
       </footer>
     </div>
-
-    <button class="vela-trigger" (click)="toggleChat()" [class.hidden]="isChatOpen">
-      <div class="pulse-container">
-        <div class="pulse"></div>
-        <div class="pulse delay"></div>
-      </div>
-      <img src="/assets/vela.png" alt="Vela" class="vela-custom-icon">
+    <button class="vcd-trigger" (click)="toggleChat()" [class.hidden]="isChatOpen">
+      <div class="vct-pulse"></div>
+      <div class="vct-pulse vct-pulse-2"></div>
+      <img src="/assets/vela.png" alt="Vela" class="vct-icon">
     </button>
   </div>
-</div>
-<footer class="vemo-footer">
-  <div class="footer-content">
 
-    <div class="footer-brand">
-      <div class="logo-container">
-        <img src="assets/logo-vemo.png" alt="VEMO Logo" class="footer-logo">
-        <span class="brand-name">VEMO</span>
+</div><!-- /vemo-universe -->
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER CINEMATOGRÁFICO
+     ═══════════════════════════════════════════ -->
+<footer class="vemo-footer-act">
+  <div class="vfa-inner">
+    <div class="vfa-brand">
+      <div class="vfa-logo-row">
+        <img src="assets/logo-vemo.png" alt="VEMO" class="vfa-logo">
+        <span class="vfa-name">VEMO</span>
       </div>
-      <p class="brand-tagline">Conectando la vibra de Barranquilla, un evento a la vez.</p>
-      <div class="social-links">
-        <a href="#" class="social-icon">ig</a>
-        <a href="#" class="social-icon">tw</a>
-        <a href="#" class="social-icon">tk</a>
+      <p class="vfa-tagline">Conectando la vibra de Barranquilla,<br>un evento a la vez.</p>
+      <div class="vfa-socials">
+        <a href="#" class="vfs-link">ig</a>
+        <a href="#" class="vfs-link">tw</a>
+        <a href="#" class="vfs-link">tk</a>
       </div>
     </div>
-
-    <div class="footer-links">
+    <div class="vfa-col">
       <h4>Explorar</h4>
-      <ul>
-        <li><a routerLink="/explora">Todos los eventos</a></li>
-        <li><a routerLink="/categorias">Categorías</a></li>
-        <li><a routerLink="/mapa">Mapa en vivo</a></li>
-      </ul>
+      <a routerLink="/explora">Todos los eventos</a>
+      <a routerLink="/categorias">Categorías</a>
+      <a routerLink="/mapa">Mapa en vivo</a>
     </div>
-
-    <div class="footer-links">
+    <div class="vfa-col">
       <h4>Comunidad</h4>
-      <ul>
-        <li><a routerLink="/organizador">Ser organizador</a></li>
-        <li><a routerLink="/ayuda">Ayuda con VELA</a></li>
-        <li><a routerLink="/terminos">Privacidad</a></li>
-      </ul>
+      <a routerLink="/organizador">Ser organizador</a>
+      <a routerLink="/ayuda">Ayuda con VELA</a>
+      <a routerLink="/terminos">Privacidad</a>
     </div>
-
-    <div class="footer-cta">
-      <h4>¿No sabes qué hacer?</h4>
-      <p>Deja que VELA te sugiera un plan ideal para hoy.</p>
-      <button class="btn-footer-chat">Chatear con VELA</button>
+    <div class="vfa-cta">
+      <h4>¿Sin plan hoy?</h4>
+      <p>Deja que VELA calibre la ciudad para ti.</p>
+      <button class="vfa-chat-btn" (click)="abrirChatDirecto()">Chatear con VELA</button>
     </div>
-
   </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2026 VEMO App. Hecho con amor en Barranquilla.</p>
+  <div class="vfa-bottom">
+    <span>&copy; 2026 VEMO App · Hecho con amor en Barranquilla</span>
+    <div class="vfa-bottom-line"></div>
   </div>
 </footer>

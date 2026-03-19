@@ -10,11 +10,16 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
-
-
 export class AdminDashboardComponent implements OnInit {
   pendingVerifications: any[] = [];
   loading = true;
+  
+  // Variables para el modal de detalles
+  selectedVerification: any = null;
+  
+  // Variables para el visor de imágenes (si quieres ampliar la foto)
+  previewImageUrl: string | null = null;
+  isImageLoading = false;
 
   async ngOnInit() {
     await this.loadVerifications();
@@ -25,38 +30,69 @@ export class AdminDashboardComponent implements OnInit {
       const res = await fetch(`${environment.apiUrl}/api/admin/verifications`);
       this.pendingVerifications = await res.json();
     } catch (error) {
-      console.error("Error cargando veríficaciones:", error);
+      console.error("Error cargando verificaciones:", error);
     } finally {
       this.loading = false;
     }
   }
 
-async processDecision(userId: string, status: string) {
-  let reason = null;
-  
-  if (status === 'rejected') {
-    reason = prompt('Razón del rechazo definitivo:');
-    if (!reason) return;
-  } else if (status === 'action_required') {
-    reason = prompt('¿Qué debe corregir el organizador? (Ej: Foto borrosa):');
-    if (!reason) return;
+  // --- MÉTODOS DEL MODAL DE DETALLES ---
+  openDetails(req: any) {
+    this.selectedVerification = req;
   }
-  
-try {
-  // Nota las comillas inclinadas ` en lugar de '
-  const res = await fetch(`${environment.apiUrl}/api/admin/decision`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, status, reason })
-  });
 
-    if (res.ok) {
-      alert('Acción realizada con éxito');
-      // Limpiamos de la lista local para que desaparezca la tarjeta
-      this.pendingVerifications = this.pendingVerifications.filter(v => v.id !== userId);
-    }
-  } catch (error) {
-    alert('Error al conectar con el servidor');
+  closeDetails() {
+    this.selectedVerification = null;
   }
-} 
+
+  // --- MÉTODOS DE IMÁGENES ---
+  openImagePreview(url: string) {
+    if (!url) return;
+    this.previewImageUrl = url;
+    this.isImageLoading = true;
+  }
+
+  openImage(url: string) { this.openImagePreview(url); }
+  viewImage(url: string) { this.openImagePreview(url); }
+
+  closeImagePreview() {
+    this.previewImageUrl = null;
+    this.isImageLoading = false;
+  }
+
+  onImageLoad() {
+    this.isImageLoading = false;
+  }
+
+  async processDecision(userId: string, status: string) {
+    let reason = null;
+    
+    if (status === 'rejected') {
+      reason = prompt('Razón del rechazo definitivo:');
+      if (!reason) return;
+    } else if (status === 'action_required') {
+      reason = prompt('¿Qué debe corregir el organizador? (Ej: Foto borrosa):');
+      if (!reason) return;
+    }
+    
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/admin/decision`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, status, reason })
+      });
+
+      if (res.ok) {
+        alert('Acción realizada con éxito');
+        // Limpiamos de la lista local
+        this.pendingVerifications = this.pendingVerifications.filter(v => v.id !== userId);
+        // Cerramos el modal si estaba abierto
+        if (this.selectedVerification && this.selectedVerification.id === userId) {
+          this.closeDetails();
+        }
+      }
+    } catch (error) {
+      alert('Error al conectar con el servidor');
+    }
+  } 
 }

@@ -1,5 +1,5 @@
 <div class="profile-page-wrapper">
-  
+
   <div class="living-atmosphere">
     <div class="glow-orb orb-1"></div>
     <div class="glow-orb orb-2"></div>
@@ -11,7 +11,7 @@
   </div>
 
   <div class="profile-viewport" *ngIf="!loading && userData">
-    
+
     <header class="identity-hero">
       <div class="avatar-rig" (click)="profileInput.click()" title="Cambiar foto de perfil">
         <div class="avatar-halo"></div>
@@ -26,10 +26,9 @@
         <div class="status-indicator-dot" [class.online]="true"></div>
         <input type="file" #profileInput (change)="onProfileImageSelected($event)" accept="image/*" hidden>
       </div>
-      
+
       <div class="identity-content">
         <h1 class="clash-display user-name">{{ userData.company_name || userData.username }}</h1>
-        
         <div class="role-badge-container">
           <span class="vemo-role-pill" [class.admin]="userData.role === 'admin'">
             <span class="role-icon" *ngIf="userData.role === 'admin'">🛡️</span>
@@ -43,13 +42,14 @@
     </header>
 
     <main class="dashboard-grid">
-      
+
+      <!-- ===================== PANEL ADMIN ===================== -->
       <section class="control-deck glass-panel" *ngIf="userData.role === 'admin'">
         <div class="deck-header">
           <h2 class="clash-display section-title">Centro de Comando</h2>
           <p class="section-subtitle">Gestiona la integridad de la red VEMO.</p>
         </div>
-        
+
         <div class="tab-system">
           <button class="tab-trigger" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
             <span class="tab-icon">👥</span> Identidades ({{pendingVerifications.length}})
@@ -61,42 +61,43 @@
         </div>
 
         <div class="admin-content-area">
-            <div *ngIf="activeTab === 'users'" class="admin-list">
-              <div *ngIf="pendingVerifications.length === 0" class="empty-state-micro"><p>✅ Todo al día.</p></div>
-              <div class="admin-card" *ngFor="let req of pendingVerifications">
-                <div class="card-info">
-                  <h4 class="clash-display">{{ req.company_name }}</h4>
-                  <p class="nit-text">NIT: {{ req.nit }}</p>
-                  <div class="links-row">
-                    <button (click)="viewImage(req.frontUrl)" class="doc-link">📄 Frontal</button>
-                    <button (click)="viewImage(req.backUrl)" class="doc-link">📄 Trasera</button>
-                  </div>
-                </div>
-                <div class="card-actions">
-                  <button class="btn-action approve" (click)="processDecision(req.id, 'approved')">✓</button>
-                  <button class="btn-action reject" (click)="processDecision(req.id, 'rejected')">✕</button>
+          <div *ngIf="activeTab === 'users'" class="admin-list">
+            <div *ngIf="pendingVerifications.length === 0" class="empty-state-micro"><p>✅ Todo al día.</p></div>
+            <div class="admin-card" *ngFor="let req of pendingVerifications">
+              <div class="card-info">
+                <h4 class="clash-display">{{ req.company_name }}</h4>
+                <p class="nit-text">NIT: {{ req.nit }}</p>
+                <div class="links-row">
+                  <button (click)="viewImage(req.frontUrl)" class="doc-link">📄 Frontal</button>
+                  <button (click)="viewImage(req.backUrl)" class="doc-link">📄 Trasera</button>
                 </div>
               </div>
+              <div class="card-actions">
+                <button class="btn-action approve" (click)="processDecision(req.id, 'approved')">✓</button>
+                <button class="btn-action reject" (click)="processDecision(req.id, 'rejected')">✕</button>
+              </div>
             </div>
+          </div>
 
-            <div *ngIf="activeTab === 'events'" class="admin-list">
-              <div *ngIf="pendingEvents.length === 0" class="empty-state-micro"><p>✅ Sin eventos pendientes.</p></div>
-              <div class="admin-card" *ngFor="let ev of pendingEvents">
-                <div class="card-image-thumb" [style.backgroundImage]="'url(' + (ev.image_url || 'assets/placeholder.png') + ')'"></div>
-                <div class="card-info">
-                  <h4 class="clash-display">{{ ev.title }}</h4>
-                  <p class="organizer-ref">Por: {{ ev.profiles?.company_name }}</p>
-                </div>
-                <button class="btn-review-details" (click)="openEventReview(ev)">
-                  🔍 Revisar
-                </button>
+          <div *ngIf="activeTab === 'events'" class="admin-list">
+            <div *ngIf="pendingEvents.length === 0" class="empty-state-micro"><p>✅ Sin eventos pendientes.</p></div>
+            <div class="admin-card" *ngFor="let ev of pendingEvents">
+              <div class="card-image-thumb" [style.backgroundImage]="'url(' + (ev.image_url || 'assets/placeholder.png') + ')'"></div>
+              <div class="card-info">
+                <h4 class="clash-display">{{ ev.title }}</h4>
+                <p class="organizer-ref">Por: {{ ev.profiles?.company_name }}</p>
               </div>
+              <button class="btn-review-details" (click)="openEventReview(ev)">
+                🔍 Revisar
+              </button>
             </div>
+          </div>
         </div>
       </section>
 
+      <!-- ===================== PANEL ORGANIZADOR / USUARIO ===================== -->
       <section class="user-dashboard glass-panel" *ngIf="userData.role !== 'admin'">
-        
+
         <div *ngIf="userData.role === 'organizer' || userData.company_name" class="organizer-view">
           <div class="deck-header">
             <h2 class="clash-display section-title">Panel de Creador</h2>
@@ -125,49 +126,40 @@
               <span class="glow-icon">+</span>
               <span class="btn-text">CREAR NUEVA EXPERIENCIA</span>
             </button>
-            
+
             <div *ngIf="userData.verification_status !== 'approved'" class="status-warning">
               ⚠️ Tu cuenta está en revisión. Podrás publicar cuando seas aprobado.
             </div>
-            
-            <button *ngIf="!userData.verification_status || userData.verification_status === 'pending_upload'" 
+
+            <button *ngIf="!userData.verification_status || userData.verification_status === 'pending_upload'"
                     class="btn-text-link" (click)="goToVerify()">
-               Completar Verificación
+              Completar Verificación
             </button>
           </div>
 
           <div class="my-events-preview">
             <h3 class="clash-display sub-header">Mis Eventos Recientes</h3>
-            
+
             <div *ngIf="myEvents.length === 0" class="empty-events-placeholder">
               <span class="ghost-icon">📅</span>
               <p>Tu historial de creación aparecerá aquí.</p>
             </div>
 
             <div *ngIf="myEvents.length > 0" class="mini-events-list">
-               <div class="mini-event-row" *ngFor="let ev of myEvents">
-                  
-                  <span class="ev-status" [class]="ev.status" [title]="ev.status">●</span>
-                  
-                  <span class="ev-title">
-                    {{ev.title}}
-                    <span *ngIf="ev.is_promoted" class="badge-promoted">GOLD</span>
-                  </span>
-                  
-                  <div class="ev-stats-mini">
-                    <span>👁️ {{ ev.views_count || 0 }}</span>
-                    <span>🔖 {{ ev.favorites_count || 0 }}</span>
-                  </div>
-
-                  <span class="ev-date">{{ev.date_event | date:'shortDate'}}</span>
-
-                  <button *ngIf="ev.status === 'approved' && !ev.is_promoted" 
-                          class="btn-promote" 
-                          (click)="promoteEvent(ev)" 
-                          title="Promocionar este evento con Wompi">
-                    ⚡ Destacar
-                  </button>
-               </div>
+              <!-- ✅ CLICK HABILITADO: abre el modal de detalle -->
+              <div class="mini-event-row clickable" *ngFor="let ev of myEvents" (click)="viewOrganizerEvent(ev)">
+                <span class="ev-status" [class]="ev.status" [title]="ev.status">●</span>
+                <span class="ev-title">
+                  {{ev.title}}
+                  <span *ngIf="ev.is_promoted" class="badge-promoted">GOLD</span>
+                </span>
+                <div class="ev-stats-mini">
+                  <span>👁️ {{ ev.views_count || 0 }}</span>
+                  <span>🔖 {{ ev.favorites_count || 0 }}</span>
+                </div>
+                <span class="ev-date">{{ev.date_event | date:'shortDate'}}</span>
+                <span class="ev-arrow">›</span>
+              </div>
             </div>
           </div>
         </div>
@@ -182,6 +174,7 @@
             <p>Aún no has guardado eventos.</p>
           </div>
         </div>
+
       </section>
 
     </main>
@@ -194,6 +187,7 @@
 
   </div>
 
+  <!-- ===================== MODAL ADMIN: REVISIÓN DE EVENTO ===================== -->
   <div class="review-modal-overlay" *ngIf="selectedEventForReview" (click)="closeEventReview()">
     <div class="review-modal-content" (click)="$event.stopPropagation()">
       <div class="modal-image-header" [style.backgroundImage]="'url(' + selectedEventForReview.image_url + ')'">
@@ -217,7 +211,80 @@
     </div>
   </div>
 
+  <!-- ===================== MODAL ORGANIZADOR: DETALLE DE EVENTO ===================== -->
+  <div class="review-modal-overlay" *ngIf="selectedEvent" (click)="closeOrganizerEvent()">
+    <div class="review-modal-content" (click)="$event.stopPropagation()">
+
+      <div class="modal-image-header" [style.backgroundImage]="'url(' + (selectedEvent.image_url || 'assets/placeholder.png') + ')'">
+        <button class="close-modal-btn" (click)="closeOrganizerEvent()">✕</button>
+        <div class="modal-badge modal-status-badge" [class]="selectedEvent.status">
+          <span>●</span>
+          {{ selectedEvent.status === 'approved' ? 'Publicado'
+           : selectedEvent.status === 'pending_review' ? 'En revisión'
+           : selectedEvent.status === 'rejected' ? 'Rechazado'
+           : selectedEvent.status }}
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <h2 class="clash-display event-title-lg">
+          {{ selectedEvent.title }}
+          <span *ngIf="selectedEvent.is_promoted" class="badge-promoted">GOLD ⭐</span>
+        </h2>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">📅 Fecha</span>
+            <span class="meta-value">{{ selectedEvent.date_event | date:'fullDate' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">🕐 Hora</span>
+            <span class="meta-value">{{ selectedEvent.time_start || 'No especificada' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">📍 Ubicación</span>
+            <span class="meta-value">{{ selectedEvent.location_name || 'No especificada' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">🎭 Categoría</span>
+            <span class="meta-value">{{ selectedEvent.emotions?.name || selectedEvent.category || '—' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">👁️ Vistas</span>
+            <span class="meta-value">{{ selectedEvent.views_count || 0 | number }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">🔖 Guardados</span>
+            <span class="meta-value">{{ selectedEvent.favorites_count || 0 | number }}</span>
+          </div>
+        </div>
+
+        <div class="description-box" *ngIf="selectedEvent.description">
+          <h4 class="desc-label">Descripción</h4>
+          <p>{{ selectedEvent.description }}</p>
+        </div>
+
+        <div class="modal-actions-bar">
+          <button class="btn-decision reject" (click)="closeOrganizerEvent()">
+            CERRAR
+          </button>
+          <button class="btn-decision approve" (click)="duplicateOrEditEvent(selectedEvent, 'edit'); closeOrganizerEvent()">
+            ✏️ EDITAR
+          </button>
+          <button
+            *ngIf="selectedEvent.status === 'approved' && !selectedEvent.is_promoted"
+            class="btn-promote"
+            (click)="promoteEvent(selectedEvent); closeOrganizerEvent()">
+            ⭐ DESTACAR
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="error-state" *ngIf="!loading && !userData">
     <button class="btn-disconnect" (click)="logout()">Reiniciar</button>
   </div>
+
 </div>

@@ -1,4 +1,5 @@
 <div class="event-detail-wrapper" *ngIf="event">
+  
   <div class="event-hero map-hero">
     <div class="hero-overlay-top"></div>
     <div id="singleEventMap" class="high-fidelity-map hero-map"></div>
@@ -6,20 +7,25 @@
   </div>
 
   <div class="detail-content-container">
+    
     <header class="detail-header glass-effect-header">
       <span class="category-pill">{{ event.categories[0]?.name || 'Experiencia' }}</span>
       <h1 class="clash-display event-title-main">{{ event.title }}</h1>
       
       <div class="quick-meta-grid">
         <div class="meta-card">
-          <span class="meta-icon">📅</span>
+          <div class="meta-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
           <div class="meta-texts">
             <span class="meta-label">Cuándo</span>
             <p class="meta-value">{{ event.date_event | date:'fullDate' }}</p>
           </div>
         </div>
         <div class="meta-card">
-          <span class="meta-icon">📍</span>
+          <div class="meta-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
           <div class="meta-texts">
             <span class="meta-label">Dónde</span>
             <p class="meta-value">{{ event.location_name }}</p>
@@ -30,23 +36,18 @@
 
     <section class="info-grid">
       <div class="description-column">
-        <div class="content-block glass-effect">
-          <h3 class="clash-display section-tag">El Momento</h3>
-          <p class="event-description-text">{{ event.description }}</p>
-          
-          <div class="organizer-badge-premium">
-            <div class="organizer-info">
-              <span class="small-tag">Curado por</span>
-              <p class="clash-display curator-name">{{ event.profiles?.username || 'Vemo Guide' }}</p>
-            </div>
-          </div>
-        </div>
 
         <div class="content-block glass-effect">
            <h3 class="clash-display section-tag">Agendar</h3>
            <div class="calendar-btn-group">
-             <button class="calendar-chip" (click)="addToGoogleCalendar()">+ Google Calendar</button>
-             <button class="calendar-chip" (click)="downloadIcsFile()">+ Apple / Outlook</button>
+             <button class="calendar-chip" (click)="addToGoogleCalendar()">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Google Calendar
+             </button>
+             <button class="calendar-chip" (click)="downloadIcsFile()">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Apple / Outlook
+             </button>
            </div>
         </div>
 
@@ -54,14 +55,17 @@
           <h3 class="clash-display section-tag">¿Cómo llegar?</h3>
           <div class="bus-info-wrapper">
             <div class="bus-route-detail">
-              <span class="bus-icon">🚌</span>
               <div class="bus-texts">
-                <span class="meta-label">Transporte Público</span>
-                <p class="event-description-text">Rutas: <strong>{{ event.bus_routes || 'Ruta A8-1, U30' }}</strong></p>
+                <span class="meta-label transport-label">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+                  Transporte Público
+                </span>
+                <p class="event-description-text route-text">Rutas: <strong>{{ event.bus_routes || 'Ruta A8-1, U30' }}</strong></p>
               </div>
             </div>
             
             <button class="google-maps-btn-neon" (click)="openGoogleMaps()">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="maps-icon"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
               <span>NAVEGAR CON GOOGLE MAPS</span>
             </button>
           </div>
@@ -69,25 +73,29 @@
 
         <div class="content-block reviews-section glass-effect" *ngIf="isPostEvent()">
           <h3 class="clash-display section-tag">Reseñas de la Comunidad</h3>
+          
           <div class="review-form" *ngIf="!hasReviewed">
-            <p class="small-tag">¿Cómo fue tu experiencia?</p>
+            <p class="small-tag prompt-tag">¿Cómo fue tu experiencia?</p>
             <div class="star-rating">
-              <span *ngFor="let s of [1,2,3,4,5]" (click)="setRating(s)" [class.active]="userRating >= s">★</span>
+              <svg *ngFor="let s of [1,2,3,4,5]" (click)="setRating(s)" [class.active]="userRating >= s" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             </div>
-            <textarea [(ngModel)]="userComment" placeholder="Comentario opcional..."></textarea>
-            <button class="filter-chip active" (click)="submitReview()">Enviar Reseña</button>
+            <textarea class="review-input" [(ngModel)]="userComment" placeholder="Escribe tu comentario opcional..."></textarea>
+            <button class="btn-submit-review" (click)="submitReview()">Enviar Reseña</button>
           </div>
           
           <div class="review-list">
              <div class="review-item" *ngFor="let rev of event.reviews">
-                <div class="star-rating static">
-                  <span *ngFor="let s of [1,2,3,4,5]" [class.active]="rev.rating >= s">★</span>
+                <div class="review-header">
+                  <p class="reviewer-name">{{ rev.username }}</p>
+                  <div class="star-rating static">
+                    <svg *ngFor="let s of [1,2,3,4,5]" [class.active]="rev.rating >= s" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  </div>
                 </div>
-                <p class="meta-value">{{ rev.username }}</p>
-                <p class="event-description-text">{{ rev.comment }}</p>
+                <p class="review-comment-text">{{ rev.comment }}</p>
              </div>
           </div>
         </div>
+
       </div>
 
       <div class="photo-column">
@@ -99,14 +107,14 @@
           </div>
         </div>
       </div>
+
     </section>
   </div>
-
-
+</div>
 
 <ng-template #loadingState>
   <div class="vemo-loader-container">
     <div class="vela-liquid-loader"></div>
-    <p class="clash-display">Sincronizando la ciudad...</p>
+    <p class="clash-display loading-text">Sincronizando la ciudad...</p>
   </div>
 </ng-template>

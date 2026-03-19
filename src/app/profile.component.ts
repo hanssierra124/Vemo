@@ -3,7 +3,6 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
-// Declaramos la variable de Wompi para que TypeScript no se queje
 declare var WidgetCheckout: any;
 
 @Component({
@@ -16,37 +15,36 @@ declare var WidgetCheckout: any;
 export class ProfileComponent implements OnInit {
   userData: any = null;
   loading: boolean = true;
-  
+
   // Datos Admin
   pendingVerifications: any[] = [];
   pendingEvents: any[] = [];
   activeTab: 'users' | 'events' = 'users';
-  
-  // Modal de Revisión
+
+  // Modal de Revisión (Admin)
   selectedEventForReview: any = null;
 
   // Datos Organizador
   myEvents: any[] = [];
-  selectedEvent: any = null;
+  selectedEvent: any = null;           // Modal del organizador
+  eventFilter: 'all' | 'active' | 'finished' = 'all';
 
-  // MÉTRICAS GLOBALES PARA EL PANEL
+  // MÉTRICAS GLOBALES
   totalViews: number = 0;
   totalSaves: number = 0;
 
-  // CONFIGURACIÓN DE WOMPI
-  wompiPublicKey: string = 'pub_test_Q5yDA9xoKdePzhSGeVe9HAez7CTSG9IW'; 
-  promotionPrice: number = 5000000; // $50.000 COP (en centavos)
+  // WOMPI
+  wompiPublicKey: string = 'pub_test_Q5yDA9xoKdePzhSGeVe9HAez7CTSG9IW';
+  promotionPrice: number = 5000000;
 
   constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    // Limpieza de estado al inicializar el componente para evitar data residual
     this.resetLocalState();
     this.getProfileData();
-    this.loadWompiScript(); // Cargamos el script de pagos al iniciar
+    this.loadWompiScript();
   }
 
-  // --- LÓGICA DE LIMPIEZA DE ESTADO ---
   resetLocalState() {
     this.userData = null;
     this.myEvents = [];
@@ -54,15 +52,15 @@ export class ProfileComponent implements OnInit {
     this.pendingEvents = [];
     this.totalViews = 0;
     this.totalSaves = 0;
+    this.selectedEvent = null;
+    this.selectedEventForReview = null;
     this.cdr.detectChanges();
   }
 
-  // --- LÓGICA DE FOTO DE PERFIL (CON PERSISTENCIA DEFINITIVA) ---
   async onProfileImageSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Previsualización local inmediata (UX Fluida)
     const reader = new FileReader();
     reader.onload = () => {
       this.userData.profile_url = reader.result as string;
@@ -70,25 +68,20 @@ export class ProfileComponent implements OnInit {
     };
     reader.readAsDataURL(file);
 
-    // Preparar envío al backend
     const formData = new FormData();
     formData.append('profileImage', file);
-
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
 
     try {
-      const res = await fetch('${environment.apiUrl}/api/auth/upload-profile-image', {
+      const res = await fetch(`${environment.apiUrl}/api/auth/upload-profile-image`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
-
       if (res.ok) {
         const result = await res.json();
-        // ACTUALIZACIÓN PERMANENTE: Sobrescribimos con la URL real de Supabase
         this.userData.profile_url = result.imageUrl;
         this.cdr.detectChanges();
-        console.log("✅ Imagen guardada permanentemente en la base de datos.");
       }
     } catch (e) {
       console.error("❌ Error al subir imagen", e);
@@ -96,14 +89,42 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // --- LÓGICA DE MÉTRICAS INDEPENDIENTES ---
   calculateMetrics() {
     this.totalViews = this.myEvents.reduce((acc, curr) => acc + (curr.views_count || 0), 0);
     this.totalSaves = this.myEvents.reduce((acc, curr) => acc + (curr.favorites_count || 0), 0);
     this.cdr.detectChanges();
   }
 
-  // --- INTEGRACIÓN WOMPI ---
+  get filteredMyEvents() {
+    if (!this.myEvents) return [];
+    const now = new Date();
+    return this.myEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      const isExpired = event.status === 'expired' || eventDate < now;
+      if (this.eventFilter === 'active') return event.status === 'approved' && !isExpired;
+      else if (this.eventFilter === 'finished') return isExpired || event.status === 'rejected';
+      return true;
+    });
+  }
+
+  setEventFilter(filter: 'all' | 'active' | 'finished') {
+    this.eventFilter = filter;
+  }
+
+  // --- MODAL ORGANIZADOR ---
+  viewOrganizerEvent(event: any) {
+    this.selectedEvent = event;
+  }
+
+  closeOrganizerEvent() {
+    this.selectedEvent = null;
+  }
+
+  duplicateOrEditEvent(event: any, mode: 'edit' | 'duplicate') {
+    this.router.navigate(['/create-event'], { state: { mode, eventData: event } });
+  }
+
+  // --- WOMPI ---
   loadWompiScript() {
     if (!document.getElementById('wompi-script')) {
       const script = document.createElement('script');
@@ -114,13 +135,11 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // --- FUNCIÓN PARA PAGAR PROMOCIÓN ---
   promoteEvent(event: any) {
     if (event.status !== 'approved') {
       alert("Solo puedes promocionar eventos que ya hayan sido aprobados.");
       return;
     }
-
     if (typeof WidgetCheckout === 'undefined') {
       alert("Error cargando la pasarela de pagos. Recarga la página.");
       return;
@@ -134,7 +153,7 @@ export class ProfileComponent implements OnInit {
       publicKey: this.wompiPublicKey,
       redirectUrl: 'http://localhost:4200/profile',
       taxInCents: { vat: 0, consumption: 0 },
-      customerData: { 
+      customerData: {
         email: this.userData.email,
         fullName: this.userData.company_name || this.userData.username,
         phoneNumber: this.userData.phone,
@@ -168,27 +187,20 @@ export class ProfileComponent implements OnInit {
   openEventReview(event: any) { this.selectedEventForReview = event; }
   closeEventReview() { this.selectedEventForReview = null; }
 
-  // --- LÓGICA PRINCIPAL DE CARGA (PERSISTENCIA AL REFRESCAR) ---
   async getProfileData() {
     this.loading = true;
     this.resetLocalState();
-
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     if (!token) { this.router.navigate(['/auth']); return; }
 
     try {
-      // Agregamos timestamp para evitar cache y forzar la lectura de la nueva foto
       const res = await fetch(`${environment.apiUrl}/api/auth/profile?t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-
       if (res.status === 401) { this.logout(); return; }
-
       const data = await res.json();
       if (res.ok) {
-        // Aquí recibimos el objeto 'user' que ya incluye la 'profile_url' de la tabla 'profiles'
         this.userData = data.user;
-        
         if (this.userData.role === 'admin') {
           await this.loadAdminData();
           await this.loadAdminEvents();
@@ -196,22 +208,22 @@ export class ProfileComponent implements OnInit {
           await this.loadMyEvents();
         }
       }
-    } catch (error) { 
-      console.error("Error cargando perfil:", error); 
-    } finally { 
-      this.loading = false; 
-      this.cdr.detectChanges(); 
+    } catch (error) {
+      console.error("Error cargando perfil:", error);
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
   async loadMyEvents() {
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     const res = await fetch(`${environment.apiUrl}/api/organizer/my-events`, {
-       headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
       this.myEvents = await res.json();
-      this.calculateMetrics(); 
+      this.calculateMetrics();
     }
   }
 
@@ -235,7 +247,7 @@ export class ProfileComponent implements OnInit {
   async processDecision(userId: string, status: string) {
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     let reason = status === 'rejected' ? (prompt('Motivo:') || 'Documentación incompleta') : null;
-    if(!confirm(`¿Desea ${status === 'approved' ? 'aprobar' : 'rechazar'} esta identidad?`)) return;
+    if (!confirm(`¿Desea ${status === 'approved' ? 'aprobar' : 'rechazar'} esta identidad?`)) return;
 
     try {
       const res = await fetch(`${environment.apiUrl}/api/admin/decision`, {
@@ -253,7 +265,7 @@ export class ProfileComponent implements OnInit {
   async decideEvent(eventId: string, status: string, organizerId: string) {
     const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     let reason = status === 'rejected' ? (prompt('Motivo:') || 'No cumple normas') : null;
-    
+
     await fetch(`${environment.apiUrl}/api/admin/event-decision`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

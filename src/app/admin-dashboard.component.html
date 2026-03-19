@@ -27,24 +27,7 @@
           </div>
         </div>
 
-        <div class="id-visuals-grid">
-          <div class="visual-frame">
-            <span class="frame-tag">Frontal</span>
-            <img [src]="req.frontUrl" alt="ID Front">
-            <div class="frame-overlay"></div>
-          </div>
-          <div class="visual-frame">
-            <span class="frame-tag">Posterior</span>
-            <img [src]="req.backUrl" alt="ID Back">
-            <div class="frame-overlay"></div>
-          </div>
-        </div>
-
-        <div class="admin-button-group">
-          <button class="btn-action btn-reject" (click)="processDecision(req.id, 'rejected')">Rechazar</button>
-          <button class="btn-action btn-retry" (click)="processDecision(req.id, 'pending')">Reintentar</button>
-          <button class="btn-action btn-approve" (click)="processDecision(req.id, 'approved')">Aprobar Acceso</button>
-        </div>
+        <button class="btn-action btn-retry" style="width: 100%;" (click)="openDetails(req)">Ver Detalles</button>
       </div>
 
       <div class="empty-state-central glass-panel" *ngIf="pendingVerifications.length === 0">
@@ -52,6 +35,44 @@
         <h2 class="clash-display">Terminal Despejada</h2>
         <p>No hay identidades esperando validación. Todo está bajo control.</p>
       </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="selectedVerification">
+    <div class="modal-content glass-panel">
+      <button class="close-modal-btn" (click)="closeDetails()">✕</button>
+      
+      <div class="modal-header">
+        <h2 class="clash-display">{{ selectedVerification.username }}</h2>
+        <p class="company-sub">{{ selectedVerification.company_name }} <span class="accent-dot">•</span> NIT {{ selectedVerification.nit }}</p>
+      </div>
+
+      <div class="id-visuals-grid">
+        <div class="visual-frame" (click)="openImagePreview(selectedVerification.frontUrl)">
+          <span class="frame-tag">Frontal</span>
+          <img [src]="selectedVerification.frontUrl" alt="ID Front">
+          <div class="frame-overlay-hover">🔍 Ampliar</div>
+        </div>
+        <div class="visual-frame" (click)="openImagePreview(selectedVerification.backUrl)">
+          <span class="frame-tag">Posterior</span>
+          <img [src]="selectedVerification.backUrl" alt="ID Back">
+          <div class="frame-overlay-hover">🔍 Ampliar</div>
+        </div>
+      </div>
+
+      <div class="admin-button-group">
+        <button class="btn-action btn-reject" (click)="processDecision(selectedVerification.id, 'rejected')">Rechazar</button>
+        <button class="btn-action btn-retry" (click)="processDecision(selectedVerification.id, 'action_required')">Reintentar</button>
+        <button class="btn-action btn-approve" (click)="processDecision(selectedVerification.id, 'approved')">Aprobar Acceso</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay image-preview-overlay" *ngIf="previewImageUrl" (click)="closeImagePreview()">
+    <div class="image-preview-content" (click)="$event.stopPropagation()">
+      <button class="close-modal-btn" (click)="closeImagePreview()">✕</button>
+      <div class="loader" *ngIf="isImageLoading">Cargando...</div>
+      <img [src]="previewImageUrl" alt="Vista previa" (load)="onImageLoad()">
     </div>
   </div>
 </div>

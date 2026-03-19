@@ -17,7 +17,9 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   userRating: number = 0;
   userComment: string = '';
   hasReviewed: boolean = false;
+  
   private map: any;
+  private L: any; // Instancia global de Leaflet
 
   constructor(
     private route: ActivatedRoute,
@@ -31,20 +33,30 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     if (eventId) this.loadEventDetail(eventId);
   }
 
-  ngAfterViewInit() {}
+  async ngAfterViewInit() {
+    // Precargamos Leaflet exactamente como en tu Explorador
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const leafletModule = await import('leaflet');
+        this.L = leafletModule.default || leafletModule;
+      } catch (error) {
+        console.error("Error iniciando Leaflet:", error);
+      }
+    }
+  }
 
   async loadEventDetail(id: string) {
     try {
       this.loading = true;
-      // Al llamar a este GET, el backend dispara el RPC increment_event_views
-      // Es vital que este ID llegue correctamente para sumar la vista en el panel del organizador
       const res = await fetch(`${environment.apiUrl}/api/events/${id}`);
       if (res.ok) {
         this.event = await res.json();
         this.cdr.detectChanges();
         
-        if (isPlatformBrowser(this.platformId)) {
-          this.initSingleMap();
+        if (isPlatformBrowser(this.platformId) && this.L) {
+          setTimeout(() => {
+            this.initSingleMap();
+          }, 300);
         }
       }
     } catch (e) {
@@ -56,37 +68,82 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   }
 
   async initSingleMap() {
-    if (!this.event || !this.event.location_name) return;
-    const L = await import('leaflet');
-    
+    if (!this.event || !document.getElementById('singleEventMap') || !this.L) return;
+
+    if (this.map) {
+        this.map.remove();
+    }
+
+    // Coordenadas base (Barranquilla)
+    let lat = 10.9685;
+    let lng = -74.7813;
+    let zoomLevel = 13;
+
     try {
-      const query = encodeURIComponent(this.event.location_name + ', Barranquilla');
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
-      const data = await res.json();
+      if (this.event.location_name) {
+        // PLAN A: Búsqueda exacta
+        let query = encodeURIComponent(`${this.event.location_name}, Barranquilla`);
+        let url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
+        let res = await fetch(url);
+        let data = await res.json();
 
-      if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
+        // PLAN B: Búsqueda limpia (Tu truco del Explorador)
+        if (!data || data.length === 0) {
+          console.warn(`Buscando con Plan B para: ${this.event.location_name}`);
+          const cleanAddress = this.event.location_name.split('-')[0].replace('#', ''); 
+          query = encodeURIComponent(`${cleanAddress}, Barranquilla`);
+          url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
+          res = await fetch(url);
+          data = await res.json();
+        }
 
-        this.map = L.map('singleEventMap', { 
-          zoomControl: true, 
-          scrollWheelZoom: false 
-        }).setView([lat, lon], 16);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(this.map);
-        L.marker([lat, lon]).addTo(this.map).bindPopup(this.event.title).openPopup();
-        
-        setTimeout(() => this.map.invalidateSize(), 500);
+        if (data && data.length > 0) {
+          lat = parseFloat(data[0].lat);
+          lng = parseFloat(data[0].lon);
+          zoomLevel = 16; // Acercamos la cámara al encontrarlo
+        }
       }
     } catch (e) {
-      console.error("Error cargando mapa", e);
+      console.warn("Usando coordenadas base de la ciudad.");
     }
+
+    // 1. Inicializar el mapa
+    this.map = this.L.map('singleEventMap', { 
+      zoomControl: false, 
+      scrollWheelZoom: false,
+      dragging: false 
+    }).setView([lat, lng], zoomLevel);
+
+    // 2. Capa oscura nativa (Igual que en el Explorador)
+    this.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© VEMO Map'
+    }).addTo(this.map);
+
+    // 3. Crear el marcador de Burbuja con la foto del evento
+    const bgImage = this.event.image_url || 'assets/placeholder.jpg'; 
+    const color = '#FF4D80'; // Magenta Vemo por defecto
+
+    const customIcon = this.L.divIcon({
+      className: 'custom-vemo-marker',
+      html: `<div class="vemo-marker-bubble" style="background-image: url('${bgImage}'); border-color: ${color}; box-shadow: 0 0 15px ${color};"></div>`,
+      iconSize: [50, 50], 
+      iconAnchor: [25, 25], 
+      popupAnchor: [0, -25]
+    });
+
+    // 4. Añadirlo al mapa
+    this.L.marker([lat, lng], { icon: customIcon })
+      .addTo(this.map)
+      .bindPopup(`<b style="color:black">${this.event.title}</b>`)
+      .openPopup();
+    
+    // 5. Forzar el recálculo
+    setTimeout(() => this.map.invalidateSize(), 500);
   }
 
   openGoogleMaps() {
     if (this.event && this.event.location_name) {
-      // Corregimos la URL para que la redirección sea efectiva y directa
-      const query = encodeURIComponent(`${this.event.location_name}, Barranquilla`);
+      const query = encodeURIComponent(`${this.event.location_name}, Barranquilla, Colombia`);
       const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
       window.open(url, '_blank');
     }
@@ -104,10 +161,7 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     const token = localStorage.getItem('token') || localStorage.getItem('vemo_token');
     const res = await fetch(`${environment.apiUrl}/api/events/${this.event.id}/reviews`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'Authorization': `Bearer ${token}` 
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ rating: this.userRating, comment: this.userComment })
     });
     if (res.ok) {
@@ -117,12 +171,14 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   }
 
   addToGoogleCalendar() {
+    if(!this.event.date_event) return;
     const start = new Date(this.event.date_event).toISOString().replace(/-|:|\.\d\d\d/g, "");
     const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(this.event.title)}&dates=${start}/${start}&details=${encodeURIComponent(this.event.description)}&location=${encodeURIComponent(this.event.location_name)}`;
     window.open(url, '_blank');
   }
 
   downloadIcsFile() {
+    if(!this.event.date_event) return;
     const start = new Date(this.event.date_event).toISOString().replace(/-|:|\.\d\d\d/g, "");
     const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${this.event.title}\nDTSTART:${start}\nLOCATION:${this.event.location_name}\nDESCRIPTION:${this.event.description}\nEND:VEVENT\nEND:VCALENDAR`;
     const blob = new Blob([ics], { type: 'text/calendar' });
@@ -132,6 +188,4 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     a.download = 'vemo-event.ics';
     a.click();
   }
-
-  goBack() { this.location.back(); }
 }

@@ -22,7 +22,7 @@
 
 .m-icon { font-size: 24px; }
 .m-data { display: flex; flex-direction: column; }
-.m-label { font-size: 10px; text-transform: uppercase; opacity: 0.5; letter-spacing: 1px;  color: white; }
+.m-label { font-size: 10px; text-transform: uppercase; opacity: 0.5; letter-spacing: 1px; color: white; }
 .m-value { font-size: 20px; font-weight: 800; color: white; font-family: 'Clash Display', sans-serif; }
 
 .ev-stats-mini {
@@ -58,7 +58,6 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* Fondo con Orbes de Luz */
 .living-atmosphere {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
 }
@@ -74,7 +73,6 @@
   bottom: -100px; right: -100px; opacity: 0.2;
 }
 
-/* Contenedor Principal */
 .profile-viewport {
   width: 100%; max-width: 900px; z-index: 10;
   display: flex; flex-direction: column; gap: 60px;
@@ -87,7 +85,7 @@
 }
 
 /* =========================================
-   2. PANTALLA DE CARGA Y ERROR
+   PANTALLA DE CARGA Y ERROR
    ========================================= */
 .loading-container {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -107,7 +105,7 @@
 }
 
 /* =========================================
-   3. HERO (FOTO Y NOMBRE)
+   HERO
    ========================================= */
 .identity-hero {
   display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -120,25 +118,19 @@
 .avatar-core {
   width: 100%; height: 100%; border-radius: 50%;
   background: var(--v-surface);
-  background-size: cover;
-  background-position: center;
+  background-size: cover; background-position: center;
   display: flex; align-items: center; justify-content: center;
   font-size: 48px; font-weight: 700; color: var(--v-white);
   border: 1px solid rgba(255,255,255,0.1);
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  position: relative; z-index: 2;
-  overflow: hidden;
+  position: relative; z-index: 2; overflow: hidden;
 }
 
 .camera-overlay {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s ease;
 }
 .avatar-rig:hover .camera-overlay { opacity: 1; }
 .camera-icon { font-size: 24px; }
@@ -152,11 +144,10 @@
 
 .user-name {
   font-size: 4rem; margin: 0 0 15px; line-height: 0.9;
-  color: #FFFFFF; /* Blanco sólido para legibilidad */
+  color: #FFFFFF;
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
 }
 
-/* Badges de Rol */
 .role-badge-container {
   display: flex; align-items: center; gap: 12px; justify-content: center;
 }
@@ -179,7 +170,7 @@
 .icon-check { width: 24px; height: 24px; }
 
 /* =========================================
-   4. PANELES DE VIDRIO (GLASS)
+   PANELES DE VIDRIO
    ========================================= */
 .glass-panel {
   background: rgba(20, 20, 20, 0.6);
@@ -196,7 +187,7 @@
 .section-subtitle { color: rgba(255,255,255,0.4); font-size: 14px; }
 
 /* =========================================
-   5. SISTEMA DE TABS (ADMIN)
+   TABS ADMIN
    ========================================= */
 .tab-system {
   background: rgba(0,0,0,0.3);
@@ -228,7 +219,7 @@
 }
 
 /* =========================================
-   6. LISTAS Y TARJETAS ADMIN
+   LISTAS Y TARJETAS ADMIN
    ========================================= */
 .admin-list {
   display: flex; flex-direction: column; gap: 15px; width: 100%;
@@ -262,10 +253,10 @@
 .nit-text, .organizer-ref, .date-ref { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; }
 
 .links-row { display: flex; gap: 10px; margin-top: 8px; }
-.doc-link { 
-  font-size: 11px; color: var(--v-black); 
-  background: var(--v-white); padding: 4px 10px; 
-  border-radius: 6px; border: none; cursor: pointer; 
+.doc-link {
+  font-size: 11px; color: var(--v-black);
+  background: var(--v-white); padding: 4px 10px;
+  border-radius: 6px; border: none; cursor: pointer;
   font-weight: 600; transition: opacity 0.2s;
 }
 .doc-link:hover { opacity: 0.8; }
@@ -273,7 +264,7 @@
 .card-actions { display: flex; gap: 10px; flex-shrink: 0; }
 .btn-action {
   width: 40px; height: 40px; border-radius: 50%; border: none;
-  font-weight: bold; font-size: 16px; cursor: pointer; 
+  font-weight: bold; font-size: 16px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -287,7 +278,7 @@
 }
 
 /* =========================================
-   7. ORGANIZADOR (BOTÓN Y EVENTOS)
+   ORGANIZADOR
    ========================================= */
 .action-center {
   display: flex; flex-direction: column; align-items: center;
@@ -322,14 +313,13 @@
   font-weight: 600; letter-spacing: 1px; font-size: 14px;
 }
 
-/* Avisos y Enlaces */
 .status-warning {
   color: #FFC107; font-size: 12px;
   background: rgba(255, 193, 7, 0.1); padding: 8px 16px; border-radius: 50px;
   border: 1px solid rgba(255, 193, 7, 0.3);
 }
-.btn-text-link { 
-  background: none; border: none; color: var(--v-glow); 
+.btn-text-link {
+  background: none; border: none; color: var(--v-glow);
   text-decoration: underline; cursor: pointer; margin-top: 5px; font-size: 13px;
 }
 
@@ -341,19 +331,43 @@
 }
 
 .mini-events-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-.mini-event-row { 
-    display: flex; align-items: center; gap: 15px; padding: 12px 15px;
-    background: rgba(255,255,255,0.03); border-radius: 12px; 
-    color: white; font-size: 14px; border: 1px solid transparent;
-}
-.mini-event-row:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); }
 
-.ev-status { font-size: 12px; }
-.ev-status.approved { color: #00FF94; }         /* Verde */
-.ev-status.pending_review { color: #FFC107; }  /* Amarillo */
-.ev-status.rejected { color: #FF4D4D; }        /* Rojo */
+.mini-event-row {
+  display: flex; align-items: center; gap: 15px; padding: 12px 15px;
+  background: rgba(255,255,255,0.03); border-radius: 12px;
+  color: white; font-size: 14px; border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+/* ✅ NUEVO: estilo clickeable */
+.mini-event-row.clickable {
+  cursor: pointer;
+}
+.mini-event-row.clickable:hover {
+  border-color: rgba(255, 77, 128, 0.4);
+  background: rgba(255, 77, 128, 0.05);
+  transform: translateX(4px);
+}
+
+.ev-status { font-size: 12px; flex-shrink: 0; }
+.ev-status.approved { color: #00FF94; }
+.ev-status.pending_review { color: #FFC107; }
+.ev-status.rejected { color: #FF4D4D; }
+
 .ev-title { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ev-date { opacity: 0.5; font-size: 12px; font-family: monospace; }
+.ev-date { opacity: 0.5; font-size: 12px; font-family: monospace; flex-shrink: 0; }
+
+/* ✅ NUEVO: flecha indicadora */
+.ev-arrow {
+  font-size: 20px;
+  opacity: 0.3;
+  flex-shrink: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.mini-event-row.clickable:hover .ev-arrow {
+  opacity: 0.8;
+  transform: translateX(3px);
+}
 
 .empty-events-placeholder {
   text-align: center; padding: 40px;
@@ -363,7 +377,7 @@
 .ghost-icon { font-size: 30px; display: block; margin-bottom: 10px; opacity: 0.5; }
 
 /* =========================================
-   8. FOOTER Y BOTONES GLOBALES
+   FOOTER
    ========================================= */
 .profile-footer { text-align: center; margin-top: 20px; }
 .btn-disconnect {
@@ -378,16 +392,14 @@
 }
 
 /* =========================================
-   9. ANIMACIONES
+   ANIMACIONES
    ========================================= */
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
 /* =========================================
-   10. MODAL DE REVISIÓN Y BOTONES NUEVOS
+   MODAL (ADMIN + ORGANIZADOR)
    ========================================= */
-
-/* Botón 'Revisar' en la tarjeta de admin */
 .btn-review-details {
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.2);
@@ -406,18 +418,16 @@
   transform: translateY(-2px);
 }
 
-/* El Fondo Oscuro (Backdrop) */
 .review-modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85); /* Muy oscuro para enfocar */
-  backdrop-filter: blur(10px);    /* Blur fuerte */
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
   z-index: 9999;
   display: flex; justify-content: center; align-items: center;
   padding: 20px;
   animation: fadeIn 0.3s ease-out;
 }
 
-/* El Contenedor del Modal */
 .review-modal-content {
   background: #121212;
   border: 1px solid rgba(255,255,255,0.1);
@@ -426,10 +436,9 @@
   overflow: hidden;
   box-shadow: 0 50px 100px rgba(0,0,0,0.8);
   display: flex; flex-direction: column;
-  max-height: 90vh; /* Para que no se salga en pantallas pequeñas */
+  max-height: 90vh;
 }
 
-/* Cabecera con Imagen */
 .modal-image-header {
   height: 200px;
   background-size: cover; background-position: center;
@@ -451,19 +460,23 @@
   padding: 4px 12px; border-radius: 20px;
   font-size: 11px; font-weight: 800; text-transform: uppercase;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  display: flex; align-items: center; gap: 6px;
 }
 
-/* Cuerpo del Modal */
+/* ✅ NUEVO: badge de estado coloreado en modal organizador */
+.modal-status-badge.approved   { background: #00FF94; color: black; }
+.modal-status-badge.pending_review { background: #FFC107; color: black; }
+.modal-status-badge.rejected   { background: #FF4D4D; color: white; }
+
 .modal-body {
   padding: 25px;
-  overflow-y: auto; /* Scroll si el contenido es largo */
+  overflow-y: auto;
 }
 
 .event-title-lg {
   font-size: 24px; color: white; margin-bottom: 20px; line-height: 1.2;
 }
 
-/* Grid de Metadatos (Fecha, Hora, Lugar) */
 .meta-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
   margin-bottom: 25px;
@@ -474,59 +487,53 @@
 .meta-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
 .meta-value { font-size: 13px; color: white; font-weight: 500; }
 
-/* Descripción */
 .description-box { margin-bottom: 30px; }
 .desc-label { font-size: 14px; color: var(--v-glow); margin-bottom: 8px; font-weight: bold; }
 .description-box p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); }
 
-/* Barra de Acciones Finales */
 .modal-actions-bar {
-  display: flex; gap: 10px; margin-top: auto;
+  display: flex; gap: 10px; margin-top: auto; flex-wrap: wrap;
 }
 .btn-decision {
   flex: 1; padding: 15px; border: none; border-radius: 12px;
   font-family: 'Clash Display', sans-serif; font-weight: 600; cursor: pointer;
   font-size: 13px; transition: transform 0.2s, box-shadow 0.2s;
 }
-.btn-decision.approve { 
-  background: #00FF94; color: black; 
+.btn-decision.approve {
+  background: #00FF94; color: black;
   box-shadow: 0 0 20px rgba(0,255,148,0.2);
 }
-.btn-decision.reject { 
-  background: rgba(255, 77, 77, 0.1); color: #FF4D4D; 
-  border: 1px solid rgba(255, 77, 77, 0.3); 
+.btn-decision.reject {
+  background: rgba(255, 77, 77, 0.1); color: #FF4D4D;
+  border: 1px solid rgba(255, 77, 77, 0.3);
 }
 .btn-decision:hover { transform: scale(1.02); }
 
 /* =========================================
-   11. PROMOCIÓN Y WOMPI (GOLD)
+   PROMOCIÓN WOMPI (GOLD)
    ========================================= */
-
-/* Botón de pago (Wompi) */
 .btn-promote {
-  background: linear-gradient(135deg, #FFD700, #FFA500); /* Dorado */
+  background: linear-gradient(135deg, #FFD700, #FFA500);
   border: none;
-  border-radius: 50px;
-  padding: 6px 14px;
+  border-radius: 12px;
+  padding: 15px 20px;
   color: black;
   font-weight: 800;
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'Clash Display', sans-serif;
   cursor: pointer;
   display: flex; align-items: center; gap: 5px;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
   transition: all 0.3s ease;
   text-transform: uppercase;
-  margin-left: auto; /* Empuja el botón a la derecha */
 }
 
 .btn-promote:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
   background: linear-gradient(135deg, #FFF, #FFD700);
 }
 
-/* Badge de evento ya promocionado */
 .badge-promoted {
   background: #FFD700;
   color: black;
@@ -536,4 +543,71 @@
   font-weight: bold;
   margin-left: 8px;
   vertical-align: middle;
+}
+
+/* =========================================
+   RESPONSIVE MÓVILES
+   ========================================= */
+@media (max-width: 768px) {
+  .profile-page-wrapper {
+    padding: 80px 15px 120px;
+  }
+
+  .glass-panel {
+    padding: 25px 20px;
+  }
+
+  .user-name {
+    font-size: 2.5rem;
+  }
+
+  .metrics-dashboard {
+    gap: 10px;
+  }
+
+  .metric-mini-card {
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .btn-create-event {
+    padding: 15px 20px;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  .btn-text {
+    font-size: 12px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .glow-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .mini-event-row {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .review-modal-content {
+    max-height: 95vh;
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions-bar {
+    flex-direction: column;
+  }
+
+  .btn-decision, .btn-promote {
+    width: 100%;
+    justify-content: center;
+  }
 }

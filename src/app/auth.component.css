@@ -29,3 +29,37 @@
   width: 100%; padding: 12px; background: #000; color: white;
   border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MÓVILES)
+   ========================================= */
+@media (max-width: 576px) {
+  .auth-container {
+    /* Evita que la tarjeta choque con los bordes de la pantalla */
+    padding: 20px; 
+    box-sizing: border-box;
+  }
+  
+  .auth-card {
+    /* Reducimos ligeramente el padding interno para aprovechar el espacio */
+    padding: 1.5rem; 
+    border-radius: 12px;
+  }
+
+  .role-selector {
+    /* Apilamos los selectores de rol para que no queden estrechos */
+    flex-direction: column; 
+    gap: 12px;
+  }
+  
+  .role-selector label {
+    /* Aumentamos el área de toque para los pulgares */
+    padding: 12px; 
+  }
+  
+  .input-group input, 
+  .primary-btn {
+    /* Inputs y botón principal un poco más altos por usabilidad móvil */
+    padding: 14px; 
+  }
+}

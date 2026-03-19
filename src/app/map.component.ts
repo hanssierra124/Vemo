@@ -132,24 +132,35 @@ export class MapComponent implements OnInit, AfterViewInit {
       let lng = ev.longitude ? parseFloat(ev.longitude) : null;
 
       // Geocoding si no hay coordenadas (Exactamente igual que en "Todo el Caos")
-      if ((!lat || !lng) && ev.location_name) {
-        if (this.coordinateCache[ev.location_name]) {
-          lat = this.coordinateCache[ev.location_name].lat;
-          lng = this.coordinateCache[ev.location_name].lng;
-        } else {
-          try {
-            const query = encodeURIComponent(ev.location_name);
-            const url = `https://photon.komoot.io/api/?q=${query}&lat=10.96&lon=-74.80&limit=1`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.features?.length > 0) {
-              lng = data.features[0].geometry.coordinates[0];
-              lat = data.features[0].geometry.coordinates[1];
-              this.coordinateCache[ev.location_name] = { lat, lng };
-            }
-          } catch (err) { }
-        }
-      }
+if ((!lat || !lng) && ev.location_name) {
+  // PLAN A: Búsqueda exacta
+  let query = encodeURIComponent(`${ev.location_name}, Barranquilla`);
+  let url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
+  
+  let res = await fetch(url);
+  let data = await res.json();
+
+  // SI EL PLAN A FALLA (Data vacía), VAMOS AL PLAN B
+  if (!data || data.length === 0) {
+    console.warn(`Falló búsqueda exacta para: ${ev.location_name}. Intentando limpieza...`);
+    
+    // TRUCO: Quitamos el símbolo '#' y todo lo que siga después del guión '-' (el número de casa específico)
+    // De "Cra. 8h #42B-103" pasamos a "Cra 8h 42B" (Intersección aproximada)
+    const cleanAddress = ev.location_name.split('-')[0].replace('#', ''); 
+    
+    query = encodeURIComponent(`${cleanAddress}, Barranquilla`);
+    url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
+    
+    res = await fetch(url);
+    data = await res.json();
+  }
+
+  if (data && data.length > 0) {
+    lat = parseFloat(data[0].lat);
+    lng = parseFloat(data[0].lon);
+    this.coordinateCache[ev.location_name] = { lat, lng };
+  }
+}
 
       if (lat && lng) {
         const emotionName = ev.emotions?.name || 'Neutro';
