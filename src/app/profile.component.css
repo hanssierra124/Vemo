@@ -210,7 +210,7 @@
 .tab-trigger.active { color: var(--v-white); }
 
 .tab-glider {
-  position: absolute; top: 6px; bottom: 6px; width: 50%;
+  position: absolute; top: 6px; bottom: 6px; width: 25%;
   background: var(--v-surface);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 100px; z-index: 1;
@@ -277,6 +277,42 @@
   border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; width: 100%;
 }
 
+/* Organizer status badge (admin organizer tab) */
+.organizer-status-badge {
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; white-space: nowrap;
+}
+.organizer-status-badge.approved { background: rgba(0,255,148,0.15); color: #00FF94; }
+.organizer-status-badge.pending_review, .organizer-status-badge.pending_upload { background: rgba(255,193,7,0.15); color: #FFC107; }
+.organizer-status-badge.rejected { background: rgba(255,77,77,0.15); color: #FF4D4D; }
+.organizer-status-badge.action_required { background: rgba(255,152,0,0.15); color: #FF9800; }
+.organizer-status-badge.none { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
+
+/* Event status dot (all-events tab) */
+.ev-status-dot { font-size: 10px; margin-right: 4px; }
+.ev-status-dot.approved { color: #00FF94; }
+.ev-status-dot.pending_review { color: #FFC107; }
+.ev-status-dot.rejected { color: #FF4D4D; }
+.ev-status-dot.inactive { color: #666; }
+
+/* Smaller action buttons for all-events tab */
+.btn-action.small { width: 34px; height: 34px; font-size: 14px; }
+.btn-action.warn {
+  background: #FF9800; color: black;
+  box-shadow: 0 0 15px rgba(255,152,0,0.2);
+}
+
+.admin-content-area { width: 100%; }
+
+.admin-quick-actions { text-align: center; margin-bottom: 20px; }
+.btn-admin-config {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7); padding: 8px 20px; border-radius: 50px;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+}
+.btn-admin-config:hover { background: rgba(255,255,255,0.12); color: white; }
+
 /* =========================================
    ORGANIZADOR
    ========================================= */
@@ -288,10 +324,10 @@
 .btn-create-event {
   background: linear-gradient(135deg, var(--v-glow), var(--v-deep));
   border: none; border-radius: 16px;
-  padding: 20px 40px; width: 100%; max-width: 400px;
+  padding: 18px 20px; width: 100%; flex: 1;
   cursor: pointer; transition: all 0.4s var(--ease-out);
-  display: flex; align-items: center; justify-content: center;
-  gap: 15px; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; position: relative; overflow: hidden;
   box-shadow: 0 10px 30px rgba(255, 77, 128, 0.3);
 }
 .btn-create-event:hover:not(:disabled) {
@@ -313,15 +349,192 @@
   font-weight: 600; letter-spacing: 1px; font-size: 14px;
 }
 
+.create-options { display: flex; gap: 16px; width: 100%; max-width: 500px; }
+.btn-create-event .btn-sub {
+  font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 400; letter-spacing: 0;
+}
+.btn-create-event.experience {
+  background: linear-gradient(135deg, #00C9FF, #6A00FF);
+  box-shadow: 0 10px 30px rgba(0, 201, 255, 0.3);
+}
+.btn-create-event.experience:hover:not(:disabled) {
+  box-shadow: 0 20px 50px rgba(0, 201, 255, 0.5);
+}
+
 .status-warning {
   color: #FFC107; font-size: 12px;
   background: rgba(255, 193, 7, 0.1); padding: 8px 16px; border-radius: 50px;
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  border: 1px solid rgba(255, 193, 7, 0.3); text-align: center;
 }
 .btn-text-link {
   background: none; border: none; color: var(--v-glow);
   text-decoration: underline; cursor: pointer; margin-top: 5px; font-size: 13px;
 }
+.btn-text-link.inline { margin: 0; display: inline; }
+
+.empty-profile-hint {
+  width: 100%; font-size: 13px; color: rgba(255,255,255,0.4);
+  padding: 8px 0; text-align: center;
+}
+
+/* =========================================
+   EDIT PROFILE (ORGANIZER)
+   ========================================= */
+.deck-actions { margin-top: 10px; }
+.btn-edit-profile {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8); padding: 8px 18px; border-radius: 50px;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+}
+.btn-edit-profile:hover { background: rgba(255,255,255,0.15); color: white; }
+
+.edit-profile-form {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 24px; margin-bottom: 30px;
+  animation: fadeIn 0.3s ease-out;
+}
+.edit-profile-form h3 { color: white; font-size: 16px; margin: 0 0 20px; }
+
+.edit-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.edit-field { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.edit-field label { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.edit-field input, .edit-field textarea {
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 10px 14px; color: white; font-size: 14px;
+  font-family: inherit; transition: border-color 0.2s;
+}
+.edit-field input:focus, .edit-field textarea:focus {
+  outline: none; border-color: var(--v-glow); box-shadow: 0 0 0 2px rgba(255,77,128,0.1);
+}
+.edit-field textarea { resize: vertical; min-height: 60px; }
+
+.edit-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+.btn-cancel {
+  background: transparent; border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6); padding: 10px 24px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: rgba(255,255,255,0.3); color: white; }
+.btn-save {
+  background: var(--v-glow); color: black; border: none;
+  padding: 10px 24px; border-radius: 10px; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,77,128,0.3); }
+
+/* =========================================
+   PROFILE INFO DISPLAY
+   ========================================= */
+.profile-info-display {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 25px; padding: 16px;
+  background: rgba(255,255,255,0.03); border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.info-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: rgba(255,255,255,0.7);
+  padding: 4px 12px; background: rgba(255,255,255,0.04); border-radius: 8px;
+}
+.info-icon { font-size: 14px; flex-shrink: 0; }
+
+.user-email { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 8px; }
+
+/* =========================================
+   EVENTS HEADER & FILTER PILLS
+   ========================================= */
+.events-header-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+.events-header-row .sub-header { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+
+.filter-pills { display: flex; gap: 6px; }
+.filter-pills button {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5); padding: 6px 14px; border-radius: 50px;
+  font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.25s;
+}
+.filter-pills button:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+.filter-pills button.active {
+  background: var(--v-glow); color: black; border-color: var(--v-glow);
+  box-shadow: 0 2px 8px rgba(255,77,128,0.3);
+}
+
+/* QR buttons */
+.btn-qr-mini {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+  width: 30px; height: 30px; border-radius: 8px;
+  cursor: pointer; font-size: 14px; display: flex; align-items: center;
+  justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.btn-qr-mini:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
+
+.btn-qr {
+  padding: 15px 20px; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
+  color: white; font-weight: 600; font-size: 13px;
+  font-family: 'Clash Display', sans-serif; cursor: pointer;
+  transition: all 0.3s; flex: 1;
+}
+.btn-qr:hover { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+
+/* =========================================
+   USER VIEW & VISIT HISTORY
+   ========================================= */
+.user-view { width: 100%; }
+.user-info-section {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 30px; padding: 16px;
+  background: rgba(255,255,255,0.03); border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.visit-history { width: 100%; }
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  display: flex; align-items: center; gap: 15px;
+  padding: 12px 16px; background: rgba(255,255,255,0.03);
+  border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s;
+}
+.history-item:hover { background: rgba(255,255,255,0.06); }
+.history-date { font-size: 12px; color: rgba(255,255,255,0.4); font-family: monospace; flex-shrink: 0; min-width: 80px; }
+.history-title { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 500; }
+
+/* =========================================
+   QR MODAL
+   ========================================= */
+.qr-modal-content {
+  background: #121212; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px; padding: 40px; text-align: center;
+  max-width: 360px; width: 100%; position: relative;
+  box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+}
+.qr-modal-content h3 { color: white; font-size: 20px; margin: 10px 0 8px; }
+.qr-subtitle { color: rgba(255,255,255,0.4); font-size: 13px; margin: 0 0 24px; }
+.qr-image {
+  width: 200px; height: 200px; border-radius: 12px;
+  background: white; padding: 8px; margin: 0 auto 16px; display: block;
+}
+.qr-event-id { color: rgba(255,255,255,0.3); font-size: 11px; font-family: monospace; margin: 0; }
+
+/* Admin edit modal */
+.admin-edit-modal .modal-body { padding-top: 50px; }
+.admin-edit-modal .edit-field { margin-bottom: 16px; }
+
+/* Status indicator dot */
+.status-indicator-dot {
+  position: absolute; bottom: 8px; right: 8px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #666; border: 3px solid var(--v-black); z-index: 3;
+}
+.status-indicator-dot.online { background: #00FF94; box-shadow: 0 0 8px rgba(0,255,148,0.4); }
+
+.identity-content { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dashboard-grid { display: flex; flex-direction: column; gap: 40px; }
+.organizer-view { width: 100%; }
+.my-events-preview { width: 100%; }
 
 /* Lista Mini de Eventos */
 .sub-header {
@@ -546,6 +759,75 @@
 }
 
 /* =========================================
+   CEDULA REVIEW MODAL
+   ========================================= */
+.btn-review-cedula {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: white; padding: 8px 16px; border-radius: 50px;
+  cursor: pointer; font-size: 12px; font-weight: 600;
+  transition: all 0.3s; margin-top: 8px; display: inline-block;
+}
+.btn-review-cedula:hover { background: var(--v-white); color: var(--v-black); }
+
+.verification-status-hint { flex-shrink: 0; }
+.pending-badge {
+  background: rgba(255,193,7,0.15); color: #FFC107;
+  padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.cedula-review-modal {
+  background: #121212; border: 1px solid rgba(255,255,255,0.1);
+  width: 100%; max-width: 650px; border-radius: 24px;
+  overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+  display: flex; flex-direction: column; max-height: 90vh; position: relative;
+}
+.cedula-modal-header { padding: 30px 30px 0; }
+.cedula-modal-header h2 { color: white; font-size: 20px; margin: 0 0 16px; }
+.cedula-org-info h3 { color: white; font-size: 16px; margin: 0 0 4px; }
+.cedula-org-info p { color: rgba(255,255,255,0.5); font-size: 13px; margin: 2px 0; }
+
+.cedula-images {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  padding: 24px 30px;
+}
+.cedula-image-box { display: flex; flex-direction: column; gap: 8px; }
+.cedula-image-box label {
+  font-size: 11px; color: rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.cedula-image-box img {
+  width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+  cursor: zoom-in; transition: transform 0.2s; background: #222;
+  min-height: 160px; object-fit: cover;
+}
+.cedula-image-box img:hover { transform: scale(1.02); border-color: var(--v-glow); }
+.cedula-link {
+  display: inline-block; margin-top: 4px; font-size: 12px;
+  color: #00f0ff; text-decoration: underline; cursor: pointer;
+}
+.cedula-link:hover { color: #fff; }
+.no-doc-text {
+  color: rgba(255,255,255,0.3); font-size: 13px; font-style: italic;
+  padding: 40px 0; text-align: center;
+  border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;
+}
+
+.cedula-actions {
+  display: flex; gap: 10px; padding: 0 30px 30px; flex-wrap: wrap;
+}
+.btn-decision.warn {
+  background: rgba(255,152,0,0.15); color: #FF9800;
+  border: 1px solid rgba(255,152,0,0.3);
+}
+
+.zoom-overlay { cursor: zoom-out; }
+.zoomed-image {
+  max-width: 90vw; max-height: 90vh; border-radius: 12px;
+  object-fit: contain; box-shadow: 0 0 60px rgba(0,0,0,0.8);
+}
+
+/* =========================================
    RESPONSIVE MÓVILES
    ========================================= */
 @media (max-width: 768px) {
@@ -606,8 +888,34 @@
     flex-direction: column;
   }
 
-  .btn-decision, .btn-promote {
+  .btn-decision, .btn-promote, .btn-qr {
     width: 100%;
     justify-content: center;
   }
+
+  .tab-system {
+    flex-wrap: wrap; border-radius: 16px;
+    left: 0; transform: none; width: 100%;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .tab-trigger { padding: 10px 16px; font-size: 11px; justify-content: center; }
+  .tab-glider { display: none; }
+
+  .edit-row { flex-direction: column; gap: 12px; }
+  .edit-field { flex: none; }
+
+  .events-header-row { flex-direction: column; align-items: flex-start; }
+
+  .profile-info-display { flex-direction: column; }
+
+  .filter-pills { width: 100%; }
+  .filter-pills button { flex: 1; text-align: center; }
+
+  .qr-modal-content { padding: 24px 16px; }
+  .qr-image { width: 160px; height: 160px; }
+
+  .organizer-status-badge { font-size: 10px; padding: 4px 10px; }
+
+  .admin-card { flex-wrap: wrap; }
 }

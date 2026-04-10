@@ -1,65 +1,97 @@
 .auth-container {
   display: flex; justify-content: center; align-items: center;
-  height: 100vh; background-color: #f5f5f5;
+  min-height: 100vh; background-color: #f5f5f5; padding: 20px;
 }
 .auth-card {
   background: white; padding: 2rem; border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 440px;
 }
 .tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px solid #eee; }
 .tabs button {
   flex: 1; padding: 10px; background: none; border: none; cursor: pointer;
-  font-weight: 600; color: #999; border-bottom: 2px solid transparent;
+  font-weight: 600; color: #999; border-bottom: 2px solid transparent; font-size: 15px;
 }
 .tabs button.active { color: #000; border-bottom: 2px solid #000; }
-.input-group input {
-  width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd;
-  border-radius: 8px; box-sizing: border-box;
+
+h2 { text-align: center; margin-bottom: 20px; font-size: 22px; }
+
+.input-group { margin-bottom: 16px; }
+.input-group label {
+  display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #333;
 }
+.input-group input, .input-group select {
+  width: 100%; padding: 12px; border: 1px solid #ddd;
+  border-radius: 8px; box-sizing: border-box; font-size: 15px;
+  font-family: inherit; transition: border-color 0.2s;
+}
+.input-group input:focus, .input-group select:focus {
+  outline: none; border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+.input-group select {
+  appearance: none; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 12px center;
+  padding-right: 36px; cursor: pointer;
+}
+.input-group.has-error input, .input-group.has-error select {
+  border-color: #e53935;
+}
+
+.required { color: #e53935; }
+
+.field-error {
+  display: block; color: #e53935; font-size: 12px; margin-top: 4px; font-weight: 500;
+}
+.field-hint {
+  display: block; color: #999; font-size: 11px; margin-top: 4px;
+}
+
+.error-banner {
+  background: #fff5f5; color: #e53935; padding: 10px 14px; border-radius: 8px;
+  margin-bottom: 16px; font-size: 13px; font-weight: 500; border: 1px solid #ffcdd2;
+}
+
 .role-selector { display: flex; gap: 10px; margin-bottom: 20px; }
 .role-selector label {
-  flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 8px;
+  flex: 1; border: 2px solid #eee; padding: 14px 10px; border-radius: 12px;
   text-align: center; cursor: pointer; transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .role-selector input { display: none; }
-.role-selector label:has(input:checked) {
-  border-color: #000; background-color: #f9f9f9; font-weight: bold;
+.role-selector label.selected {
+  border-color: #000; background-color: #fafafa;
 }
+.role-icon { font-size: 24px; }
+.role-label { font-weight: 700; font-size: 14px; color: #1d1d1f; }
+.role-desc { font-size: 11px; color: #999; }
+
+.section-divider {
+  display: flex; align-items: center; margin: 20px 0 16px; gap: 12px;
+}
+.section-divider::before, .section-divider::after {
+  content: ''; flex: 1; height: 1px; background: #eee;
+}
+.section-divider span { font-size: 12px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+
+.role-specific-fields {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .primary-btn {
-  width: 100%; padding: 12px; background: #000; color: white;
+  width: 100%; padding: 13px; background: #000; color: white;
   border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+  font-size: 15px; margin-top: 8px; transition: opacity 0.2s;
 }
+.primary-btn:hover:not(:disabled) { opacity: 0.85; }
+.primary-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-/* =========================================
-   RESPONSIVE DESIGN (MÓVILES)
-   ========================================= */
 @media (max-width: 576px) {
-  .auth-container {
-    /* Evita que la tarjeta choque con los bordes de la pantalla */
-    padding: 20px; 
-    box-sizing: border-box;
-  }
-  
-  .auth-card {
-    /* Reducimos ligeramente el padding interno para aprovechar el espacio */
-    padding: 1.5rem; 
-    border-radius: 12px;
-  }
-
-  .role-selector {
-    /* Apilamos los selectores de rol para que no queden estrechos */
-    flex-direction: column; 
-    gap: 12px;
-  }
-  
-  .role-selector label {
-    /* Aumentamos el área de toque para los pulgares */
-    padding: 12px; 
-  }
-  
-  .input-group input, 
-  .primary-btn {
-    /* Inputs y botón principal un poco más altos por usabilidad móvil */
-    padding: 14px; 
-  }
+  .auth-container { padding: 16px; }
+  .auth-card { padding: 1.5rem; border-radius: 12px; }
+  .role-selector { flex-direction: column; gap: 10px; }
+  .role-selector label { padding: 12px; flex-direction: row; gap: 10px; }
+  .input-group input, .input-group select, .primary-btn { padding: 14px; }
 }

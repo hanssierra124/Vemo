@@ -68,7 +68,7 @@
         <div class="company-matrix">
           <button *ngFor="let opt of companyOptions" class="company-cell"
             [class.chosen]="selectedCompany === opt.value"
-            (click)="selectedCompany = opt.value">
+            (click)="selectCompany(opt.value)">
             <span class="cc-icon">{{ opt.icon }}</span>
             <span class="cc-label">{{ opt.label }}</span>
             <div class="cc-corner tl"></div>
@@ -94,7 +94,7 @@
         <div class="time-matrix">
           <button *ngFor="let t of timeOptions" class="time-cell"
             [class.chosen]="selectedTime === t.value"
-            (click)="selectedTime = t.value">
+            (click)="selectTime(t.value)">
             <span class="tc-icon">{{ t.icon }}</span>
             <div class="tc-info">
               <span class="tc-label">{{ t.label }}</span>
@@ -226,18 +226,27 @@
             <img [src]="event.image_url" alt="Event">
             <div class="vec-overlay"></div>
             <button class="vec-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">❤</button>
-            <div class="vec-emotion-badge">{{ event.emotions?.emoji }}</div>
+            <div class="vec-score-badge" *ngIf="event._velaScore >= 50">{{ event._velaScore }}% match</div>
           </div>
           <div class="vec-body">
-            <div class="vec-index">0{{ i + 1 }}</div>
             <h3 class="vec-title">{{ event.title }}</h3>
+            <p class="vec-reason">{{ event._velaReason || getMatchReason(event) }}</p>
             <div class="vec-meta">
-              <span>{{ event.date_event | date:'d MMM' }}</span>
+              <span class="vec-emotion-inline">{{ event.emotions?.emoji }} {{ event.emotions?.name }}</span>
               <span class="vec-dot">·</span>
-              <span>{{ event.location_name }}</span>
+              <span class="vec-location">📍 {{ event.location_name | slice:0:30 }}</span>
+            </div>
+            <div class="vec-actions">
+              <button class="vec-action-btn primary" (click)="goToDetail(event.id); $event.stopPropagation()">Ver más</button>
+              <button class="vec-action-btn" (click)="toggleLike(event, $event)">{{ isFav(event.id) ? '✓ Guardado' : '🔖 Guardar' }}</button>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Back to change answers -->
+      <div class="vela-retry">
+        <button class="vela-retry-btn" (click)="reopenOnboarding()">Cambiar mis respuestas</button>
       </div>
     </div>
   </section>

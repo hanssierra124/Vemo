@@ -1,54 +1,117 @@
 <div class="auth-container">
   <div class="auth-card">
-    
+
     <div class="tabs">
       <button [class.active]="isLogin" (click)="isLogin = true">Ingresar</button>
       <button [class.active]="!isLogin" (click)="isLogin = false">Registrarse</button>
     </div>
 
-    <div *ngIf="isLogin">
-      <h2>Bienvenido de nuevo</h2>
-      <div class="input-group">
-        <label>Correo</label>
-        <input type="email" [(ngModel)]="email" name="emailLogin" placeholder="tu@correo.com">
-      </div>
-      <div class="input-group">
-        <label>Contraseña</label>
-        <input type="password" [(ngModel)]="password" name="passwordLogin" placeholder="******">
-      </div>
-      <button (click)="onLogin()" class="primary-btn">Iniciar Sesión</button>
+    <!-- ERROR GENERAL -->
+    <div class="error-banner" *ngIf="errors['general']">
+      {{ errors['general'] }}
     </div>
 
+    <!-- ==================== LOGIN ==================== -->
+    <div *ngIf="isLogin">
+      <h2>Bienvenido de nuevo</h2>
+      <div class="input-group" [class.has-error]="hasError('email')">
+        <label>Correo</label>
+        <input type="email" [(ngModel)]="email" name="emailLogin" placeholder="tu@correo.com">
+        <span class="field-error" *ngIf="hasError('email')">{{ errors['email'] }}</span>
+      </div>
+      <div class="input-group" [class.has-error]="hasError('password')">
+        <label>Contraseña</label>
+        <input type="password" [(ngModel)]="password" name="passwordLogin" placeholder="******">
+        <span class="field-error" *ngIf="hasError('password')">{{ errors['password'] }}</span>
+      </div>
+      <button (click)="onLogin()" class="primary-btn" [disabled]="submitting">
+        {{ submitting ? 'Ingresando...' : 'Iniciar Sesión' }}
+      </button>
+    </div>
+
+    <!-- ==================== REGISTRO ==================== -->
     <div *ngIf="!isLogin">
       <h2>Crea tu cuenta</h2>
-      
+
+      <!-- Selector de rol -->
       <div class="role-selector">
         <label [class.selected]="role === 'user'">
           <input type="radio" name="role" [(ngModel)]="role" value="user">
-          👤 Usuario
+          <span class="role-icon">👤</span>
+          <span class="role-label">Usuario</span>
+          <span class="role-desc">Descubre planes</span>
         </label>
         <label [class.selected]="role === 'organizer'">
           <input type="radio" name="role" [(ngModel)]="role" value="organizer">
-          🎉 Organizador
+          <span class="role-icon">🎉</span>
+          <span class="role-label">Organizador</span>
+          <span class="role-desc">Publica eventos</span>
         </label>
       </div>
 
-      <div class="input-group">
-        <label>Usuario</label>
+      <!-- Campos comunes -->
+      <div class="input-group" [class.has-error]="hasError('username')">
+        <label>Nombre de usuario</label>
         <input type="text" [(ngModel)]="username" name="username" placeholder="Tu nombre público">
+        <span class="field-error" *ngIf="hasError('username')">{{ errors['username'] }}</span>
       </div>
 
-      <div class="input-group">
-        <label>Correo</label>
+      <div class="input-group" [class.has-error]="hasError('email')">
+        <label>Correo electrónico <span class="required">*</span></label>
         <input type="email" [(ngModel)]="email" name="emailRegister" placeholder="tu@correo.com">
+        <span class="field-error" *ngIf="hasError('email')">{{ errors['email'] }}</span>
       </div>
 
-      <div class="input-group">
-        <label>Contraseña</label>
-        <input type="password" [(ngModel)]="password" name="passwordRegister" placeholder="Crea una contraseña">
+      <div class="input-group" [class.has-error]="hasError('password')">
+        <label>Contraseña <span class="required">*</span></label>
+        <input type="password" [(ngModel)]="password" name="passwordRegister" placeholder="Mínimo 6 caracteres">
+        <span class="field-error" *ngIf="hasError('password')">{{ errors['password'] }}</span>
       </div>
 
-      <button (click)="onRegister()" class="primary-btn">Crear Cuenta</button>
+      <!-- ===== CAMPOS ESPECÍFICOS ORGANIZADOR ===== -->
+      <div *ngIf="role === 'organizer'" class="role-specific-fields">
+        <div class="section-divider">
+          <span>Datos del organizador</span>
+        </div>
+
+        <div class="input-group" [class.has-error]="hasError('whatsapp')">
+          <label>WhatsApp del administrador <span class="required">*</span></label>
+          <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" placeholder="Ej: 3001234567">
+          <span class="field-hint">Número principal de contacto para gestión de la cuenta</span>
+          <span class="field-error" *ngIf="hasError('whatsapp')">{{ errors['whatsapp'] }}</span>
+        </div>
+
+        <div class="input-group" [class.has-error]="hasError('businessType')">
+          <label>Tipo de negocio/organización <span class="required">*</span></label>
+          <select [(ngModel)]="businessType" name="businessType">
+            <option value="" disabled>Selecciona una opción</option>
+            <option *ngFor="let type of businessTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+          <span class="field-error" *ngIf="hasError('businessType')">{{ errors['businessType'] }}</span>
+        </div>
+      </div>
+
+      <!-- ===== CAMPOS ESPECÍFICOS USUARIO ===== -->
+      <div *ngIf="role === 'user'" class="role-specific-fields">
+        <div class="section-divider">
+          <span>Datos personales</span>
+        </div>
+
+        <div class="input-group" [class.has-error]="hasError('birthDate')">
+          <label>Fecha de nacimiento <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="birthDate" name="birthDate">
+          <span class="field-error" *ngIf="hasError('birthDate')">{{ errors['birthDate'] }}</span>
+        </div>
+
+        <div class="input-group">
+          <label>Celular <small>(opcional)</small></label>
+          <input type="tel" [(ngModel)]="phone" name="phone" placeholder="Ej: 3001234567">
+        </div>
+      </div>
+
+      <button (click)="onRegister()" class="primary-btn" [disabled]="submitting">
+        {{ submitting ? 'Creando cuenta...' : 'Crear Cuenta' }}
+      </button>
     </div>
 
   </div>

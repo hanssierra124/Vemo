@@ -1,30 +1,182 @@
 <div class="onboarding-container">
-  <h2>Verificación de Identidad</h2>
-  <p class="subtitle">Para garantizar la seguridad, necesitamos validar que eres tú.</p>
+  <h2>Verificación de Organizador</h2>
+  <p class="subtitle">Para garantizar la seguridad y calidad de Vemo, necesitamos validar tu identidad.</p>
 
-  <form (submit)="submitVerification()">
-    <div class="input-group">
-      <label>Nombre de la Empresa / Proyecto</label>
-      <input type="text" [(ngModel)]="companyName" name="company" placeholder="Ej. Eventos Barranquilla" required>
+  <!-- STATUS BANNER -->
+  <div class="status-banner" [ngClass]="getStatusClass()" *ngIf="verificationStatus">
+    <div class="status-dot"></div>
+    <div class="status-info">
+      <span class="status-label">Estado: <strong>{{ getStatusLabel() }}</strong></span>
+      <span class="status-reason" *ngIf="rejectionReason">{{ rejectionReason }}</span>
+    </div>
+  </div>
+
+  <form (ngSubmit)="submitVerification()">
+
+    <!-- SECTION: Datos de empresa -->
+    <div class="form-section">
+      <h3 class="section-title">Datos de la empresa</h3>
+
+      <div class="input-group">
+        <label>Nombre de la Empresa / Proyecto <span class="req">*</span></label>
+        <input type="text" [(ngModel)]="companyName" name="company" placeholder="Ej. Eventos Barranquilla" required>
+      </div>
+
+      <div class="input-group">
+        <label>NIT <span class="req">*</span></label>
+        <input type="text" [(ngModel)]="nit" name="nit" placeholder="Número de identificación tributaria" required>
+      </div>
+
+      <!-- Segmentation -->
+      <div class="input-group">
+        <label>Tamaño de la organización</label>
+        <div class="size-selector">
+          <button type="button" [class.active]="organizerSize === 'pequeno'" (click)="organizerSize = 'pequeno'">
+            <span class="size-icon">🏠</span>
+            <span class="size-label">Pequeño</span>
+            <span class="size-desc">&lt; 50 personas</span>
+          </button>
+          <button type="button" [class.active]="organizerSize === 'mediano'" (click)="organizerSize = 'mediano'">
+            <span class="size-icon">🏢</span>
+            <span class="size-label">Mediano</span>
+            <span class="size-desc">50 - 500 personas</span>
+          </button>
+          <button type="button" [class.active]="organizerSize === 'grande'" (click)="organizerSize = 'grande'">
+            <span class="size-icon">🏟️</span>
+            <span class="size-label">Grande</span>
+            <span class="size-desc">&gt; 500 personas</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="input-group">
-      <label>NIT (Opcional)</label>
-      <input type="text" [(ngModel)]="nit" name="nit" placeholder="Número de identificación tributaria">
+    <!-- SECTION: Logo -->
+    <div class="form-section">
+      <h3 class="section-title">Logo de tu marca</h3>
+      <p class="section-hint">Sube el logo de tu empresa o proyecto. Formatos: JPG, PNG. Recomendado: 400x400px, fondo transparente.</p>
+
+      <div class="upload-area logo-upload" (click)="logoInput.click()">
+        <img *ngIf="logoPreview" [src]="logoPreview" class="upload-preview logo-preview" alt="Logo">
+        <div *ngIf="!logoPreview" class="upload-placeholder">
+          <span class="upload-icon">🖼️</span>
+          <span>Subir logo</span>
+        </div>
+        <input type="file" #logoInput (change)="onFileSelected($event, 'logo')" accept="image/*" hidden>
+      </div>
     </div>
 
-    <div class="upload-section">
-      <h3>Foto Cédula (Frente)</h3>
-      <input type="file" (change)="onFileSelected($event, 'front')" accept="image/*">
+    <!-- SECTION: Cédula -->
+    <div class="form-section">
+      <h3 class="section-title">Verificación de identidad <span class="req">*</span></h3>
+      <p class="section-hint">Sube fotos claras de tu cédula de ciudadanía (frontal y trasera).</p>
+
+      <div class="id-upload-grid">
+        <div class="upload-area" (click)="frontInput.click()">
+          <img *ngIf="frontIdPreview" [src]="frontIdPreview" class="upload-preview" alt="Cédula frontal">
+          <div *ngIf="!frontIdPreview" class="upload-placeholder">
+            <span class="upload-icon">📄</span>
+            <span>Cédula Frontal</span>
+          </div>
+          <input type="file" #frontInput (change)="onFileSelected($event, 'front')" accept="image/*" hidden>
+        </div>
+
+        <div class="upload-area" (click)="backInput.click()">
+          <img *ngIf="backIdPreview" [src]="backIdPreview" class="upload-preview" alt="Cédula trasera">
+          <div *ngIf="!backIdPreview" class="upload-placeholder">
+            <span class="upload-icon">📄</span>
+            <span>Cédula Trasera</span>
+          </div>
+          <input type="file" #backInput (change)="onFileSelected($event, 'back')" accept="image/*" hidden>
+        </div>
+      </div>
     </div>
 
-    <div class="upload-section">
-      <h3>Foto Cédula (Reverso)</h3>
-      <input type="file" (change)="onFileSelected($event, 'back')" accept="image/*">
+    <!-- SECTION: Ubicación -->
+    <div class="form-section">
+      <h3 class="section-title">Ubicación del negocio</h3>
+      <p class="section-hint">Escribe tu dirección y confirma en el mapa, o haz clic en el mapa para seleccionar.</p>
+
+      <div class="input-group address-row">
+        <input type="text" [(ngModel)]="address" name="address" placeholder="Ej: Cra 53 #75-129, Barranquilla">
+        <button type="button" class="btn-geocode" (click)="geocodeAddress()">Buscar</button>
+      </div>
+
+      <div id="verify-map" class="map-container"></div>
+      <p class="map-hint" *ngIf="selectedLat">Ubicación seleccionada: {{ selectedLat | number:'1.4-4' }}, {{ selectedLng | number:'1.4-4' }}</p>
+    </div>
+
+    <!-- SECTION: Contacto y horarios -->
+    <div class="form-section">
+      <h3 class="section-title">Contacto de atención al público</h3>
+
+      <div class="input-group">
+        <label>Teléfono de atención</label>
+        <input type="tel" [(ngModel)]="publicPhone" name="publicPhone" placeholder="Ej: 3001234567">
+      </div>
+
+      <div class="input-group">
+        <label>Correo de atención</label>
+        <input type="email" [(ngModel)]="publicEmail" name="publicEmail" placeholder="contacto@tuempresa.com">
+      </div>
+
+      <div class="schedule-section">
+        <label class="schedule-main-label">Horarios de atención</label>
+
+        <!-- Day toggles -->
+        <div class="day-selector">
+          <button type="button" *ngFor="let d of schedule; let i = index"
+            class="day-btn" [class.active]="d.enabled" (click)="toggleDay(i)">
+            {{ d.day | uppercase }}
+          </button>
+        </div>
+
+        <!-- Same schedule toggle -->
+        <label class="same-schedule-toggle" *ngIf="hasActiveDays()">
+          <input type="checkbox" [(ngModel)]="sameScheduleAllDays" name="sameSchedule" (change)="onSameScheduleToggle()">
+          <span>Mismo horario todos los días activos</span>
+        </label>
+
+        <!-- Time pickers per active day -->
+        <div class="schedule-times" *ngIf="hasActiveDays()">
+          <div class="time-row" *ngFor="let d of schedule; let i = index"
+            [style.display]="d.enabled && (!sameScheduleAllDays || i === firstActiveIndex()) ? 'flex' : 'none'">
+            <span class="time-day-label">{{ sameScheduleAllDays ? 'Todos los días' : d.label }}</span>
+            <div class="time-pickers">
+              <div class="time-field">
+                <label>Abre</label>
+                <input type="time" [(ngModel)]="d.open" [name]="'open_' + d.day" (change)="onTimeChange(i)">
+              </div>
+              <span class="time-separator">—</span>
+              <div class="time-field">
+                <label>Cierra</label>
+                <input type="time" [(ngModel)]="d.close" [name]="'close_' + d.day" (change)="onTimeChange(i)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="schedule-hint" *ngIf="!hasActiveDays()">Selecciona los días en que abres tu negocio.</p>
+      </div>
+    </div>
+
+    <!-- SECTION: Categorías -->
+    <div class="form-section" *ngIf="availableCategories.length > 0">
+      <h3 class="section-title">Categorías de tu negocio</h3>
+      <p class="section-hint">Selecciona las categorías que mejor describen lo que ofreces.</p>
+
+      <div class="cats-grid">
+        <div
+          *ngFor="let cat of availableCategories"
+          class="cat-pill"
+          [class.active]="isCatSelected(cat.id)"
+          (click)="toggleCategory(cat.id)">
+          <span class="cat-icon">{{ cat.icon }}</span> {{ cat.name }}
+        </div>
+      </div>
     </div>
 
     <button type="submit" class="primary-btn" [disabled]="isUploading">
-      {{ isUploading ? 'Subiendo...' : 'Solicitar Verificación' }}
+      {{ isUploading ? 'Enviando documentos...' : 'Solicitar Verificación' }}
     </button>
   </form>
 </div>

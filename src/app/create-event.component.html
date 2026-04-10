@@ -1,74 +1,289 @@
 <div class="page-wrapper">
   <div class="create-container">
     <div class="header-section">
-      <h1>{{ isEditMode ? 'Editar Evento' : 'Crear Nuevo Evento' }}</h1>
-      <p>{{ isEditMode ? 'Corrige los detalles solicitados' : 'Comparte tu experiencia con Barranquilla' }}</p>
+      <h1>{{ isEditMode ? 'Editar Publicación' : 'Crear Nueva Publicación' }}</h1>
+      <p>{{ isEditMode ? 'Corrige los detalles solicitados' : 'Comparte tu experiencia con la ciudad' }}</p>
     </div>
-    
+
+    <!-- ===== STEP 1: Tipo de publicación ===== -->
+    <div class="type-selector">
+      <button type="button" class="type-btn type-evento" [class.active]="postType === 'evento'" (click)="postType = 'evento'">
+        <span class="type-icon">📅</span>
+        <span class="type-label">Evento</span>
+        <span class="type-desc">Fecha y hora específica</span>
+        <ul class="type-features">
+          <li>Fecha de inicio y fin</li>
+          <li>Aforo limitado</li>
+          <li>Cierre de inscripción</li>
+        </ul>
+      </button>
+      <button type="button" class="type-btn type-experiencia" [class.active]="postType === 'experiencia'" (click)="postType = 'experiencia'">
+        <span class="type-icon">✨</span>
+        <span class="type-label">Experiencia</span>
+        <span class="type-desc">Recurrente o permanente</span>
+        <ul class="type-features">
+          <li>Usa tu horario de perfil</li>
+          <li>Sin fecha de cierre</li>
+          <li>Disponible siempre</li>
+        </ul>
+      </button>
+    </div>
+
     <form (ngSubmit)="onSubmit()">
-      
-      <div class="form-group">
-         <label>Título del Evento</label>
-         <input type="text" [(ngModel)]="eventData.title" name="title" required placeholder="Ej: Festival de Jazz al Parque">
+
+      <!-- ===== INFORMACIÓN BÁSICA ===== -->
+      <div class="form-section">
+        <h3 class="section-header">Información básica</h3>
+
+        <div class="form-group" [class.has-error]="hasError('title')">
+          <label>Título <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="eventData.title" name="title" placeholder="Ej: Festival de Jazz al Parque">
+          <span class="field-error" *ngIf="hasError('title')">{{ errors['title'] }}</span>
+        </div>
+
+        <div class="form-group" [class.has-error]="hasError('description')">
+          <label>Descripción <span class="req">*</span></label>
+          <div class="description-guide">
+            <p>Describe de forma clara qué van a vivir los asistentes. Incluye:</p>
+            <ul>
+              <li>¿Qué se va a hacer?</li>
+              <li>¿Qué hace especial esta experiencia?</li>
+              <li>¿Qué deben saber antes de ir?</li>
+            </ul>
+          </div>
+          <textarea [(ngModel)]="eventData.description" name="description" rows="5"
+                    placeholder="Cuéntanos en detalle de qué trata..."
+                    (input)="onDescriptionChange()"></textarea>
+          <div class="char-counter" [class.valid]="descriptionCharCount >= descriptionMinChars">
+            {{ descriptionCharCount }}/{{ descriptionMinChars }} caracteres mínimos
+          </div>
+          <span class="field-error" *ngIf="hasError('description')">{{ errors['description'] }}</span>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Descripción</label>
-        <textarea [(ngModel)]="eventData.description" name="description" rows="4" required placeholder="Cuéntanos de qué trata..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>¿Qué emoción define esta experiencia? <small>(Obligatorio)</small></label>
+      <!-- ===== EMOCIÓN ===== -->
+      <div class="form-section" [class.has-error]="hasError('emotion')">
+        <h3 class="section-header">¿Qué emoción define esta experiencia? <span class="req">*</span></h3>
         <div class="emotions-grid">
-          <div 
-            *ngFor="let emotion of availableEmotions" 
-            class="emotion-chip"
-            [class.selected]="eventData.main_emotion_id === emotion.id"
-            (click)="eventData.main_emotion_id = emotion.id">
+          <div *ngFor="let emotion of availableEmotions"
+               class="emotion-chip"
+               [class.selected]="eventData.main_emotion_id === emotion.id"
+               (click)="eventData.main_emotion_id = emotion.id">
             <span class="emoji">{{ emotion.emoji }}</span>
             <span class="emotion-name">{{ emotion.name }}</span>
           </div>
         </div>
+        <span class="field-error" *ngIf="hasError('emotion')">{{ errors['emotion'] }}</span>
       </div>
 
-      <div class="form-row">
-        <div class="form-group half">
-          <label>Fecha y Hora</label>
-          <input type="datetime-local" [(ngModel)]="eventData.date_event" name="date" required>
+      <!-- ===== FECHA Y UBICACIÓN ===== -->
+      <div class="form-section">
+        <h3 class="section-header">{{ postType === 'evento' ? '¿Cuándo y dónde?' : '¿Dónde se vive?' }}</h3>
+
+        <!-- Event: requires dates -->
+        <div class="form-row" *ngIf="postType === 'evento'">
+          <div class="form-group half" [class.has-error]="hasError('date')">
+            <label>Fecha y hora de inicio <span class="req">*</span></label>
+            <input type="datetime-local" [(ngModel)]="eventData.date_event" name="date">
+            <span class="field-error" *ngIf="hasError('date')">{{ errors['date'] }}</span>
+          </div>
+          <div class="form-group half">
+            <label>Fecha y hora de fin</label>
+            <input type="datetime-local" [(ngModel)]="eventData.date_end" name="date_end">
+          </div>
         </div>
-        <div class="form-group half">
-          <label>Ubicación (Nombre)</label>
-          <input type="text" [(ngModel)]="eventData.location_name" name="location" required placeholder="Ej: Gran Malecón">
+
+        <!-- Experience: schedule hint -->
+        <div class="experience-schedule-note" *ngIf="postType === 'experiencia'">
+          <span class="note-icon">🕐</span>
+          <div class="note-content">
+            <strong>Esta experiencia usa el horario de tu perfil.</strong>
+            <p>Los visitantes verán los días y horas que configuraste en tu verificación. Puedes actualizarlos desde tu perfil.</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ciudad <span class="req">*</span></label>
+          <select [(ngModel)]="eventData.city" name="city">
+            <option *ngFor="let c of cities" [value]="c.value">{{ c.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" [class.has-error]="hasError('location')">
+          <label>Ubicación <span class="req">*</span></label>
+          <div class="address-row">
+            <input type="text" [(ngModel)]="eventData.location_name" name="location" placeholder="Ej: Gran Malecón, Cra 46">
+            <button type="button" class="btn-geocode" (click)="geocodeAddress()">Buscar</button>
+          </div>
+          <span class="field-error" *ngIf="hasError('location')">{{ errors['location'] }}</span>
+        </div>
+
+        <div id="event-map" class="map-container"></div>
+        <p class="map-hint" *ngIf="selectedLat">Ubicación en mapa confirmada</p>
+      </div>
+
+      <!-- ===== CATEGORÍAS ===== -->
+      <div class="form-section" [class.has-error]="hasError('categories')">
+        <h3 class="section-header">Categorías <span class="req">*</span></h3>
+        <div class="cats-grid">
+          <div *ngFor="let cat of availableCategories"
+               class="cat-pill"
+               [class.active]="isSelected(cat.id)"
+               (click)="toggleCategory(cat.id)">
+            <span class="emoji">{{ cat.icon }}</span> {{ cat.name }}
+          </div>
+        </div>
+        <span class="field-error" *ngIf="hasError('categories')">{{ errors['categories'] }}</span>
+      </div>
+
+      <!-- ===== CAMPOS DE MATCH (para recomendación) ===== -->
+      <div class="form-section">
+        <h3 class="section-header">Perfil del asistente ideal</h3>
+        <p class="section-subtitle">Estos datos ayudan a Vela a recomendar tu publicación a las personas correctas.</p>
+
+        <div class="form-row">
+          <div class="form-group half" [class.has-error]="hasError('company')">
+            <label>Compañía ideal <span class="req">*</span></label>
+            <select [(ngModel)]="matchFields.ideal_company" name="ideal_company">
+              <option value="" disabled>Selecciona</option>
+              <option *ngFor="let opt of companyOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+            <span class="field-error" *ngIf="hasError('company')">{{ errors['company'] }}</span>
+          </div>
+          <div class="form-group half" [class.has-error]="hasError('time')">
+            <label>Horario ideal <span class="req">*</span></label>
+            <select [(ngModel)]="matchFields.ideal_time" name="ideal_time">
+              <option value="" disabled>Selecciona</option>
+              <option *ngFor="let opt of timeOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+            <span class="field-error" *ngIf="hasError('time')">{{ errors['time'] }}</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Nivel de energía</label>
+            <select [(ngModel)]="matchFields.energy_level" name="energy_level">
+              <option value="">Sin definir</option>
+              <option *ngFor="let opt of energyOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>Código de vestimenta</label>
+            <select [(ngModel)]="matchFields.dress_code" name="dress_code">
+              <option value="">Sin definir</option>
+              <option value="casual">Casual</option>
+              <option value="elegante">Elegante</option>
+              <option value="tematico">Temático</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Rango de precio</label>
+            <select [(ngModel)]="eventData.price_range" name="price_range">
+              <option value="gratis">Gratis</option>
+              <option value="bajo">$ Económico</option>
+              <option value="medio">$$ Moderado</option>
+              <option value="alto">$$$ Premium</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>Edad mínima</label>
+            <input type="number" [(ngModel)]="eventData.min_age" name="min_age" placeholder="Ej: 18">
+          </div>
+        </div>
+
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="matchFields.accessibility" name="accessibility">
+          Accesible para personas con movilidad reducida
+        </label>
+      </div>
+
+      <!-- ===== DATOS ADICIONALES (evento vs experiencia) ===== -->
+      <div class="form-section" *ngIf="postType === 'evento'">
+        <h3 class="section-header">Detalles del evento</h3>
+        <div class="form-group">
+          <label>Capacidad máxima</label>
+          <input type="number" [(ngModel)]="eventData.max_capacity" name="max_capacity" placeholder="Ej: 200">
+        </div>
+        <div class="form-group">
+          <label>Audiencia objetivo</label>
+          <input type="text" [(ngModel)]="eventData.target_audience" name="target_audience" placeholder="Ej: Amantes del jazz, mayores de 18">
         </div>
       </div>
-      
-      <div class="form-group">
-        <label>Categorías <small>(Selecciona al menos una)</small></label>
-        <div class="cats-grid">
-          <div 
-            *ngFor="let cat of availableCategories" 
-            class="cat-pill" 
-            [class.active]="isSelected(cat.id)"
-            (click)="toggleCategory(cat.id)">
-            <span class="emoji">{{ cat.icon }}</span> {{ cat.name }}
+
+      <div class="form-section" *ngIf="postType === 'experiencia'">
+        <h3 class="section-header">Detalles de la experiencia</h3>
+        <div class="form-group">
+          <label>Recurrencia</label>
+          <select [(ngModel)]="systemFields.recurrence" name="recurrence">
+            <option value="unico">Evento único</option>
+            <option value="semanal">Semanal</option>
+            <option value="mensual">Mensual</option>
+            <option value="permanente">Permanente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Audiencia objetivo</label>
+          <input type="text" [(ngModel)]="eventData.target_audience" name="target_audience_exp" placeholder="Ej: Turistas, familias locales">
+        </div>
+      </div>
+
+      <!-- ===== PREGUNTAS OCULTAS PARA EL SISTEMA ===== -->
+      <div class="form-section system-section">
+        <button type="button" class="toggle-system-btn" (click)="showSystemFields = !showSystemFields">
+          {{ showSystemFields ? '▼' : '▶' }} Configuración avanzada (opcional)
+        </button>
+
+        <div *ngIf="showSystemFields" class="system-fields">
+          <p class="section-subtitle">Estos datos son internos y ayudan al motor de recomendación.</p>
+
+          <div class="form-group">
+            <label>Tipo de usuario que buscas</label>
+            <input type="text" [(ngModel)]="systemFields.target_user_type" name="target_user_type" placeholder="Ej: Jóvenes universitarios, turistas">
+          </div>
+          <div class="form-group">
+            <label>Tipo de usuario que NO debería llegar</label>
+            <input type="text" [(ngModel)]="systemFields.avoid_user_type" name="avoid_user_type" placeholder="Ej: Menores de edad, personas buscando fiesta">
+          </div>
+          <div class="form-group">
+            <label>Objetivo principal del evento</label>
+            <select [(ngModel)]="systemFields.event_objective" name="event_objective">
+              <option value="">Sin definir</option>
+              <option value="entretenimiento">Entretenimiento</option>
+              <option value="educacion">Educación</option>
+              <option value="networking">Networking</option>
+              <option value="cultural">Cultural</option>
+              <option value="gastronomico">Gastronómico</option>
+              <option value="deportivo">Deportivo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hora pico esperada</label>
+            <input type="time" [(ngModel)]="systemFields.peak_hour" name="peak_hour">
           </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Imagen de Portada</label>
-        
-        <div *ngIf="isEditMode && currentImageUrl" style="margin-bottom: 15px; padding: 10px; background: #f5f5f7; border-radius: 12px; display: inline-block;">
-          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Imagen Actual:</p>
-          <img [src]="currentImageUrl" style="height: 100px; border-radius: 8px; display: block;">
+      <!-- ===== IMAGEN ===== -->
+      <div class="form-section" [class.has-error]="hasError('image')">
+        <h3 class="section-header">Imagen de portada <span class="req" *ngIf="!isEditMode">*</span></h3>
+
+        <div *ngIf="isEditMode && currentImageUrl" class="current-image-box">
+          <p class="image-label">Imagen actual:</p>
+          <img [src]="currentImageUrl" class="current-image">
         </div>
 
         <div class="file-input-wrapper">
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" [required]="!isEditMode">
+          <input type="file" (change)="onFileSelected($event)" accept="image/*">
         </div>
+        <span class="field-error" *ngIf="hasError('image')">{{ errors['image'] }}</span>
       </div>
 
-      <button type="submit" [disabled]="loading || selectedCategories.length === 0 || !eventData.main_emotion_id" class="btn-submit">
+      <!-- ===== SUBMIT ===== -->
+      <button type="submit" [disabled]="loading" class="btn-submit">
         {{ loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios' : 'Enviar a Revisión') }}
       </button>
 

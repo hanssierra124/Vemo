@@ -4,6 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FavoritesService } from './favorites.service';
+import { VelaRecommendationService } from './vela-recommendation.service';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +18,16 @@ export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
   events: any[] = [];
-  availableEmotions: any[] = [];
+  availableEmotions: any[] = [
+    { id: 'alegria',      name: 'Alegría',      emoji: '😄' },
+    { id: 'calma',        name: 'Calma',        emoji: '😌' },
+    { id: 'curiosidad',   name: 'Curiosidad',   emoji: '🤔' },
+    { id: 'emocion',      name: 'Emoción',      emoji: '🤩' },
+    { id: 'nostalgia',    name: 'Nostalgia',    emoji: '🥹' },
+    { id: 'amor',         name: 'Amor',         emoji: '❤️' },
+    { id: 'inspiracion',  name: 'Inspiración',  emoji: '✨' },
+    { id: 'relajacion',   name: 'Relajación',   emoji: '🧘' },
+  ];
   loading: boolean = true;
   private map: any;
   mapMarkers: any[] = [];
@@ -69,7 +79,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    public favService: FavoritesService
+    public favService: FavoritesService,
+    private velaService: VelaRecommendationService
   ) {}
 
   ngOnInit() {
@@ -83,10 +94,24 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (isPlatformBrowser(this.platformId)) {
       this.initNoiseCanvas();
       this.initMouseGlow();
-      setTimeout(async () => {
-        await this.initHomeMap();
-      }, 100);
+      this.initMapWhenVisible();
     }
+  }
+
+  private initMapWhenVisible() {
+    const mapEl = document.getElementById('map-home');
+    if (!mapEl) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          this.initHomeMap();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(mapEl);
   }
 
   // ── MAPA INTERACTIVO EN HOME ──────────────────────
@@ -311,20 +336,41 @@ if (el) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    // Draw at 1/4 resolution and scale up — much cheaper
+    const SCALE = 4;
+    const resize = () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
     resize();
     window.addEventListener('resize', resize);
 
-    const drawNoise = () => {
-      const imageData = ctx.createImageData(canvas.width, canvas.height);
+    const offscreen = document.createElement('canvas');
+    const octx = offscreen.getContext('2d')!;
+
+    let lastTime = 0;
+    const INTERVAL = 66; // ~15 fps
+
+    const drawNoise = (timestamp: number) => {
+      requestAnimationFrame(drawNoise);
+      if (timestamp - lastTime < INTERVAL) return;
+      lastTime = timestamp;
+
+      const w = Math.ceil(canvas.width  / SCALE);
+      const h = Math.ceil(canvas.height / SCALE);
+      offscreen.width  = w;
+      offscreen.height = h;
+
+      const imageData = octx.createImageData(w, h);
       const buffer = new Uint32Array(imageData.data.buffer);
       for (let i = 0; i < buffer.length; i++) {
         if (Math.random() < 0.5) buffer[i] = 0xff000000 | (Math.random() * 255);
       }
-      ctx.putImageData(imageData, 0, 0);
-      requestAnimationFrame(drawNoise);
+      octx.putImageData(imageData, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
     };
-    drawNoise();
+    requestAnimationFrame(drawNoise);
   }
 
   // ── ONBOARDING ──────────────────────────────────────
@@ -352,14 +398,50 @@ if (el) {
       this.selectedTime = '';
     } else {
       this.showOnboarding = false;
-      this.processVelaRecommendations();
+      // No llamar processVelaRecommendations aqui — loadEvents lo hará cuando tenga datos
     }
+  }
+
+  selectEmotion(emotion: any) {
+    // Toggle: clicking the same emotion deselects it
+    this.selectedEmotion = this.selectedEmotion?.id === emotion.id ? null : emotion;
+  }
+  selectCompany(value: string) {
+    this.selectedCompany = this.selectedCompany === value ? '' : value;
+  }
+  selectTime(value: string) {
+    this.selectedTime = this.selectedTime === value ? '' : value;
+  }
+  nextStep() { if (this.onboardingStep < 3) this.onboardingStep++; }
+  prevStep() { if (this.onboardingStep > 1) this.onboardingStep--; }
+
+  reopenOnboarding() {
+    // Reopen onboarding keeping previous selections so user can modify
+    this.showOnboarding = true;
+    this.closingOnboarding = false;
+    this.onboardingStep = 1;
+    // Restore previous selections from localStorage
+    const savedMood = localStorage.getItem('userCurrentMood');
+    if (savedMood && !this.selectedEmotion) {
+      this.selectedEmotion = this.availableEmotions.find(e => e.name === savedMood) || null;
+    }
+    this.selectedCompany = this.selectedCompany || localStorage.getItem('userCompany') || '';
+    this.selectedTime = this.selectedTime || localStorage.getItem('userTimeAvailable') || '';
     this.cdr.detectChanges();
   }
 
-  selectEmotion(emotion: any) { this.selectedEmotion = emotion; }
-  nextStep() { if (this.onboardingStep < 3) this.onboardingStep++; }
-  prevStep() { if (this.onboardingStep > 1) this.onboardingStep--; }
+  getMatchReason(event: any): string {
+    const mood = this.currentUserMood?.toLowerCase() || '';
+    const emotionName = event.emotions?.name?.toLowerCase() || '';
+    const company = localStorage.getItem('userCompany') || '';
+
+    if (emotionName === mood) {
+      const companyMap: {[k:string]:string} = { solo: 'para ir solo/a', pareja: 'ideal en pareja', amigos: 'perfecto con amigos', familia: 'para toda la familia' };
+      const companyHint = companyMap[company] || '';
+      return `Vibra con tu mood de hoy${companyHint ? ' — ' + companyHint : ''}`;
+    }
+    return 'Experiencia destacada que te puede sorprender';
+  }
 
   async finishOnboarding() {
     if (!this.selectedEmotion || !this.selectedCompany || !this.selectedTime) return;
@@ -381,11 +463,10 @@ if (el) {
       }).catch(() => {});
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       this.showOnboarding = false;
       this.closingOnboarding = false;
-      this.processVelaRecommendations();
-      this.cdr.detectChanges();
+      await this.processVelaRecommendations();
     }, 800);
   }
 
@@ -397,7 +478,10 @@ if (el) {
   async loadEmotions() {
     try {
       const res = await fetch(`${environment.apiUrl}/api/emotions`);
-      if (res.ok) { this.availableEmotions = await res.json(); this.cdr.detectChanges(); }
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.length) { this.availableEmotions = data; this.cdr.detectChanges(); }
+      }
     } catch (e) { console.error('Emociones:', e); }
   }
 
@@ -413,36 +497,90 @@ if (el) {
       }).catch(() => {});
     }
     this.showMoodModal = false;
-    this.processVelaRecommendations();
-    this.cdr.detectChanges();
+    await this.processVelaRecommendations();
   }
 
   // ── EVENTOS ─────────────────────────────────────────
+  // ── EVENTOS ─────────────────────────────────────────
   async loadEvents() {
     try {
-      const res = await fetch(`${environment.apiUrl}/api/events`);
-      if (res.ok) {
-        this.events = await res.json();
-        this.processVelaRecommendations();
-        this.eventsReady = true;
-        // Si el mapa ya estaba listo cuando llegaron los eventos → dibujamos ahora
-        if (this.mapReady) this.drawHomeMap();
+      const [evRes, expRes] = await Promise.all([
+        fetch(`${environment.apiUrl}/api/events`),
+        fetch(`${environment.apiUrl}/api/events?post_type=experiencia`).catch(() => null)
+      ]);
+
+      let combined: any[] = [];
+      if (evRes.ok) {
+        const res = await evRes.json();
+        // Extraemos el array sin importar si viene directo o envuelto en data/events
+        combined = Array.isArray(res) ? res : (res.data || res.events || []);
       }
-    } catch (e) { console.error('Eventos:', e); }
-    finally { this.loading = false; this.cdr.detectChanges(); }
+
+      if (expRes && expRes.ok) {
+        const res = await expRes.json();
+        const experiences: any[] = Array.isArray(res) ? res : (res.data || res.events || []);
+        
+        // Solo agregamos experiencias que no estén ya en combined
+        const existingIds = new Set(combined.map((e: any) => e.id));
+        const newExp = experiences.filter((e: any) => !existingIds.has(e.id));
+        combined = [...combined, ...newExp];
+      }
+
+      this.events = combined;
+      this.explorerEvents = combined;
+      this.eventsReady = true;
+      if (this.mapReady) this.drawHomeMap();
+      
+      // Scoring en segundo plano — no bloquea la UI
+      this.processVelaRecommendations();
+    } catch (e) { 
+      console.error('Eventos:', e); 
+    } finally { 
+      this.loading = false; 
+      this.cdr.detectChanges(); 
+    }
   }
 
-  processVelaRecommendations() {
-    this.explorerEvents = this.events;
-    if (!this.currentUserMood || !this.events.length) return;
-    const match = this.events.filter(e => e.emotions?.name.toLowerCase() === this.currentUserMood?.toLowerCase());
-    if (match.length > 0) {
-      this.recommendedEvents = match.slice(0, 3);
-      this.velaMessage = `Veo que hoy buscas ${this.currentUserMood}. Estas experiencias vibran en tu frecuencia.`;
-    } else {
-      this.recommendedEvents = this.events.slice(0, 3);
-      this.velaMessage = `No hay eventos exactos para ${this.currentUserMood} ahora mismo, pero estas experiencias te van a sorprender.`;
+  async processVelaRecommendations() {
+    // Verificación segura del array
+    if (!this.events || !this.events.length) {
+      this.explorerEvents = [];
+      this.recommendedEvents = [];
+      return;
     }
+
+    try {
+      const scored = await this.velaService.scoreEvents(this.events);
+      const daily = this.velaService.getDailyMood();
+
+      // Pegar score y reason directo en cada evento
+      for (const s of scored) {
+        if (s.event) {
+          s.event._velaScore = s.score;
+          s.event._velaReason = s.topReason;
+        }
+      }
+
+      // Ordenar por score (faltaba aplicar el sort) y usar los eventos directamente
+      const sorted = scored.sort((a, b) => b.score - a.score).map(s => s.event);
+      
+      this.recommendedEvents = sorted.filter((e: any) => e && e._velaScore > 0).slice(0, 3);
+      this.explorerEvents = sorted;
+      this.velaMessage = this.velaService.generateVelaMessage(scored, daily);
+    } catch (e) {
+      console.error('Vela scoring fallback:', e);
+      // Fallback: mostrar eventos sin scoring
+      this.explorerEvents = this.events;
+      if (this.currentUserMood) {
+        const match = this.events.filter(ev => ev.emotions?.name?.toLowerCase() === this.currentUserMood?.toLowerCase());
+        this.recommendedEvents = (match.length > 0 ? match : this.events).slice(0, 3);
+        this.velaMessage = `Veo que hoy buscas ${this.currentUserMood}. Estas experiencias vibran en tu frecuencia.`;
+      } else {
+        this.recommendedEvents = this.events.slice(0, 3);
+      }
+    }
+
+    this.cdr.detectChanges();
   }
 
   // ── FAVORITOS ────────────────────────────────────────

@@ -1,25 +1,135 @@
-<div class="interests-container">
-  <div class="header">
-    <h1>¿Qué te mueve hoy?</h1>
-    <p>Selecciona tus gustos para que VELA te recomiende los mejores planes en Barranquilla.</p>
-  </div>
+<div class="onboarding-wrapper">
+  <div class="onboarding-container">
 
-  <div class="interests-grid">
-    <div 
-      *ngFor="let interes of interesesDisponibles" 
-      class="interest-pill" 
-      [class.active]="interes.seleccionado"
-      (click)="toggleInteres(interes)">
-      {{ interes.nombre }}
+    <!-- Progress bar -->
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
     </div>
-  </div>
+    <p class="step-indicator">Paso {{ currentStep }} de {{ totalSteps }}</p>
 
-  <div class="footer-actions">
-    <button 
-      class="btn-continue" 
-      [disabled]="loading" 
-      (click)="guardarIntereses()">
-      {{ loading ? 'Sincronizando...' : 'Continuar' }}
-    </button>
+    <!-- ===== STEP 1: Positive Interests ===== -->
+    <div class="step-content" *ngIf="currentStep === 1">
+      <div class="step-header">
+        <h1>¿Qué te mueve?</h1>
+        <p>Selecciona todo lo que te interesa. Vela usará esto para recomendarte los mejores planes.</p>
+      </div>
+
+      <div class="interests-grid">
+        <div *ngFor="let interes of interesesDisponibles"
+             class="interest-chip"
+             [class.active]="interes.seleccionado"
+             (click)="toggleInteres(interes)">
+          <span class="chip-emoji">{{ interes.emoji }}</span>
+          <span class="chip-label">{{ interes.nombre }}</span>
+        </div>
+      </div>
+
+      <p class="selection-count" *ngIf="positiveCount > 0">{{ positiveCount }} seleccionados</p>
+    </div>
+
+    <!-- ===== STEP 2: Negative Preferences ===== -->
+    <div class="step-content" *ngIf="currentStep === 2">
+      <div class="step-header">
+        <h1>¿Qué prefieres evitar?</h1>
+        <p>Esto nos ayuda a NO recomendarte cosas que no disfrutarías. Es opcional.</p>
+      </div>
+
+      <div class="interests-grid">
+        <div *ngFor="let neg of negativosDisponibles"
+             class="interest-chip negative"
+             [class.active]="neg.seleccionado"
+             (click)="toggleInteres(neg)">
+          <span class="chip-emoji">{{ neg.emoji }}</span>
+          <span class="chip-label">{{ neg.nombre }}</span>
+        </div>
+      </div>
+
+      <p class="skip-hint">Puedes saltarte este paso si no tienes preferencias.</p>
+    </div>
+
+    <!-- ===== STEP 3: Company & Time ===== -->
+    <div class="step-content" *ngIf="currentStep === 3">
+      <div class="step-header">
+        <h1>¿Cómo te gusta salir?</h1>
+        <p>Cuéntanos tu estilo para personalizar tus recomendaciones.</p>
+      </div>
+
+      <div class="preference-section">
+        <h3>¿Con quién sueles ir?</h3>
+        <div class="option-grid">
+          <div *ngFor="let opt of companyOptions"
+               class="option-card"
+               [class.active]="selectedCompany === opt.value"
+               (click)="selectedCompany = opt.value">
+            <span class="option-emoji">{{ opt.emoji }}</span>
+            <span class="option-label">{{ opt.label }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preference-section">
+        <h3>¿A qué hora prefieres?</h3>
+        <div class="option-grid">
+          <div *ngFor="let opt of timeOptions"
+               class="option-card"
+               [class.active]="selectedTime === opt.value"
+               (click)="selectedTime = opt.value">
+            <span class="option-emoji">{{ opt.emoji }}</span>
+            <span class="option-label">{{ opt.label }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STEP 4: Location & Feedback ===== -->
+    <div class="step-content" *ngIf="currentStep === 4">
+      <div class="step-header">
+        <h1>Casi listo</h1>
+        <p>Un par de cosas más para darte la mejor experiencia.</p>
+      </div>
+
+      <!-- Location permission -->
+      <div class="location-section">
+        <div class="location-icon">📍</div>
+        <h3>Ubicación en tiempo real</h3>
+        <p>Permitir tu ubicación nos ayuda a mostrarte planes cercanos y medir qué tan lejos estás de cada lugar.</p>
+
+        <div *ngIf="!locationGranted && !locationDenied">
+          <button class="btn-location" (click)="requestLocation()">Permitir ubicación</button>
+        </div>
+        <div *ngIf="locationGranted" class="location-status granted">
+          <span>✓</span> Ubicación activada
+        </div>
+        <div *ngIf="locationDenied" class="location-status denied">
+          <span>✕</span> Ubicación denegada — puedes cambiar esto en los ajustes de tu navegador.
+        </div>
+      </div>
+
+      <!-- Missing in city -->
+      <div class="feedback-section">
+        <h3>¿Qué te hace falta en Barranquilla?</h3>
+        <p class="feedback-hint">Cuéntanos qué tipo de planes, eventos o experiencias sientes que faltan en la ciudad.</p>
+        <textarea [(ngModel)]="missingInCity" name="missing"
+                  placeholder="Ej: Más eventos de comida callejera, conciertos de jazz, espacios pet-friendly..."
+                  rows="3" maxlength="500"></textarea>
+        <div class="char-count">{{ missingInCity.length }}/500</div>
+      </div>
+    </div>
+
+    <!-- ===== NAVIGATION BUTTONS ===== -->
+    <div class="nav-buttons">
+      <button *ngIf="currentStep > 1" class="btn-back" (click)="prevStep()">← Atrás</button>
+      <div class="spacer"></div>
+      <button *ngIf="currentStep < totalSteps" class="btn-next"
+              [disabled]="!canAdvance()"
+              (click)="nextStep()">
+        Siguiente →
+      </button>
+      <button *ngIf="currentStep === totalSteps" class="btn-finish"
+              [disabled]="loading"
+              (click)="guardarIntereses()">
+        {{ loading ? 'Guardando...' : 'Empezar a explorar' }}
+      </button>
+    </div>
   </div>
 </div>

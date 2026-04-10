@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx ng:*)",
+      "Bash(curl -s \"https://vemo-backend-b0bk.onrender.com/api/admin/verifications\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(json.dumps\\(list\\(data[0].keys\\(\\)\\), indent=2\\)\\)\")",
+      "Bash(curl -s https://vemo-backend-b0bk.onrender.com/api/admin/verifications)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(json.dumps\\(list\\(data[0].keys\\(\\)\\), indent=2\\)\\)\")",
+      "Bash(curl -s \"https://vemo-backend-b0bk.onrender.com/api/events\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(json.dumps\\(data[0] if data else {}, indent=2\\)\\)\")",
+      "Bash(curl -s https://vemo-backend-b0bk.onrender.com/api/categories)",
+      "Bash(curl -s https://vemo-backend-b0bk.onrender.com/api/emotions)",
+      "Bash(curl -X POST https://vemo-backend-b0bk.onrender.com/api/organizer/verify -H 'Content-Type: application/json' -d {})",
+      "Bash(curl -X OPTIONS \"https://vemo-backend-b0bk.onrender.com/api/organizer/verify\" -v)",
+      "Bash(curl -s https://vemo-backend-b0bk.onrender.com/api/auth/profile)",
+      "Bash(curl -s https://vemo-backend-b0bk.onrender.com/)",
+      "Bash(curl -s https://vemo-backend-b0bk.onrender.com/api)",
+      "Bash(find c:/Users/Usuario/Desktop/vela-backend -maxdepth 2 -type f -name *.py -o -name *.js -o -name *.ts)",
+      "Bash(node -c server.js)",
+      "Bash(npx vercel:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

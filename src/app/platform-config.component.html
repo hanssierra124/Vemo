@@ -1,0 +1,153 @@
+<div class="config-wrapper">
+  <div class="config-container">
+    <div class="config-header">
+      <button class="btn-back" (click)="goBack()">← Volver</button>
+      <h1>Configuración de Plataforma</h1>
+      <p>Gestión de techo operativo y materiales de onboarding.</p>
+    </div>
+
+    <!-- Section tabs -->
+    <div class="section-tabs">
+      <button [class.active]="activeSection === 'ceiling'" (click)="activeSection = 'ceiling'">Techo</button>
+      <button [class.active]="activeSection === 'onboarding'" (click)="activeSection = 'onboarding'">Tutorial</button>
+      <button [class.active]="activeSection === 'criteria'" (click)="activeSection = 'criteria'">Criterios</button>
+      <button [class.active]="activeSection === 'pitch'" (click)="activeSection = 'pitch'">Pitch</button>
+    </div>
+
+    <!-- ===== CEILING SECTION ===== -->
+    <div *ngIf="activeSection === 'ceiling'" class="section-content">
+      <h2>Techo del Prototipo — Fase {{ ceilingConfig.phase }}</h2>
+      <p class="section-desc">{{ ceilingConfig.phase_description }}</p>
+
+      <!-- Usage meters -->
+      <div class="usage-meters">
+        <div class="meter-card">
+          <div class="meter-header">
+            <span class="meter-label">Organizadores</span>
+            <span class="meter-count">{{ ceilingConfig.current_organizers }} / {{ ceilingConfig.max_organizers }}</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill"
+                 [style.width.%]="getUsagePercent(ceilingConfig.current_organizers, ceilingConfig.max_organizers)"
+                 [style.background]="getUsageColor(getUsagePercent(ceilingConfig.current_organizers, ceilingConfig.max_organizers))">
+            </div>
+          </div>
+        </div>
+
+        <div class="meter-card">
+          <div class="meter-header">
+            <span class="meter-label">Usuarios</span>
+            <span class="meter-count">{{ ceilingConfig.current_users }} / {{ ceilingConfig.max_users }}</span>
+          </div>
+          <div class="meter-bar">
+            <div class="meter-fill"
+                 [style.width.%]="getUsagePercent(ceilingConfig.current_users, ceilingConfig.max_users)"
+                 [style.background]="getUsageColor(getUsagePercent(ceilingConfig.current_users, ceilingConfig.max_users))">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config fields -->
+      <div class="config-fields">
+        <div class="field-row">
+          <div class="field-group">
+            <label>Máx. Organizadores</label>
+            <input type="number" [(ngModel)]="ceilingConfig.max_organizers" name="max_org" min="1">
+          </div>
+          <div class="field-group">
+            <label>Máx. Usuarios</label>
+            <input type="number" [(ngModel)]="ceilingConfig.max_users" name="max_users" min="1">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Comportamiento al alcanzar el techo</label>
+          <div class="behavior-options">
+            <div *ngFor="let b of ceilingBehaviors"
+                 class="behavior-card"
+                 [class.active]="ceilingConfig.ceiling_behavior === b.value"
+                 (click)="ceilingConfig.ceiling_behavior = b.value">
+              <strong>{{ b.label }}</strong>
+              <span>{{ b.desc }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="limits-explanation">
+          <div class="limit-box">
+            <h4>Límite operativo</h4>
+            <p>{{ ceilingConfig.operational_limit_reason }}</p>
+          </div>
+          <div class="limit-box">
+            <h4>Límite técnico</h4>
+            <p>{{ ceilingConfig.technical_limit_reason }}</p>
+          </div>
+        </div>
+
+        <div class="save-row">
+          <button class="btn-save" [disabled]="loading" (click)="saveCeilingConfig()">
+            {{ loading ? 'Guardando...' : 'Guardar Configuración' }}
+          </button>
+          <span class="save-ok" *ngIf="saveSuccess">✓ Guardado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TUTORIAL SECTION ===== -->
+    <div *ngIf="activeSection === 'onboarding'" class="section-content">
+      <h2>Tutorial de uso para organizadores</h2>
+      <p class="section-desc">Pasos que el organizador sigue desde el registro hasta la autonomía.</p>
+
+      <div class="tutorial-timeline">
+        <div class="timeline-step" *ngFor="let step of tutorialSteps">
+          <div class="step-number">{{ step.icon }}</div>
+          <div class="step-body">
+            <h4>{{ step.step }}. {{ step.title }}</h4>
+            <p>{{ step.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub-title">Ruta de acompañamiento</h3>
+      <div class="accompaniment-grid">
+        <div class="accomp-card" *ngFor="let phase of accompanimentRoute">
+          <div class="accomp-week">{{ phase.week }}</div>
+          <h4>{{ phase.title }}</h4>
+          <ul>
+            <li *ngFor="let task of phase.tasks">{{ task }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CRITERIA SECTION ===== -->
+    <div *ngIf="activeSection === 'criteria'" class="section-content">
+      <h2>Criterios de selección de organizadores</h2>
+      <p class="section-desc">Checklist que el equipo de Vemo usa para evaluar si un organizador califica para la plataforma.</p>
+
+      <div class="criteria-list">
+        <div class="criteria-item" *ngFor="let c of selectionCriteria">
+          <div class="criteria-badge" [class.required]="c.required">
+            {{ c.required ? 'Obligatorio' : 'Deseable' }}
+          </div>
+          <div class="criteria-body">
+            <h4>{{ c.label }}</h4>
+            <p>{{ c.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PITCH SECTION ===== -->
+    <div *ngIf="activeSection === 'pitch'" class="section-content">
+      <h2>Texto de Pitch para organizadores</h2>
+      <p class="section-desc">Texto listo para enviar por WhatsApp, email o redes sociales para captar organizadores.</p>
+
+      <div class="pitch-box">
+        <pre class="pitch-text">{{ pitchText }}</pre>
+      </div>
+      <button class="btn-copy" (click)="copyPitch()">📋 Copiar texto</button>
+    </div>
+  </div>
+</div>
