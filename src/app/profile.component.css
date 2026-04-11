@@ -919,3 +919,66 @@
 
   .admin-card { flex-wrap: wrap; }
 }
+
+/* ========== ALERTA DE CORRECCIÓN / RECHAZO ========== */
+.correction-alert {
+  margin-bottom: 20px;
+  border: 1px solid #ff9800;
+  border-left: 4px solid #ff9800;
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(255, 152, 0, 0.02));
+}
+.correction-alert.rejected-alert {
+  border-color: #f44336;
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.08), rgba(244, 67, 54, 0.02));
+}
+.correction-alert-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+}
+.correction-icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: #ff9800;
+}
+.rejected-alert .correction-icon {
+  color: #f44336;
+}
+.correction-content {
+  flex: 1;
+}
+.correction-title {
+  font-size: 16px;
+  margin: 0 0 8px;
+  color: #fff;
+}
+.correction-reason {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.btn-correction-action {
+  display: inline-block;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #ff9800;
+  color: #000;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-correction-action:hover {
+  background: #ffb74d;
+}
+.rejected-alert .btn-correction-action {
+  background: #f44336;
+  color: #fff;
+}
+.rejected-alert .btn-correction-action:hover {
+  background: #ef5350;
+}

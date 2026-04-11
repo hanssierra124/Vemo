@@ -4,7 +4,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FavoritesService } from './favorites.service';
-import { VelaRecommendationService } from './vela-recommendation.service';
 
 @Component({
   selector: 'app-home',
@@ -62,11 +61,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { icon: '🗓️', label: 'Todo el día',  desc: 'Modo aventura activado',      value: 'dia'   },
   ];
 
-  // ── VELA & MOOD ─────────────────────────────────────
+  // ── MOOD ─────────────────────────────────────────────
   showMoodModal: boolean = false;
   currentUserMood: string | null = null;
-  recommendedEvents: any[] = [];
   explorerEvents: any[] = [];
+
+  // ── VELA RECOMENDACIONES ──────────────────────────────
+  recommendedEvents: any[] = [];
   velaMessage: string = '';
 
   // ── CHAT ────────────────────────────────────────────
@@ -79,15 +80,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    public favService: FavoritesService,
-    private velaService: VelaRecommendationService
+    public favService: FavoritesService
   ) {}
 
   ngOnInit() {
     this.generateParticles();
+    this.checkOnboardingStatus();
     this.loadEvents();
     this.loadEmotions();
-    this.checkOnboardingStatus();
   }
 
   async ngAfterViewInit() {
@@ -398,7 +398,6 @@ if (el) {
       this.selectedTime = '';
     } else {
       this.showOnboarding = false;
-      // No llamar processVelaRecommendations aqui — loadEvents lo hará cuando tenga datos
     }
   }
 
@@ -430,19 +429,6 @@ if (el) {
     this.cdr.detectChanges();
   }
 
-  getMatchReason(event: any): string {
-    const mood = this.currentUserMood?.toLowerCase() || '';
-    const emotionName = event.emotions?.name?.toLowerCase() || '';
-    const company = localStorage.getItem('userCompany') || '';
-
-    if (emotionName === mood) {
-      const companyMap: {[k:string]:string} = { solo: 'para ir solo/a', pareja: 'ideal en pareja', amigos: 'perfecto con amigos', familia: 'para toda la familia' };
-      const companyHint = companyMap[company] || '';
-      return `Vibra con tu mood de hoy${companyHint ? ' — ' + companyHint : ''}`;
-    }
-    return 'Experiencia destacada que te puede sorprender';
-  }
-
   async finishOnboarding() {
     if (!this.selectedEmotion || !this.selectedCompany || !this.selectedTime) return;
     localStorage.setItem('lastMoodUpdate', new Date().toDateString());
@@ -463,10 +449,11 @@ if (el) {
       }).catch(() => {});
     }
 
-    setTimeout(async () => {
+    setTimeout(() => {
       this.showOnboarding = false;
       this.closingOnboarding = false;
-      await this.processVelaRecommendations();
+      this.processVelaRecommendations();
+      this.cdr.detectChanges();
     }, 800);
   }
 
@@ -497,90 +484,138 @@ if (el) {
       }).catch(() => {});
     }
     this.showMoodModal = false;
-    await this.processVelaRecommendations();
+    this.processVelaRecommendations();
+    this.cdr.detectChanges();
   }
 
-  // ── EVENTOS ─────────────────────────────────────────
   // ── EVENTOS ─────────────────────────────────────────
   async loadEvents() {
     try {
-      const [evRes, expRes] = await Promise.all([
-        fetch(`${environment.apiUrl}/api/events`),
-        fetch(`${environment.apiUrl}/api/events?post_type=experiencia`).catch(() => null)
-      ]);
-
-      let combined: any[] = [];
-      if (evRes.ok) {
-        const res = await evRes.json();
-        // Extraemos el array sin importar si viene directo o envuelto en data/events
-        combined = Array.isArray(res) ? res : (res.data || res.events || []);
+      const res = await fetch(`${environment.apiUrl}/api/events`);
+      if (res.ok) {
+        const data = await res.json();
+        const events = Array.isArray(data) ? data : (data.data || data.events || []);
+        this.events = events;
+        this.explorerEvents = events;
       }
-
-      if (expRes && expRes.ok) {
-        const res = await expRes.json();
-        const experiences: any[] = Array.isArray(res) ? res : (res.data || res.events || []);
-        
-        // Solo agregamos experiencias que no estén ya en combined
-        const existingIds = new Set(combined.map((e: any) => e.id));
-        const newExp = experiences.filter((e: any) => !existingIds.has(e.id));
-        combined = [...combined, ...newExp];
-      }
-
-      this.events = combined;
-      this.explorerEvents = combined;
       this.eventsReady = true;
       if (this.mapReady) this.drawHomeMap();
-      
-      // Scoring en segundo plano — no bloquea la UI
       this.processVelaRecommendations();
-    } catch (e) { 
-      console.error('Eventos:', e); 
-    } finally { 
-      this.loading = false; 
-      this.cdr.detectChanges(); 
+    } catch (e) {
+      console.error('Eventos:', e);
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
-  async processVelaRecommendations() {
-    // Verificación segura del array
+  // ── VELA SCORING (lógica simple inline, sin servicio externo) ──
+  processVelaRecommendations() {
     if (!this.events || !this.events.length) {
-      this.explorerEvents = [];
       this.recommendedEvents = [];
+      this.velaMessage = '';
       return;
     }
 
-    try {
-      const scored = await this.velaService.scoreEvents(this.events);
-      const daily = this.velaService.getDailyMood();
+    const mood = (this.currentUserMood || '').toLowerCase().trim();
+    const company = (localStorage.getItem('userCompany') || '').toLowerCase();
+    const timeAvail = (localStorage.getItem('userTimeAvailable') || '').toLowerCase();
 
-      // Pegar score y reason directo en cada evento
-      for (const s of scored) {
-        if (s.event) {
-          s.event._velaScore = s.score;
-          s.event._velaReason = s.topReason;
+    // Si no hay mood guardado, no mostramos recomendaciones (la sección se oculta por *ngIf)
+    if (!mood) {
+      this.recommendedEvents = [];
+      this.velaMessage = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const scored = this.events.map(ev => {
+      let score = 0;
+      const reasons: string[] = [];
+
+      // 1. Emoción coincide con el mood → máximo peso
+      const emotionName = (ev.emotions?.name || '').toLowerCase();
+      if (emotionName && emotionName === mood) {
+        score += 60;
+        reasons.push('Vibra con tu mood de hoy');
+      } else if (emotionName && mood && (emotionName.includes(mood) || mood.includes(emotionName))) {
+        score += 35;
+        reasons.push('Afín a lo que buscas');
+      }
+
+      // 2. Match de compañía (match_fields es JSON almacenado)
+      let mf: any = ev.match_fields;
+      if (typeof mf === 'string') { try { mf = JSON.parse(mf); } catch { mf = null; } }
+      if (mf && company) {
+        const ideal = (mf.ideal_company || '').toLowerCase();
+        if (ideal === company || ideal === 'cualquiera') {
+          score += 20;
+          const companyLabel: { [k: string]: string } = {
+            solo: 'ideal para ir solo/a', pareja: 'perfecto en pareja',
+            amigos: 'genial con amigos', familia: 'para toda la familia'
+          };
+          if (companyLabel[company]) reasons.push(companyLabel[company]);
         }
       }
 
-      // Ordenar por score (faltaba aplicar el sort) y usar los eventos directamente
-      const sorted = scored.sort((a, b) => b.score - a.score).map(s => s.event);
-      
-      this.recommendedEvents = sorted.filter((e: any) => e && e._velaScore > 0).slice(0, 3);
-      this.explorerEvents = sorted;
-      this.velaMessage = this.velaService.generateVelaMessage(scored, daily);
-    } catch (e) {
-      console.error('Vela scoring fallback:', e);
-      // Fallback: mostrar eventos sin scoring
-      this.explorerEvents = this.events;
-      if (this.currentUserMood) {
-        const match = this.events.filter(ev => ev.emotions?.name?.toLowerCase() === this.currentUserMood?.toLowerCase());
-        this.recommendedEvents = (match.length > 0 ? match : this.events).slice(0, 3);
-        this.velaMessage = `Veo que hoy buscas ${this.currentUserMood}. Estas experiencias vibran en tu frecuencia.`;
-      } else {
-        this.recommendedEvents = this.events.slice(0, 3);
+      // 3. Match de tiempo disponible
+      if (mf && timeAvail) {
+        const ideal = (mf.ideal_time || '').toLowerCase();
+        const timeMap: { [k: string]: string[] } = {
+          '1h': ['manana', 'tarde'],
+          '3h': ['tarde', 'noche'],
+          'noche': ['noche', 'todo_dia'],
+          'dia': ['todo_dia', 'manana', 'tarde']
+        };
+        if (timeMap[timeAvail]?.includes(ideal)) {
+          score += 10;
+        }
       }
+
+      // 4. Pequeño bonus si el evento tiene fecha próxima (hasta 7 días)
+      if (ev.date_event) {
+        const daysAway = (new Date(ev.date_event).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+        if (daysAway >= 0 && daysAway <= 7) score += 10;
+      }
+
+      return { ev, score, reason: reasons[0] || '' };
+    });
+
+    const sorted = scored.sort((a, b) => b.score - a.score);
+
+    // Solo recomendamos lo que tenga algo de match real (score > 0)
+    this.recommendedEvents = sorted
+      .filter(s => s.score > 0)
+      .slice(0, 3)
+      .map(s => {
+        s.ev._velaScore = Math.min(100, s.score);
+        s.ev._velaReason = s.reason;
+        return s.ev;
+      });
+
+    if (this.recommendedEvents.length > 0) {
+      this.velaMessage = `Hoy buscas ${this.currentUserMood}. Encontré ${this.recommendedEvents.length} ${this.recommendedEvents.length === 1 ? 'experiencia que vibra' : 'experiencias que vibran'} en tu frecuencia.`;
+    } else {
+      this.velaMessage = '';
     }
 
     this.cdr.detectChanges();
+  }
+
+  getMatchReason(event: any): string {
+    const mood = this.currentUserMood?.toLowerCase() || '';
+    const emotionName = event.emotions?.name?.toLowerCase() || '';
+    const company = localStorage.getItem('userCompany') || '';
+
+    if (emotionName === mood) {
+      const companyMap: { [k: string]: string } = {
+        solo: 'para ir solo/a', pareja: 'ideal en pareja',
+        amigos: 'perfecto con amigos', familia: 'para toda la familia'
+      };
+      const companyHint = companyMap[company] || '';
+      return `Vibra con tu mood de hoy${companyHint ? ' — ' + companyHint : ''}`;
+    }
+    return 'Experiencia destacada que te puede sorprender';
   }
 
   // ── FAVORITOS ────────────────────────────────────────

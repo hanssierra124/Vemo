@@ -200,10 +200,11 @@
     </div>
 
   </section>
- <!-- ═══════════════════════════════════════════
-       VELA RECOMMENDATIONS (primero)
+
+  <!-- ═══════════════════════════════════════════
+       VELA RECOMMENDATIONS
        ═══════════════════════════════════════════ -->
-  <section class="vela-act" *ngIf="!loading && currentUserMood">
+  <section class="vela-act" *ngIf="!loading && currentUserMood && recommendedEvents.length > 0">
     <div class="vela-bg-grid"></div>
     <div class="vela-inner">
       <div class="vela-header-block">
@@ -223,7 +224,7 @@
           (click)="goToDetail(event.id)"
           [style.animationDelay]="(i * 0.15) + 's'">
           <div class="vec-image">
-            <img [src]="event.image_url" alt="Event">
+            <img [src]="event.image_url || 'assets/placeholder.jpg'" alt="Event">
             <div class="vec-overlay"></div>
             <button class="vec-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">❤</button>
             <div class="vec-score-badge" *ngIf="event._velaScore >= 50">{{ event._velaScore }}% match</div>
@@ -244,13 +245,11 @@
         </div>
       </div>
 
-      <!-- Back to change answers -->
       <div class="vela-retry">
         <button class="vela-retry-btn" (click)="reopenOnboarding()">Cambiar mis respuestas</button>
       </div>
     </div>
   </section>
-
 
   <!-- ═══════════════════════════════════════════
        HERO — OBERTURA ÉPICA

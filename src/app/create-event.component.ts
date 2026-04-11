@@ -49,29 +49,8 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     recurrence: 'unico'     // unico, semanal, mensual
   };
 
-  availableCategories: any[] = [
-    { id: 'musica',       name: 'Música en vivo' },
-    { id: 'gastronomia',  name: 'Gastronomía' },
-    { id: 'arte',         name: 'Arte y Cultura' },
-    { id: 'deportes',     name: 'Deportes' },
-    { id: 'fiesta',       name: 'Fiesta y Rumba' },
-    { id: 'aire_libre',   name: 'Aire Libre' },
-    { id: 'teatro',       name: 'Teatro y Shows' },
-    { id: 'bienestar',    name: 'Bienestar' },
-    { id: 'tecnologia',   name: 'Tecnología' },
-    { id: 'turismo',      name: 'Turismo local' },
-    { id: 'educacion',    name: 'Talleres y Cursos' },
-  ];
-  availableEmotions: any[] = [
-    { id: 'alegria',      name: 'Alegría',      emoji: '😄' },
-    { id: 'calma',        name: 'Calma',        emoji: '😌' },
-    { id: 'curiosidad',   name: 'Curiosidad',   emoji: '🤔' },
-    { id: 'emocion',      name: 'Emoción',      emoji: '🤩' },
-    { id: 'nostalgia',    name: 'Nostalgia',    emoji: '🥹' },
-    { id: 'amor',         name: 'Amor',         emoji: '❤️' },
-    { id: 'inspiracion',  name: 'Inspiración',  emoji: '✨' },
-    { id: 'relajacion',   name: 'Relajación',   emoji: '🧘' },
-  ];
+  availableCategories: any[] = [];
+  availableEmotions: any[] = [];
   selectedCategories: string[] = [];
   selectedFile: File | null = null;
 

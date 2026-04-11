@@ -132,7 +132,32 @@
         </div>
       </section>
 
-      <!-- ========== ORGANIZER PANEL ========== -->
+      <!-- ========== ALERTA DE CORRECCIÓN DE VERIFICACIÓN ========== -->
+      <section class="correction-alert glass-panel" *ngIf="userData.role !== 'admin' && userData.verification_status === 'action_required'">
+        <div class="correction-alert-inner">
+          <div class="correction-icon">&#9888;</div>
+          <div class="correction-content">
+            <h3 class="clash-display correction-title">Corrección requerida en tu verificación</h3>
+            <p class="correction-reason" *ngIf="userData.rejection_reason">{{ userData.rejection_reason }}</p>
+            <p class="correction-reason" *ngIf="!userData.rejection_reason">El administrador ha solicitado que corrijas tu documentación.</p>
+            <button class="btn-correction-action" (click)="goToVerify()">Corregir y Reenviar documentos</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== ALERTA DE RECHAZO ========== -->
+      <section class="correction-alert glass-panel rejected-alert" *ngIf="userData.role !== 'admin' && userData.verification_status === 'rejected'">
+        <div class="correction-alert-inner">
+          <div class="correction-icon">&#10007;</div>
+          <div class="correction-content">
+            <h3 class="clash-display correction-title">Tu verificación fue rechazada</h3>
+            <p class="correction-reason" *ngIf="userData.rejection_reason">{{ userData.rejection_reason }}</p>
+            <button class="btn-correction-action" (click)="goToVerify()">Volver a enviar documentos</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== ORGANIZER / USER PANEL ========== -->
       <section class="user-dashboard glass-panel" *ngIf="userData.role !== 'admin'">
         <div *ngIf="userData.role === 'organizer'" class="organizer-view">
           <div class="deck-header">
@@ -232,10 +257,14 @@
             <div *ngIf="userData.verification_status !== 'approved'" class="status-warning">
               <span *ngIf="userData.verification_status === 'pending'">Tu cuenta está en revisión. Podrás publicar cuando seas aprobado.</span>
               <span *ngIf="userData.verification_status === 'rejected'">Tu verificación fue rechazada. Revisa los motivos y vuelve a intentar.</span>
+              <span *ngIf="userData.verification_status === 'action_required'">
+                Se requiere una corrección en tu verificación.
+                <strong *ngIf="userData.rejection_reason"> Motivo: {{ userData.rejection_reason }}</strong>
+              </span>
               <span *ngIf="!userData.verification_status || userData.verification_status === 'pending_upload'">Completa tu verificación para poder crear eventos.</span>
             </div>
-            <button *ngIf="!userData.verification_status || userData.verification_status === 'pending_upload' || userData.verification_status === 'rejected'"
-                    class="btn-text-link" (click)="goToVerify()">Completar Verificación</button>
+            <button *ngIf="!userData.verification_status || userData.verification_status === 'pending_upload' || userData.verification_status === 'rejected' || userData.verification_status === 'action_required'"
+                    class="btn-text-link" (click)="goToVerify()">{{ userData.verification_status === 'action_required' ? 'Corregir y Reenviar' : 'Completar Verificación' }}</button>
           </div>
 
           <!-- My Events with per-post metrics -->
@@ -296,9 +325,25 @@
             </div>
           </div>
 
-          <div *ngIf="visitHistory.length === 0" class="empty-events-placeholder">
+          <div *ngIf="visitHistory.length === 0 && !userData.verification_status" class="empty-events-placeholder">
             <span class="ghost-icon">🎟️</span>
             <p>Tu historial de visitas aparecerá aquí.</p>
+          </div>
+
+          <div *ngIf="userData.verification_status === 'action_required'" class="status-warning">
+            <span>
+              Se requiere una corrección en tu verificación.
+              <strong *ngIf="userData.rejection_reason"> Motivo: {{ userData.rejection_reason }}</strong>
+            </span>
+            <button class="btn-text-link" (click)="goToVerify()">Corregir y Reenviar</button>
+          </div>
+          <div *ngIf="userData.verification_status === 'rejected'" class="status-warning">
+            <span>Tu verificación fue rechazada.</span>
+            <strong *ngIf="userData.rejection_reason"> Motivo: {{ userData.rejection_reason }}</strong>
+            <button class="btn-text-link" (click)="goToVerify()">Volver a Intentar</button>
+          </div>
+          <div *ngIf="userData.verification_status === 'pending'" class="status-warning">
+            <span>Tu verificación está en revisión.</span>
           </div>
         </div>
       </section>
