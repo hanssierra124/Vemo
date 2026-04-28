@@ -90,7 +90,19 @@ export const routes: Routes = [
     canActivate: [blockGuard]
   },
 
-  // 11. COMODÍN
+  // 11. POLÍTICA DE PRIVACIDAD
+  {
+    path: 'terminos',
+    loadComponent: () => import('./privacy.component').then(m => m.PrivacyComponent)
+  },
+
+  // 12. SOBRE NOSOTROS
+  {
+    path: 'sobre-nosotros',
+    loadComponent: () => import('./about.component').then(m => m.AboutComponent)
+  },
+
+  // 13. COMODÍN
   {
     path: '**',
     redirectTo: 'home'

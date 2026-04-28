@@ -17,7 +17,13 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   userRating: number = 0;
   userComment: string = '';
   hasReviewed: boolean = false;
-  
+
+  // ── Estado de envío de reseña ─────────────────────────
+  submitting: boolean = false;
+  submitError: string | null = null;
+  submitSuccess: boolean = false;
+  readonly MAX_COMMENT_LEN = 500;
+
   private map: any;
   private L: any; // Instancia global de Leaflet
 
@@ -154,19 +160,112 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     return new Date(this.event.date_event) < new Date();
   }
 
-  setRating(val: number) { this.userRating = val; }
+  setRating(val: number) {
+    if (this.submitting) return;
+    this.userRating = val;
+    if (this.submitError) this.submitError = null;
+  }
 
   async submitReview() {
-    if (this.userRating === 0) return;
+    // Idempotency: ignore rapid double-clicks while a request is in flight
+    if (this.submitting) return;
+    if (!this.event?.id) return;
+
+    // Validation
+    if (this.userRating < 1 || this.userRating > 5) {
+      this.submitError = 'Por favor selecciona una calificación entre 1 y 5 estrellas.';
+      return;
+    }
+    const comment = (this.userComment || '').trim();
+    if (comment.length > this.MAX_COMMENT_LEN) {
+      this.submitError = `El comentario no puede superar ${this.MAX_COMMENT_LEN} caracteres.`;
+      return;
+    }
+
+    // Auth
     const token = localStorage.getItem('token') || localStorage.getItem('vemo_token');
-    const res = await fetch(`${environment.apiUrl}/api/events/${this.event.id}/reviews`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ rating: this.userRating, comment: this.userComment })
-    });
-    if (res.ok) {
+    if (!token) {
+      this.submitError = 'Debes iniciar sesión para dejar una reseña.';
+      return;
+    }
+
+    this.submitting = true;
+    this.submitError = null;
+    this.submitSuccess = false;
+    this.cdr.detectChanges();
+
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/events/${this.event.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          event_id: this.event.id,
+          rating: this.userRating,
+          comment: comment || null
+        })
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        const msg = errBody?.message || errBody?.error || `Error ${res.status}`;
+        throw new Error(msg);
+      }
+
+      const created = await res.json().catch(() => null);
+
+      // Update local list so the new review appears immediately without
+      // re-fetching the whole event (which would re-init the map).
+      const optimistic = created && (created.id || created.rating !== undefined)
+        ? created
+        : {
+            rating: this.userRating,
+            comment: comment,
+            username: this.getCurrentUsername() || 'Tú',
+            created_at: new Date().toISOString(),
+          };
+
+      this.event = {
+        ...this.event,
+        reviews: [optimistic, ...(this.event.reviews || [])]
+      };
+
       this.hasReviewed = true;
-      this.loadEventDetail(this.event.id);
+      this.submitSuccess = true;
+      this.userComment = '';
+
+      // Best-effort sync with backend for accurate usernames/IDs
+      this.refreshReviews().catch(() => { /* fallback already shown */ });
+    } catch (e: any) {
+      console.error('Error enviando reseña:', e);
+      this.submitError = e?.message || 'No pudimos enviar tu reseña. Inténtalo de nuevo.';
+    } finally {
+      this.submitting = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private async refreshReviews() {
+    if (!this.event?.id) return;
+    const res = await fetch(`${environment.apiUrl}/api/events/${this.event.id}/reviews`);
+    if (!res.ok) return;
+    const reviews = await res.json();
+    if (Array.isArray(reviews)) {
+      this.event = { ...this.event, reviews };
+      this.cdr.detectChanges();
+    }
+  }
+
+  private getCurrentUsername(): string | null {
+    try {
+      const raw = localStorage.getItem('vemo_user') || localStorage.getItem('user');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed?.username || parsed?.name || parsed?.email || null;
+    } catch {
+      return null;
     }
   }
 

@@ -1,136 +1,169 @@
-:root {
-    --vemo-glow: #FF4D80;      /* Coral Magenta */
-    --vemo-deep: #6A00FF;      /* Indigo Violet */
-    --asphalt-black: #121212;  /* Fondo Principal */
-    --gunmetal-grey: #252525;  /* Superficies */
-    --stardust-white: #F0F0F0; /* Texto */
+/* ══════════════════════════════════════════════
+   CABECERA / HEADER VEMO
+   ══════════════════════════════════════════════ */
+
+.vemo-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  padding: 0 4vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+}
+.brand-name {
+  font-family: var(--ff-ui);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color:rgb(255, 224, 236);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.vh-text-group {
+  display: flex;
+  flex-direction: column; /* Apila los elementos verticalmente */
+  justify-content: center;
+  /* gap: 2px; Opcional: para separar un poco VEMO de BARRANQUILLA */
 }
 
-.vemo-navbar {
-    width: 100%;
-    height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 9999;
-    /* MISMO GRADIENTE QUE EL FONDO DE LA PÁGINA */
-    background-color: var(--asphalt-black);
-    background-image: radial-gradient(circle at 0% 0%, rgba(106, 0, 255, 0) 0%, transparent 50%);
-    backdrop-filter: blur(15px); /* Efecto cristal */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+/* ── TRUCO DE CENTRADO ABSOLUTO ── */
+.vh-left, .vh-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
-.nav-container {
-    width: 90%;
-    max-width: 1200px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+.vh-left {
+  justify-content: flex-start;
 }
 
-.brand-logo {
-    width: 110px;
-    display: block;
+.vh-right {
+  justify-content: flex-end;
+   color: rgb(253, 210, 235);
 }
 
-.nav-links {
-    display: flex;
-    flex-direction: row;
-    gap: 30px;
-    align-items: center;
+/* ── LOGO Y CIUDAD (Lado Izquierdo) ── */
+.vh-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
 }
 
-/* --- ESTILOS DE LOS ENLACES (INCLUIDO FAVORITOS) --- */
-.nav-link-item {
-    text-decoration: none;
-    font-family: 'Clash Display', sans-serif;
-    color: var(--stardust-white) !important; /* FORZAMOS BLANCO (quita el morado por defecto) */
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
-    transition: all 0.3s ease; /* Transición suave para color y efectos */
-    cursor: pointer;
+.vh-logo-wrap img {
+  height: 24px;
+  width: auto;
 }
 
-/* EFECTO AL PASAR EL MOUSE (HOVER) */
-.nav-link-item:hover {
-    color: var(--vemo-glow) !important; /* Cambia a Magenta VEMO */
-    text-shadow: 0 0 8px rgba(255, 77, 128, 0.5); /* Agrega un pequeño brillo neon */
-    transform: translateY(-1px); /* Pequeña elevación */
+
+.vh-city {
+  font-family: var(--ff-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color:rgb(184, 24, 85);
+  text-transform: uppercase;
+  margin-top: 2px;
 }
 
-/* ESTADO ACTIVO (CUANDO ESTÁS EN ESA PÁGINA) */
-.active-link {
-    color: var(--vemo-glow) !important;
-    font-weight: 700;
+/* ── NAVEGACIÓN (Centro) ── */
+.vh-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 100px;
+  padding: 6px;
+  backdrop-filter: blur(8px);
+  color:aliceblue
 }
 
-.profile-btn {
-    text-decoration: none;
-    font-family: 'Clash Display', sans-serif;
-    color: var(--stardust-white) !important;
-    background: var(--gunmetal-grey);
-    padding: 10px 20px;
-    border-radius: 100px;
-    border: 1px solid rgba(106, 0, 255, 0.3);
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
+.vh-link {
+  font-family: var(--ff-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 100px;
+  transition: all 0.3s var(--ease-snap);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.profile-btn:hover {
-    background: var(--vemo-deep);
-    border-color: var(--vemo-glow);
-    box-shadow: 0 0 15px rgba(106, 0, 255, 0.4);
+.vh-link:hover {
+  color: var(--text-1);
+  background: rgb(136, 13, 85);
 }
 
-/* =========================================
-   RESPONSIVE DESIGN (MÓVILES Y TABLETS)
-   ========================================= */
-@media (max-width: 768px) {
-    .vemo-navbar {
-        height: auto; 
-        padding: 15px 0;
-    }
+.vh-link.active {
+  color: var(--text-1);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+}
 
-    .nav-container {
-        flex-wrap: wrap; /* Permitimos que los elementos bajen de línea */
-    }
+/* ── PERFIL (Lado Derecho) ── */
+.vh-profile-btn {
+  font-family: var(--ff-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 24px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s var(--ease-snap);
+}
 
-    /* 1. Asignamos ORDEN 1 al Logo para que se quede arriba a la izquierda */
-    .brand-logo {
-        order: 1;
-        width: 90px;
-    }
+.vh-profile-btn:hover {
+  background: rgba(255, 77, 128, 0.1);
+  border-color: rgba(255, 77, 128, 0.4);
+  color: var(--glow-pink);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
 
-    /* 2. Asignamos ORDEN 2 al botón de perfil para que se quede arriba a la derecha */
-    .profile-btn {
-        order: 2;
-        padding: 8px 16px;
-        font-size: 12px;
-    }
+/* ── RESPONSIVE BÁSICO ── */
+@media (max-width: 960px) {
+  .vh-city {
+    display: none;
+  }
 
-    /* 3. Asignamos ORDEN 3 a los enlaces para obligarlos a irse a la segunda fila */
-    .nav-links {
-        order: 3;
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 20px;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid rgba(150, 150, 150, 0.2); /* Línea sutil separadora */
-    }
+  .vh-link {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
 
-    .nav-link-item {
-        font-size: 12px; 
-        padding: 5px;
-    }
+  .vh-profile-btn {
+    padding: 8px 18px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vh-left, .vh-right {
+    flex: none;
+  }
+
+  .vemo-header {
+    height: 70px;
+    padding: 0 20px;
+    color:  rgb(253, 210, 235);
+  }
+
+  .vh-profile-btn span:last-child {
+    display: none;
+  }
 }

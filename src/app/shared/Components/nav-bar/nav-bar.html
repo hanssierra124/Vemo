@@ -1,19 +1,31 @@
-<nav class="vemo-navbar">
-    <div class="nav-container">
-        <div class="logo-wrapper">
-            <img src="logovemo.svg" alt="VEMO" class="brand-logo">
-        </div>
+<nav class="vemo-header">
+  <div class="vh-left">
+    <a routerLink="/" class="vh-logo-wrap">
+      <img src="logovemo.svg" alt="VEMO">
+<div class="vh-text-group">
+    <span class="brand-name">VEMO</span>
+    <span class="vh-city">BARRANQUILLA · 2026</span>
+  </div>
+    </a>
+  </div>
 
-        <div class="nav-links">
-            <a routerLink="" class="nav-link-item">Inicio</a>
-            <a routerLink="/map" class="nav-link-item">Explora</a>
-            <a routerLink="/favorites" class="nav-link-item">Favoritos</a>
-        </div>
+  <div class="vh-center">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="vh-link">Inicio</a>
+    <a routerLink="/favorites" routerLinkActive="active" class="vh-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span>Favoritos</span>
+    </a>
+  </div>
 
-        <div class="nav-actions">
-            <a routerLink="/profile" class="profile-btn">
-                <span>👤</span> Mi Perfil
-            </a>
-        </div>
-    </div>
+  <div class="vh-right">
+    <a routerLink="/profile" class="vh-profile-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Mi Perfil</span>
+    </a>
+  </div>
 </nav>

@@ -1,1 +1,13 @@
-<p>footer works!</p>
+<footer class="vemo-footer-act">
+  <div class="vfa-inner">
+    <a routerLink="/" class="vfa-brand" aria-label="VEMO">
+      <img src="logovemo.svg" alt="VEMO" class="vfa-logo">
+      <span class="vfa-name">VEMO</span>
+    </a>
+    <nav class="vfa-links" aria-label="Enlaces del pie de página">
+      <button type="button" class="vfa-link vfa-link-chat" (click)="openVelaChat()">Chatear con Vela</button>
+      <a routerLink="/terminos" class="vfa-link">Privacidad</a>
+      <a routerLink="/sobre-nosotros" class="vfa-link">Sobre Nosotros</a>
+    </nav>
+  </div>
+</footer>

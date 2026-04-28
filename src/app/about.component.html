@@ -1,0 +1,95 @@
+<main class="about-page">
+  <article class="about-doc">
+
+    <header class="ab-header">
+      <span class="ab-eyebrow">VEMO · QUIÉNES SOMOS</span>
+      <h1 class="ab-title">El equipo detrás de Vemo</h1>
+      <p class="ab-lede">
+        Tres personas convencidas de que la ciudad merece una forma más
+        humana de descubrirse. Vemo nace en Barranquilla con una sola
+        obsesión: que cada plan se sienta hecho para ti.
+      </p>
+    </header>
+
+    <section class="ab-team">
+
+      <!-- ───────── JAVIER ARCHILA — CEO ───────── -->
+      <article class="ab-card">
+        <div class="ab-photo-wrap">
+          <span class="ab-initials" aria-hidden="true">JA</span>
+          <img
+            src="/assets/Papu.jpeg"
+            alt="Foto de Javier Archila"
+            class="ab-photo"
+            loading="lazy"
+            (error)="onPhotoError($event)" />
+        </div>
+        <div class="ab-info">
+          <span class="ab-role">CEO</span>
+          <h2 class="ab-name">Javier Archila</h2>
+          <p class="ab-bio">
+            Lidera la visión y dirección estratégica de Vemo.
+            Conecta el producto con la cultura de la ciudad.
+          </p>
+        </div>
+      </article>
+
+      <!-- ───────── BYRON REALES — CPO ───────── -->
+      <article class="ab-card">
+        <div class="ab-photo-wrap">
+          <span class="ab-initials" aria-hidden="true">BR</span>
+          <img
+            src="/assets/byron.jpeg"
+            alt="Foto de Byron Reales"
+            class="ab-photo"
+            loading="lazy"
+            (error)="onPhotoError($event)" />
+        </div>
+        <div class="ab-info">
+          <span class="ab-role">CPO</span>
+          <h2 class="ab-name">Byron Reales</h2>
+          <p class="ab-bio">
+            Diseña la experiencia y curaduría de Vemo.
+            Hace que cada plan se sienta hecho a tu medida.
+          </p>
+        </div>
+      </article>
+
+      <!-- ───────── HANS SIERRA — CTO ───────── -->
+      <article class="ab-card">
+        <div class="ab-photo-wrap">
+          <span class="ab-initials" aria-hidden="true">HS</span>
+          <img
+            src="/assets/hans.jpeg"
+            alt="Foto de Hans Sierra"
+            class="ab-photo"
+            loading="lazy"
+            (error)="onPhotoError($event)" />
+        </div>
+        <div class="ab-info">
+          <span class="ab-role">CTO</span>
+          <h2 class="ab-name">Hans Sierra</h2>
+          <p class="ab-bio">
+            Construye la tecnología detrás de Vemo.
+            Mantiene la plataforma rápida, estable y escalable.
+          </p>
+        </div>
+      </article>
+
+    </section>
+
+    <section class="ab-mission">
+      <h3 class="ab-mission-title">Nuestra misión</h3>
+      <p class="ab-mission-text">
+        Conectar la vibra de Barranquilla con quienes la habitan, una experiencia
+        a la vez. Sin algoritmos invasivos, sin manipulación emocional —
+        solo curaduría humana y tecnología al servicio del encuentro real.
+      </p>
+    </section>
+
+    <footer class="ab-footer">
+      <a routerLink="/" class="ab-back">← Volver al inicio</a>
+    </footer>
+
+  </article>
+</main>

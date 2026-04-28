@@ -1,7 +1,7 @@
 import { environment } from '../environments/environment';
-import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FavoritesService } from './favorites.service';
 
@@ -12,9 +12,11 @@ import { FavoritesService } from './favorites.service';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit, AfterViewInit {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
+  @ViewChild('waveA') private waveAPath?: ElementRef<SVGPathElement>;
+  @ViewChild('waveB') private waveBPath?: ElementRef<SVGPathElement>;
 
   events: any[] = [];
   availableEmotions: any[] = [
@@ -37,6 +39,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   mapLoading: boolean = false;
   hudHidden: boolean = false;
   private coordinateCache: { [key: string]: { lat: number; lng: number } } = {};
+  isLegendMinimized: boolean = typeof window !== 'undefined' ? window.innerWidth <= 600 : false;
 
   // ── ONBOARDING ──────────────────────────────────────
   showOnboarding: boolean = false;
@@ -76,10 +79,33 @@ export class HomeComponent implements OnInit, AfterViewInit {
   chatHistory: any[] = [];
   isTyping = false;
 
+  // ── MOMENT ORBITAL (prototipo) ───────────────────────
+  momentCategories = [
+    { id: 'carnaval',  label: 'Carnaval',     img: 'https://carnavaldebarranquilla.org/wp-content/uploads/2025/02/Foto-macrofiguras.jpeg', pos: 'mb1', tint: '#FF5B3D' },
+    { id: 'gastro',    label: 'Gastronomía',  img: 'https://miredvista.co/wp-content/uploads/2021/10/aleta-del-tiburon.jpg',              pos: 'mb2', tint: '#6A00FF' },
+    { id: 'cultura',   label: 'Cultura',      img: 'https://ecoturismocienagademallorquin.com/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-22-at-19.35.08-e1705970345137.jpeg', pos: 'mb3', tint: '#22754E' },
+    { id: 'noche',     label: 'Noche',        img: 'https://imagenes2.eltiempo.com/files/image_1200_535/uploads/2025/07/21/687e66b547ef8.jpeg', pos: 'mb4', tint: '#FF4D80' },
+  ];
+  tickerWords = ['Carnaval', 'Gastronomía', 'Cultura', 'Noche', 'Arte', 'Yoga', 'Tech', 'Cine', 'Mercado', 'Teatro'];
+
+  // ── FREQ WAVE ANIMATION ──────────────────────────────
+  private waveRaf: any = null;
+  private waveT = 0;
+
+  // ── SCROLL REVEAL + PARALLAX ─────────────────────────
+  private revealObserver?: IntersectionObserver;
+  private parallaxItems: { el: HTMLElement; speed: number }[] = [];
+  private parallaxScrollHandler?: () => void;
+  private parallaxRaf: number | null = null;
+  private parallaxTicking = false;
+  private revealDirHandler?: () => void;
+  private lastScrollY = 0;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
     private router: Router,
+    private route: ActivatedRoute,
     public favService: FavoritesService
   ) {}
 
@@ -88,6 +114,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.checkOnboardingStatus();
     this.loadEvents();
     this.loadEmotions();
+
+    // El footer global navega aquí con ?openChat=1 cuando el usuario
+    // hace clic en "Chatear con Vela". Lo abrimos y limpiamos el query.
+    this.route.queryParams.subscribe(params => {
+      if (params['openChat'] === '1') {
+        setTimeout(() => this.abrirChatDirecto(), 50);
+        this.router.navigate([], {
+          queryParams: { openChat: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
   }
 
   async ngAfterViewInit() {
@@ -95,7 +134,135 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.initNoiseCanvas();
       this.initMouseGlow();
       this.initMapWhenVisible();
+      this.startWaveAnimation();
+      this.initScrollReveals();
+      this.initParallax();
     }
+  }
+
+  ngOnDestroy() {
+    this.revealObserver?.disconnect();
+    if (this.parallaxRaf !== null) cancelAnimationFrame(this.parallaxRaf);
+    if (isPlatformBrowser(this.platformId)) {
+      if (this.parallaxScrollHandler) {
+        window.removeEventListener('scroll', this.parallaxScrollHandler);
+      }
+      if (this.revealDirHandler) {
+        window.removeEventListener('scroll', this.revealDirHandler);
+      }
+      document.documentElement.removeAttribute('data-scroll-dir');
+    }
+    if (this.waveRaf) cancelAnimationFrame(this.waveRaf);
+  }
+
+  private initScrollReveals() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(el => el.classList.add('is-visible'));
+      return;
+    }
+
+    // Track scroll direction so CSS / observers can adapt their easing if needed.
+    this.lastScrollY = window.scrollY;
+    document.documentElement.setAttribute('data-scroll-dir', 'down');
+    this.revealDirHandler = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - this.lastScrollY) < 2) return; // dead-zone to avoid micro flicker
+      const dir = y > this.lastScrollY ? 'down' : 'up';
+      if (document.documentElement.getAttribute('data-scroll-dir') !== dir) {
+        document.documentElement.setAttribute('data-scroll-dir', dir);
+      }
+      this.lastScrollY = y;
+    };
+    window.addEventListener('scroll', this.revealDirHandler, { passive: true });
+
+    // Bidirectional observer: keeps observing each element so it can re-animate
+    // every time it leaves and re-enters the viewport from either direction.
+    this.revealObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const target = entry.target as HTMLElement;
+        if (entry.isIntersecting) {
+          target.classList.remove('is-hiding-up', 'is-hiding-down');
+          target.classList.add('is-visible');
+        } else {
+          // Decide which side the element exited through using its geometry
+          // relative to the viewport. boundingClientRect.top < 0 means it has
+          // moved above the viewport (user scrolled down past it). Otherwise
+          // it sits below the viewport (user scrolled back up past it).
+          const rect = entry.boundingClientRect;
+          const root = entry.rootBounds;
+          const refTop = root ? root.top : 0;
+          const exitedAbove = rect.top < refTop;
+          target.classList.remove('is-visible');
+          target.classList.toggle('is-hiding-up', exitedAbove);
+          target.classList.toggle('is-hiding-down', !exitedAbove);
+        }
+      }
+    }, {
+      threshold: [0, 0.12, 0.85],
+      rootMargin: '-8% 0px -8% 0px',
+    });
+
+    const attach = () => {
+      document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(el => {
+        this.revealObserver!.observe(el);
+      });
+    };
+    attach();
+    setTimeout(attach, 500);
+    setTimeout(attach, 1500);
+  }
+
+  private initParallax() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const collect = () => {
+      this.parallaxItems = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]')).map(el => ({
+        el,
+        speed: parseFloat(el.dataset['parallax'] || '0.12'),
+      }));
+    };
+    setTimeout(collect, 100);
+    setTimeout(collect, 800);
+
+    this.parallaxScrollHandler = () => {
+      if (this.parallaxTicking) return;
+      this.parallaxTicking = true;
+      this.parallaxRaf = requestAnimationFrame(() => this.applyParallax());
+    };
+    window.addEventListener('scroll', this.parallaxScrollHandler, { passive: true });
+  }
+
+  private applyParallax() {
+    this.parallaxTicking = false;
+    const vh = window.innerHeight;
+    for (const { el, speed } of this.parallaxItems) {
+      const rect = el.getBoundingClientRect();
+      if (rect.bottom < -200 || rect.top > vh + 200) continue;
+      const center = rect.top + rect.height / 2;
+      const distance = center - vh / 2;
+      const offset = -distance * speed;
+      el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
+    }
+  }
+
+  private startWaveAnimation() {
+    const tick = () => {
+      this.waveT += 0.02;
+      const a = this.waveAPath?.nativeElement;
+      const b = this.waveBPath?.nativeElement;
+      if (a && b) {
+        const y1 = 100 + Math.sin(this.waveT) * 30;
+        const y2 = 100 + Math.sin(this.waveT + Math.PI) * 30;
+        a.setAttribute('d', `M0 100 Q 150 ${y1}, 300 100 T 600 100 T 900 100 T 1200 100`);
+        b.setAttribute('d', `M0 100 Q 150 ${y2}, 300 100 T 600 100 T 900 100 T 1200 100`);
+      }
+      this.waveRaf = requestAnimationFrame(tick);
+    };
+    this.waveRaf = requestAnimationFrame(tick);
+  }
+
+  filterByMomentCategory(_cat: any) {
+    this.scrollToExplorer();
   }
 
   private initMapWhenVisible() {
@@ -371,9 +538,12 @@ if (el) {
       ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
     };
     requestAnimationFrame(drawNoise);
+    
   }
+  
 
   // ── ONBOARDING ──────────────────────────────────────
+  
   generateParticles() {
     this.particles = Array.from({ length: 50 }, () => ({
       x: Math.random() * 100,
@@ -386,19 +556,12 @@ if (el) {
 
   checkOnboardingStatus() {
     if (!isPlatformBrowser(this.platformId)) return;
-    const lastUpdate = localStorage.getItem('lastMoodUpdate');
-    const today = new Date().toDateString();
+    // Cargamos el mood guardado (si existe) para que la sección Vela
+    // pueda usarlo, pero NO disparamos el overlay automáticamente.
+    // Las 3 preguntas ahora se responden desde la sección Vela mediante
+    // el botón "Responder las 3 preguntas" / "Recalibrar mis respuestas".
     this.currentUserMood = localStorage.getItem('userCurrentMood');
-
-    if (lastUpdate !== today) {
-      this.showOnboarding = true;
-      this.onboardingStep = 1;
-      this.selectedEmotion = null;
-      this.selectedCompany = '';
-      this.selectedTime = '';
-    } else {
-      this.showOnboarding = false;
-    }
+    this.showOnboarding = false;
   }
 
   selectEmotion(emotion: any) {
@@ -427,6 +590,24 @@ if (el) {
     this.selectedCompany = this.selectedCompany || localStorage.getItem('userCompany') || '';
     this.selectedTime = this.selectedTime || localStorage.getItem('userTimeAvailable') || '';
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Cierra el onboarding sin obligar al usuario a elegir nada.
+   * Marca la fecha para no volver a abrirlo hoy automáticamente,
+   * pero no persiste mood/company/time — el usuario podrá completarlo
+   * después desde "Cambiar mis respuestas".
+   */
+  skipOnboarding() {
+    localStorage.setItem('lastMoodUpdate', new Date().toDateString());
+    localStorage.setItem('onboardingSkipped', '1');
+    this.closingOnboarding = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.showOnboarding = false;
+      this.closingOnboarding = false;
+      this.cdr.detectChanges();
+    }, 400);
   }
 
   async finishOnboarding() {
@@ -459,6 +640,21 @@ if (el) {
 
   scrollToExplorer() {
     document.getElementById('seccion-explorador')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /**
+   * Indica si el evento ya pasó. Comparamos contra el FIN del día del evento
+   * (23:59:59), no contra su hora exacta — así un evento de hoy a las 8pm
+   * sigue siendo "activo" durante todo el día calendario.
+   * Los eventos pasados NO se eliminan, solo reciben un badge informativo.
+   */
+  isPastEvent(event: any): boolean {
+    if (!event?.date_event) return false;
+    const eventDate = new Date(event.date_event);
+    if (Number.isNaN(eventDate.getTime())) return false;
+    const endOfDay = new Date(eventDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    return endOfDay.getTime() < Date.now();
   }
 
   // ── EMOCIONES ───────────────────────────────────────
@@ -642,9 +838,39 @@ if (el) {
     this.scrollToBottom();
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('vemo_token');
+
+      // Pasamos al backend el catálogo de eventos visibles + las preferencias
+      // del usuario para que Vela pueda responder con datos reales en vez
+      // de decir "no hay eventos". Tomamos primero los recomendados; si están
+      // vacíos, caemos al explorer (todos los eventos cargados en home).
+      const sourceEvents = (this.recommendedEvents?.length ? this.recommendedEvents : this.explorerEvents) || [];
+      const eventsContext = sourceEvents.slice(0, 20).map((ev: any) => ({
+        id: ev.id,
+        title: ev.title,
+        description: ev.description,
+        date_event: ev.date_event,
+        location_name: ev.location_name,
+        emotion: ev.emotions?.name,
+        category: ev.categories?.[0]?.name,
+        price_range: ev.price_range,
+      }));
+
       const res = await fetch(`${environment.apiUrl}/api/chat`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ message: userMsg })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          message: userMsg,
+          context: {
+            mood: this.currentUserMood || null,
+            company: localStorage.getItem('userCompany') || null,
+            timeAvailable: localStorage.getItem('userTimeAvailable') || null,
+            events: eventsContext,
+            eventsCount: sourceEvents.length,
+          },
+          // Compat: algunos backends esperan estos campos en el root
+          events: eventsContext,
+          mood: this.currentUserMood || null,
+        })
       });
       const data = await res.json();
       this.chatHistory.push({ role: 'vela', text: data.reply });

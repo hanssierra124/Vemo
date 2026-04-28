@@ -347,7 +347,13 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
 
     // Core fields
     formData.append('post_type', this.postType);
+    // Campos que la tabla 'events' de Supabase aún NO soporta —
+    // se mantienen en la UI pero no se envían al backend para evitar
+    // "Could not find the 'X' column of 'events' in the schema cache".
+    // Cuando la migración SQL agregue estas columnas, eliminar de la lista.
+    const unsupportedFields = new Set<string>(['date_end']);
     Object.keys(this.eventData).forEach(key => {
+      if (unsupportedFields.has(key)) return;
       const val = (this.eventData as any)[key];
       if (val !== '' && val !== null && val !== undefined) formData.append(key, val);
     });

@@ -37,6 +37,11 @@
     <section class="info-grid">
       <div class="description-column">
 
+        <div class="content-block glass-effect" *ngIf="event.description">
+          <h3 class="clash-display section-tag">Sobre esta experiencia</h3>
+          <p class="event-description-text event-description-body">{{ event.description }}</p>
+        </div>
+
         <div class="content-block glass-effect">
            <h3 class="clash-display section-tag">Agendar</h3>
            <div class="calendar-btn-group">
@@ -79,8 +84,26 @@
             <div class="star-rating">
               <svg *ngFor="let s of [1,2,3,4,5]" (click)="setRating(s)" [class.active]="userRating >= s" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             </div>
-            <textarea class="review-input" [(ngModel)]="userComment" placeholder="Escribe tu comentario opcional..."></textarea>
-            <button class="btn-submit-review" (click)="submitReview()">Enviar Reseña</button>
+            <textarea class="review-input"
+                      [(ngModel)]="userComment"
+                      [maxlength]="MAX_COMMENT_LEN"
+                      [disabled]="submitting"
+                      placeholder="Escribe tu comentario opcional..."></textarea>
+
+            <div *ngIf="submitError" class="review-feedback review-feedback-error">
+              {{ submitError }}
+            </div>
+
+            <button class="btn-submit-review"
+                    type="button"
+                    (click)="submitReview()"
+                    [disabled]="submitting || userRating === 0">
+              {{ submitting ? 'Enviando…' : 'Enviar Reseña' }}
+            </button>
+          </div>
+
+          <div *ngIf="hasReviewed && submitSuccess" class="review-feedback review-feedback-success">
+            ¡Gracias! Tu reseña fue publicada.
           </div>
           
           <div class="review-list">

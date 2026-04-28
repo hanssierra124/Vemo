@@ -1,0 +1,229 @@
+/* ══════════════════════════════════════════════
+   ABOUT US — "Sobre Nosotros"
+   Self-contained dark theme matching the app aesthetic.
+   ══════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  background: #07070b;
+  min-height: 100vh;
+  color: #eaeaf0;
+}
+
+.about-page {
+  display: flex;
+  justify-content: center;
+  padding: clamp(110px, 14vw, 160px) clamp(20px, 5vw, 48px) clamp(60px, 8vw, 100px);
+  /* el padding-top deja respirar el navbar fijo (90px) */
+}
+
+.about-doc {
+  width: 100%;
+  max-width: 980px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: clamp(20px, 3vw, 32px);
+  padding: clamp(28px, 5vw, 56px) clamp(24px, 5vw, 56px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+/* ── HEADER ─────────────────────────────────── */
+
+.ab-header { margin-bottom: clamp(40px, 6vw, 64px); text-align: center; }
+
+.ab-eyebrow {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.ab-title {
+  font-family: 'Instrument Serif', 'Inter', serif;
+  font-size: clamp(34px, 6vw, 56px);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0 0 18px;
+  background: linear-gradient(135deg, #fff 0%, #FFB347 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ab-lede {
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 auto;
+  max-width: 640px;
+}
+
+/* ── TEAM GRID ──────────────────────────────── */
+
+.ab-team {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 3vw, 32px);
+  margin-bottom: clamp(48px, 7vw, 80px);
+}
+
+.ab-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(24px, 3vw, 32px) clamp(18px, 2.5vw, 24px);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: clamp(18px, 2.5vw, 24px);
+  transition: transform 0.35s ease, border-color 0.35s ease, background 0.35s ease;
+}
+
+.ab-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 77, 128, 0.35);
+  background: rgba(255, 77, 128, 0.04);
+}
+
+/* ── PHOTO + FALLBACK INITIALS ─────────────── */
+
+.ab-photo-wrap {
+  position: relative;
+  width: clamp(110px, 14vw, 150px);
+  height: clamp(110px, 14vw, 150px);
+  border-radius: 50%;
+  margin-bottom: 22px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #FF4D80, #5B00E8);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.06),
+    0 12px 30px rgba(255, 77, 128, 0.25);
+}
+
+.ab-initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(34px, 4vw, 42px);
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.92);
+  /* este texto queda como fallback visible si la <img> falla y se oculta */
+  user-select: none;
+}
+
+.ab-photo {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── INFO ───────────────────────────────────── */
+
+.ab-role {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  color: #FF4D80;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.ab-name {
+  font-family: 'Instrument Serif', 'Inter', serif;
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 400;
+  margin: 0 0 12px;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.ab-bio {
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+/* ── MISSION ────────────────────────────────── */
+
+.ab-mission {
+  text-align: center;
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: clamp(16px, 2vw, 22px);
+}
+
+.ab-mission-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+
+.ab-mission-text {
+  font-size: clamp(15px, 1.7vw, 18px);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 auto;
+  max-width: 620px;
+  font-style: italic;
+}
+
+/* ── FOOTER ─────────────────────────────────── */
+
+.ab-footer {
+  margin-top: clamp(36px, 5vw, 56px);
+  text-align: center;
+}
+
+.ab-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.ab-back:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+/* ── RESPONSIVE ─────────────────────────────── */
+
+@media (max-width: 768px) {
+  .ab-team { grid-template-columns: 1fr; gap: 18px; }
+  .ab-card { padding: 28px 22px; }
+  .ab-bio { font-size: 13.5px; }
+}
+
+@media (max-width: 480px) {
+  .about-page { padding-top: 100px; }
+  .ab-photo-wrap { width: 120px; height: 120px; }
+  .ab-initials { font-size: 36px; }
+}
