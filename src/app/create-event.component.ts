@@ -31,6 +31,11 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     max_capacity: ''
   };
 
+  isPrivate = false;
+  accessPassword = '';
+  generatedAccessToken: string | null = null;
+  privateEventLink: string | null = null;
+
   // Match fields (for recommendation engine)
   matchFields = {
     ideal_company: '',    // solo, pareja, amigos, familia
@@ -105,10 +110,16 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
   ];
 
   constructor(
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
+
+  copyPrivateLink() {
+    if (this.privateEventLink) {
+      navigator.clipboard.writeText(this.privateEventLink).catch(() => {});
+    }
+  }
 
   ngOnInit() {
     this.loadCategories();
@@ -369,6 +380,12 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     // System fields
     formData.append('system_fields', JSON.stringify(this.systemFields));
 
+    // Privacidad
+    if (this.isPrivate) {
+      formData.append('is_private', 'true');
+      if (this.accessPassword.trim()) formData.append('access_password', this.accessPassword.trim());
+    }
+
     if (this.selectedFile) formData.append('image', this.selectedFile);
 
     try {
@@ -392,8 +409,14 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
       });
 
       if (res.ok) {
-        alert(this.isEditMode ? 'Evento actualizado con éxito' : 'Evento enviado a revisión');
-        this.router.navigate(['/profile']);
+        const data = await res.json();
+        if (this.isPrivate && data.access_token) {
+          this.generatedAccessToken = data.access_token;
+          this.privateEventLink = `${window.location.origin}/eventos/privado/${data.access_token}`;
+        } else {
+          alert(this.isEditMode ? 'Evento actualizado con éxito' : 'Evento enviado a revisión');
+          this.router.navigate(['/profile']);
+        }
       } else {
         let errorMsg = 'Fallo al procesar';
         try {

@@ -18,6 +18,21 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   userComment: string = '';
   hasReviewed: boolean = false;
 
+  photos: any[] = [];
+  lightboxOpen = false;
+  lightboxIndex = 0;
+
+  get allPhotos(): string[] {
+    const main = this.event?.image_url ? [this.event.image_url] : [];
+    const extra = (this.photos || []).map((p: any) => p.url);
+    return [...main, ...extra];
+  }
+
+  openLightbox(index: number) { this.lightboxOpen = true; this.lightboxIndex = index; this.cdr.detectChanges(); }
+  closeLightbox() { this.lightboxOpen = false; this.cdr.detectChanges(); }
+  prevPhoto() { this.lightboxIndex = (this.lightboxIndex - 1 + this.allPhotos.length) % this.allPhotos.length; this.cdr.detectChanges(); }
+  nextPhoto() { this.lightboxIndex = (this.lightboxIndex + 1) % this.allPhotos.length; this.cdr.detectChanges(); }
+
   // ── Estado de envío de reseña ─────────────────────────
   submitting: boolean = false;
   submitError: string | null = null;
@@ -58,7 +73,7 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
       if (res.ok) {
         this.event = await res.json();
         this.cdr.detectChanges();
-        
+        this.loadPhotos(id);
         if (isPlatformBrowser(this.platformId) && this.L) {
           setTimeout(() => {
             this.initSingleMap();
@@ -267,6 +282,16 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     } catch {
       return null;
     }
+  }
+
+  async loadPhotos(id: string) {
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/events/${id}/photos`);
+      if (res.ok) {
+        this.photos = await res.json();
+        this.cdr.detectChanges();
+      }
+    } catch {}
   }
 
   addToGoogleCalendar() {

@@ -19,6 +19,43 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('waveB') private waveBPath?: ElementRef<SVGPathElement>;
 
   events: any[] = [];
+  availableCategories: any[] = [];
+  activeCategoryId: string | null = null;
+  activePostType = 'all';
+
+  get filteredExplorerEvents(): any[] {
+    let evs = this.explorerEvents;
+    if (this.activeCategoryId) {
+      evs = evs.filter(e => e.categories?.some((c: any) => String(c.id) === this.activeCategoryId));
+    }
+    if (this.activePostType !== 'all') {
+      evs = evs.filter(e => (e.post_type || 'evento') === this.activePostType);
+    }
+    return evs;
+  }
+
+  get isLoggedIn(): boolean {
+    if (typeof window === 'undefined') return false;
+    return !!(localStorage.getItem('token') || localStorage.getItem('vemo_token'));
+  }
+
+  filterByCategory(catId: string | number | null) {
+    const id = catId === null ? null : String(catId);
+    this.activeCategoryId = this.activeCategoryId === id ? null : id;
+    this.cdr.detectChanges();
+  }
+
+  isCategoryActive(catId: any): boolean {
+    return this.activeCategoryId === String(catId);
+  }
+
+  setPostTypeFilter(type: string) {
+    this.activePostType = type;
+    this.cdr.detectChanges();
+  }
+
+  goToAuth() { this.router.navigate(['/auth']); }
+
   availableEmotions: any[] = [
     { id: 'alegria',      name: 'Alegría',      emoji: '😄' },
     { id: 'calma',        name: 'Calma',        emoji: '😌' },
@@ -114,6 +151,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.checkOnboardingStatus();
     this.loadEvents();
     this.loadEmotions();
+    this.loadCategories();
 
     // El footer global navega aquí con ?openChat=1 cuando el usuario
     // hace clic en "Chatear con Vela". Lo abrimos y limpiamos el query.
@@ -655,6 +693,17 @@ if (el) {
     const endOfDay = new Date(eventDate);
     endOfDay.setHours(23, 59, 59, 999);
     return endOfDay.getTime() < Date.now();
+  }
+
+  // ── CATEGORÍAS ──────────────────────────────────────
+  async loadCategories() {
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/categories`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.length) { this.availableCategories = data; this.cdr.detectChanges(); }
+      }
+    } catch {}
   }
 
   // ── EMOCIONES ───────────────────────────────────────

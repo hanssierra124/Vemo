@@ -282,8 +282,49 @@
         <span class="field-error" *ngIf="hasError('image')">{{ errors['image'] }}</span>
       </div>
 
+      <!-- ===== PRIVACIDAD ===== -->
+      <div class="form-section" *ngIf="!isEditMode">
+        <h3 class="section-header">Visibilidad del evento</h3>
+        <div class="privacy-toggle-wrap">
+          <label class="privacy-toggle">
+            <input type="checkbox" [(ngModel)]="isPrivate" name="isPrivate">
+            <span class="privacy-toggle-track">
+              <span class="privacy-toggle-thumb"></span>
+            </span>
+            <div class="privacy-toggle-info">
+              <span class="privacy-toggle-label">🔒 Evento privado</span>
+              <span class="privacy-toggle-desc">No aparece en el feed público. Solo accesible con el link que se genera.</span>
+            </div>
+          </label>
+        </div>
+        <div class="privacy-password-wrap" *ngIf="isPrivate">
+          <div class="form-group">
+            <label>Contraseña de acceso <span class="opt-label">Opcional</span></label>
+            <input type="text" [(ngModel)]="accessPassword" name="accessPassword"
+                   placeholder="Deja vacío si no quieres contraseña"
+                   maxlength="50">
+            <span class="field-hint">Si estableces contraseña, los invitados deberán ingresarla al abrir el link.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LINK GENERADO (evento privado creado) ===== -->
+      <div class="private-link-result" *ngIf="generatedAccessToken">
+        <div class="plr-inner">
+          <div class="plr-icon">🔗</div>
+          <h3 class="plr-title">¡Evento privado creado!</h3>
+          <p class="plr-desc">Comparte este link con las personas que quieres invitar:</p>
+          <div class="plr-link-box">
+            <span class="plr-url">{{ privateEventLink }}</span>
+            <button type="button" class="plr-copy-btn"
+                    (click)="copyPrivateLink()">Copiar</button>
+          </div>
+          <button type="button" class="plr-done-btn" (click)="router.navigate(['/profile'])">Ir a mi perfil →</button>
+        </div>
+      </div>
+
       <!-- ===== SUBMIT ===== -->
-      <button type="submit" [disabled]="loading" class="btn-submit">
+      <button type="submit" [disabled]="loading" class="btn-submit" *ngIf="!generatedAccessToken">
         {{ loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios' : 'Enviar a Revisión') }}
       </button>
 

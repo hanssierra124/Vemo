@@ -1,0 +1,68 @@
+<div class="exp-page">
+
+  <header class="ep-header">
+    <div class="ep-header-inner">
+      <div class="ep-eyebrow">· Permanentes y recurrentes</div>
+      <h1 class="ep-title">Experiencias<br><em>de la ciudad</em></h1>
+      <p class="ep-desc">Lugares y vivencias que no tienen fecha de caducidad. Siempre ahí, esperándote.</p>
+    </div>
+  </header>
+
+  <!-- Filtros -->
+  <div class="ep-filters">
+    <div class="ep-type-row">
+      <button *ngFor="let t of typeOptions" class="ep-type-btn"
+        [class.active]="activeType === t.value" (click)="setType(t.value)">
+        {{ t.label }}
+      </button>
+    </div>
+    <div class="ep-cat-row" *ngIf="categoryOptions.length > 0">
+      <button *ngFor="let cat of categoryOptions" class="ep-cat-chip"
+        [class.active]="activeCategory === cat" (click)="setCategory(cat)">
+        {{ cat }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Skeleton -->
+  <div class="ep-grid" *ngIf="loading">
+    <div class="ep-card ep-skeleton" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- Empty -->
+  <div class="ep-empty" *ngIf="!loading && filtered.length === 0">
+    <span>🔍</span>
+    <p>No hay experiencias con estos filtros.</p>
+    <button (click)="setType('all'); setCategory('')">Limpiar filtros</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="ep-grid" *ngIf="!loading && filtered.length > 0">
+    <article class="ep-card" *ngFor="let exp of filtered" (click)="goToDetail(exp.id)">
+      <div class="ep-card-media">
+        <img [src]="exp.image_url || 'assets/placeholder.jpg'" [alt]="exp.title" loading="lazy">
+        <div class="ep-card-overlay"></div>
+        <button class="ep-fav" [class.on]="isFav(exp.id)" (click)="toggleLike(exp, $event)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+        <div class="ep-mood-dot" *ngIf="exp.emotional_climate"
+          [style.background]="getEmotionColor(exp.emotional_climate)"></div>
+        <div class="ep-badges">
+          <span class="ep-badge ep-badge--type">✨ Experiencia</span>
+          <span class="ep-badge" *ngIf="exp.category">{{ exp.category }}</span>
+        </div>
+      </div>
+      <div class="ep-card-body">
+        <h3 class="ep-card-title">{{ exp.title }}</h3>
+        <p class="ep-card-desc">{{ exp.description | slice:0:90 }}{{ exp.description?.length > 90 ? '…' : '' }}</p>
+        <div class="ep-card-footer">
+          <span class="ep-card-addr" *ngIf="exp.address_short">📍 {{ exp.address_short }}</span>
+          <span class="ep-card-hours" *ngIf="exp.start_time">{{ exp.start_time }}</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+</div>

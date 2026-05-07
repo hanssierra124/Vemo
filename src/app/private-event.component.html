@@ -1,0 +1,70 @@
+<div class="pev-page">
+
+  <!-- Loading -->
+  <div class="pev-center" *ngIf="loading">
+    <div class="pev-spinner"></div>
+    <p>Cargando evento privado…</p>
+  </div>
+
+  <!-- Error -->
+  <div class="pev-center" *ngIf="!loading && error">
+    <div class="pev-error-icon">🔒</div>
+    <h2 class="pev-error-title">Acceso no disponible</h2>
+    <p class="pev-error-desc">{{ error }}</p>
+    <button class="pev-home-btn" (click)="goHome()">Volver al inicio</button>
+  </div>
+
+  <!-- Necesita contraseña -->
+  <div class="pev-center" *ngIf="!loading && needsPassword && !event">
+    <div class="pev-lock-icon">🔑</div>
+    <h2 class="pev-pass-title">Evento privado</h2>
+    <p class="pev-pass-desc">Este evento está protegido con contraseña. Ingresa la clave que te compartieron.</p>
+    <div class="pev-pass-form">
+      <input type="password" [(ngModel)]="passwordInput" placeholder="Contraseña" class="pev-pass-input"
+             (keyup.enter)="submitPassword()">
+      <button class="pev-pass-btn" (click)="submitPassword()" [disabled]="checkingPassword">
+        {{ checkingPassword ? 'Verificando…' : 'Acceder' }}
+      </button>
+    </div>
+    <p class="pev-pass-error" *ngIf="passwordError">{{ passwordError }}</p>
+  </div>
+
+  <!-- Contenido del evento -->
+  <div class="pev-content" *ngIf="!loading && event">
+    <div class="pev-private-badge">🔒 Evento privado</div>
+
+    <div class="pev-hero">
+      <img [src]="event.image_url || 'assets/placeholder.jpg'" [alt]="event.title" class="pev-hero-img">
+      <div class="pev-hero-overlay"></div>
+      <div class="pev-hero-text">
+        <span class="pev-emo-tag" *ngIf="event.emotions?.name">{{ event.emotions.name }}</span>
+        <h1 class="pev-title">{{ event.title }}</h1>
+      </div>
+    </div>
+
+    <div class="pev-body">
+      <div class="pev-meta">
+        <div class="pev-meta-item" *ngIf="event.date_event">
+          <span class="pev-meta-icon">📅</span>
+          <span>{{ formatDate(event.date_event) }}</span>
+        </div>
+        <div class="pev-meta-item" *ngIf="event.location_name">
+          <span class="pev-meta-icon">📍</span>
+          <span>{{ event.location_name }}</span>
+        </div>
+        <div class="pev-meta-item" *ngIf="event.price_range">
+          <span class="pev-meta-icon">💰</span>
+          <span>{{ event.price_range }}</span>
+        </div>
+      </div>
+
+      <p class="pev-description">{{ event.description }}</p>
+    </div>
+
+    <div class="pev-footer">
+      <p class="pev-footer-note">Este evento es privado. Solo personas con el link pueden verlo.</p>
+      <button class="pev-home-btn pev-home-btn--ghost" (click)="goHome()">Explorar más eventos</button>
+    </div>
+  </div>
+
+</div>

@@ -392,14 +392,34 @@
       <div class="exp-divider"></div>
     </div>
 
+    <!-- Barra de filtros -->
+    <div class="exp-filters" data-reveal="up">
+      <div class="exp-type-tabs">
+        <button class="exp-tab" [class.active]="activePostType === 'all'" (click)="setPostTypeFilter('all')">Todos</button>
+        <button class="exp-tab" [class.active]="activePostType === 'evento'" (click)="setPostTypeFilter('evento')">📅 Eventos</button>
+        <button class="exp-tab" [class.active]="activePostType === 'experiencia'" (click)="setPostTypeFilter('experiencia')">✨ Experiencias</button>
+      </div>
+      <div class="exp-cat-row" *ngIf="availableCategories.length > 0">
+        <button class="exp-cat-chip" [class.active]="!activeCategoryId" (click)="filterByCategory(null)">Todas</button>
+        <button *ngFor="let cat of availableCategories" class="exp-cat-chip" [class.active]="isCategoryActive(cat.id)" (click)="filterByCategory(cat.id)">
+          <span *ngIf="cat.icon">{{ cat.icon }}</span> {{ cat.name }}
+        </button>
+      </div>
+    </div>
+
     <div class="exp-grid" *ngIf="loading">
       <div class="exp-card exp-skeleton" *ngFor="let i of [1,2,3,4,5,6]"></div>
     </div>
 
-    <div class="exp-grid" *ngIf="!loading" data-reveal="fade" data-stagger>
+    <div class="exp-empty" *ngIf="!loading && filteredExplorerEvents.length === 0">
+      <span class="exp-empty-icon">🔍</span>
+      <p>No hay publicaciones con estos filtros. <button (click)="setPostTypeFilter('all'); filterByCategory(null)">Limpiar filtros</button></p>
+    </div>
+
+    <div class="exp-grid" *ngIf="!loading && filteredExplorerEvents.length > 0" data-reveal="fade" data-stagger>
       <article class="exp-card"
         [class.is-past]="isPastEvent(event)"
-        *ngFor="let event of explorerEvents; let i = index"
+        *ngFor="let event of filteredExplorerEvents; let i = index"
         (click)="goToDetail(event.id)"
         [style.animationDelay]="(i * 0.07) + 's'">
         <div class="ec-media">
@@ -408,7 +428,10 @@
           <button class="ec-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">❤</button>
           <span class="ec-past-badge" *ngIf="isPastEvent(event)">Finalizado</span>
           <div class="ec-badges">
-            <span class="ec-cat">{{ event.categories?.[0]?.name }}</span>
+            <span class="ec-type" [class.ec-type--exp]="event.post_type === 'experiencia'">
+              {{ event.post_type === 'experiencia' ? '✨' : '📅' }}
+            </span>
+            <span class="ec-cat" *ngIf="event.categories?.[0]?.name">{{ event.categories[0].name }}</span>
             <span class="ec-mood">{{ event.emotions?.emoji }}</span>
           </div>
           <div class="ec-index">{{ (i + 1).toString().padStart(2, '0') }}</div>
@@ -421,6 +444,35 @@
           </div>
         </div>
       </article>
+    </div>
+  </section>
+
+  <!-- CTA de registro para usuarios no logueados -->
+  <section class="register-cta-act" *ngIf="!isLoggedIn">
+    <div class="rcta-inner" data-reveal="rise">
+      <div class="rcta-eyebrow">· Únete a la comunidad</div>
+      <h2 class="rcta-title">Lleva tu experiencia<br><em>al siguiente nivel.</em></h2>
+      <p class="rcta-desc">Crea eventos, guarda favoritos y recibe recomendaciones personalizadas. Gratis, siempre.</p>
+      <div class="rcta-cards">
+        <div class="rcta-card">
+          <div class="rcta-card-icon">🎪</div>
+          <h3 class="rcta-card-title">Crea tu evento gratis</h3>
+          <p class="rcta-card-desc">Publica tu evento o experiencia y llega a miles de personas en Barranquilla.</p>
+          <button class="rcta-btn rcta-btn--primary" (click)="goToAuth()">Empezar →</button>
+        </div>
+        <div class="rcta-card">
+          <div class="rcta-card-icon">❤️</div>
+          <h3 class="rcta-card-title">Guarda experiencias</h3>
+          <p class="rcta-card-desc">Crea tu lista de favoritos y recibe recordatorios antes de que empiecen.</p>
+          <button class="rcta-btn" (click)="goToAuth()">Crear cuenta →</button>
+        </div>
+        <div class="rcta-card">
+          <div class="rcta-card-icon">✦</div>
+          <h3 class="rcta-card-title">Recomendaciones de Vela</h3>
+          <p class="rcta-card-desc">Vela aprende de tus gustos y te sugiere planes basados en tu mood del día.</p>
+          <button class="rcta-btn" (click)="goToAuth()">Descubrir →</button>
+        </div>
+      </div>
     </div>
   </section>
 

@@ -1,0 +1,83 @@
+:host {
+  --glow: #FF4D80; --deep: #6A00FF; --ink: #0E0D12;
+  --border: rgba(255,255,255,0.08); --text-1: #F0F0F0;
+  --text-2: rgba(240,240,240,0.6); --text-3: rgba(240,240,240,0.3);
+  --ease-snap: cubic-bezier(0.25, 1, 0.5, 1);
+  --ff-display: 'Clash Display', 'Inter', sans-serif;
+}
+
+.pev-page { min-height: 100vh; background: var(--ink); color: var(--text-1); font-family: 'Inter', sans-serif; }
+
+.pev-center {
+  min-height: 80vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 40px 20px; text-align: center;
+}
+
+/* ── SPINNER ── */
+.pev-spinner {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--glow);
+  animation: spin 0.9s linear infinite; margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ERROR / LOCK ── */
+.pev-error-icon, .pev-lock-icon { font-size: 56px; margin-bottom: 16px; }
+.pev-error-title, .pev-pass-title { font-family: var(--ff-display); font-size: 28px; margin-bottom: 10px; }
+.pev-error-desc, .pev-pass-desc { color: var(--text-2); font-size: 15px; max-width: 400px; line-height: 1.6; margin-bottom: 28px; }
+
+/* ── PASSWORD FORM ── */
+.pev-pass-form { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 12px; }
+.pev-pass-input {
+  flex: 1; padding: 14px 18px; border-radius: 12px; font-size: 15px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-1); outline: none;
+  transition: border-color 0.2s;
+}
+.pev-pass-input:focus { border-color: var(--glow); }
+.pev-pass-btn {
+  padding: 14px 22px; border-radius: 12px; background: var(--glow); color: #000;
+  font-weight: 700; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s;
+}
+.pev-pass-btn:hover { background: #ff6b98; }
+.pev-pass-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.pev-pass-error { color: #ff6b6b; font-size: 13px; }
+
+/* ── HOME BTN ── */
+.pev-home-btn {
+  padding: 14px 28px; border-radius: 12px; background: var(--glow); color: #000;
+  font-weight: 700; font-size: 15px; cursor: pointer; border: none; transition: all 0.25s;
+}
+.pev-home-btn:hover { background: #ff6b98; }
+.pev-home-btn--ghost { background: none; border: 1px solid var(--border); color: var(--text-2); }
+.pev-home-btn--ghost:hover { border-color: var(--glow); color: var(--glow); background: none; }
+
+/* ── CONTENT ── */
+.pev-content { max-width: 860px; margin: 0 auto; padding: 40px 20px 100px; }
+.pev-private-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700;
+  background: rgba(106,0,255,0.12); border: 1px solid rgba(106,0,255,0.35);
+  color: #a06fff; margin-bottom: 24px;
+}
+
+.pev-hero { position: relative; border-radius: 24px; overflow: hidden; margin-bottom: 36px; }
+.pev-hero-img { width: 100%; height: 420px; object-fit: cover; display: block; }
+.pev-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(14,13,18,0.95) 0%, rgba(14,13,18,0.2) 60%, transparent 100%); }
+.pev-hero-text { position: absolute; bottom: 32px; left: 32px; right: 32px; }
+.pev-emo-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--glow); display: block; margin-bottom: 8px; }
+.pev-title { font-family: var(--ff-display); font-size: clamp(28px, 5vw, 52px); font-weight: 400; color: var(--text-1); line-height: 1.1; }
+
+.pev-body { padding-bottom: 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.pev-meta { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+.pev-meta-item { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); }
+.pev-meta-icon { font-size: 18px; width: 28px; text-align: center; }
+.pev-description { font-size: 16px; color: var(--text-2); line-height: 1.75; }
+
+.pev-footer { text-align: center; }
+.pev-footer-note { font-size: 12px; color: var(--text-3); margin-bottom: 20px; }
+
+@media (max-width: 600px) {
+  .pev-hero-img { height: 280px; }
+  .pev-hero-text { bottom: 20px; left: 20px; right: 20px; }
+  .pev-pass-form { flex-direction: column; }
+}

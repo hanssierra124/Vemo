@@ -947,6 +947,88 @@ h1 em, h2 em, h3 em,
 .ec-footer { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); }
 .ec-location { max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ── EXPLORER FILTERS ── */
+.exp-filters { margin-bottom: 40px; display: flex; flex-direction: column; gap: 16px; }
+
+.exp-type-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.exp-tab {
+  padding: 9px 20px; border-radius: 100px; font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  border: 1px solid var(--border); color: var(--text-2); transition: all 0.25s var(--ease-snap);
+}
+.exp-tab:hover { border-color: rgba(255,77,128,0.4); color: var(--text-1); }
+.exp-tab.active { background: var(--glow-pink); border-color: var(--glow-pink); color: #000; box-shadow: 0 0 20px rgba(255,77,128,0.3); }
+
+.exp-cat-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.exp-cat-chip {
+  padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500;
+  border: 1px solid var(--border); color: var(--text-3); transition: all 0.2s;
+}
+.exp-cat-chip:hover { border-color: rgba(255,255,255,0.2); color: var(--text-2); }
+.exp-cat-chip.active { border-color: var(--glow-pink); color: var(--glow-pink); background: rgba(255,77,128,0.07); }
+
+/* ── TYPE BADGE ── */
+.ec-type {
+  background: rgba(10,10,16,0.75); backdrop-filter: blur(4px);
+  padding: 4px 8px; border-radius: 20px; font-size: 13px; border: 1px solid rgba(255,255,255,0.1);
+}
+.ec-type--exp { border-color: rgba(106,0,255,0.4); background: rgba(106,0,255,0.12); }
+
+/* ── EMPTY STATE ── */
+.exp-empty { text-align: center; padding: 60px 20px; color: var(--text-3); }
+.exp-empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+.exp-empty p { font-size: 15px; }
+.exp-empty button { color: var(--glow-pink); text-decoration: underline; font-size: 15px; }
+
+/* ── REGISTER CTA SECTION ── */
+.register-cta-act {
+  padding: 100px 6% 120px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--asphalt) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.register-cta-act::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.register-cta-act::after {
+  content: '';
+  position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(ellipse, rgba(255,77,128,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.rcta-inner { position: relative; z-index: 1; }
+.rcta-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--glow-pink); margin-bottom: 20px; }
+.rcta-title { font-family: var(--ff-display); font-size: clamp(36px, 5vw, 64px); font-weight: 400; color: var(--text-1); line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.02em; }
+.rcta-desc { font-size: 17px; color: var(--text-2); max-width: 520px; line-height: 1.65; margin-bottom: 56px; }
+
+.rcta-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.rcta-card {
+  padding: 36px 32px; border-radius: 24px;
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+  transition: all 0.35s var(--ease-snap);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.rcta-card:hover { border-color: var(--border-hot); transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+.rcta-card-icon { font-size: 32px; }
+.rcta-card-title { font-family: var(--ff-display); font-size: 20px; color: var(--text-1); line-height: 1.2; }
+.rcta-card-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; flex: 1; }
+.rcta-btn {
+  margin-top: 8px; padding: 12px 22px; border-radius: 100px; font-size: 13px; font-weight: 700;
+  border: 1px solid var(--border); color: var(--text-2); transition: all 0.25s; display: inline-block; width: fit-content;
+}
+.rcta-btn:hover { border-color: var(--glow-pink); color: var(--glow-pink); background: rgba(255,77,128,0.06); }
+.rcta-btn--primary { background: var(--glow-pink); border-color: var(--glow-pink); color: #000; box-shadow: 0 0 24px rgba(255,77,128,0.3); }
+.rcta-btn--primary:hover { background: #ff6b98; box-shadow: 0 0 36px rgba(255,77,128,0.5); }
+
+@media (max-width: 900px) { .rcta-cards { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 576px) {
+  .rcta-cards { grid-template-columns: 1fr; }
+  .rcta-card { padding: 24px 20px; }
+  .exp-filters { gap: 12px; }
+}
+
 /* ══════════════════════════════════════════════
    MOOD OVERLAY (LEGACY)
    ══════════════════════════════════════════════ */
@@ -1321,6 +1403,7 @@ h1 em, h2 em, h3 em,
   .map-hud-h2 { font-size: 36px; }
   .mf-chip { font-size: 10px; padding: 5px 10px; }
   .map-vig-left, .map-vig-right { display: none; }
+  .map-frame { aspect-ratio: unset; min-height: 62vh; }
 
   /* Onboarding móvil */
   .onboarding-overlay { padding: 16px; align-items: flex-start; padding-top: 60px; overflow-y: auto; }

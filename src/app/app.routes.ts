@@ -102,7 +102,20 @@ export const routes: Routes = [
     loadComponent: () => import('./about.component').then(m => m.AboutComponent)
   },
 
-  // 13. COMODÍN
+  // 13. EXPERIENCIAS
+  {
+    path: 'experiencias',
+    loadComponent: () => import('./experiencias.component').then(m => m.ExperienciasComponent),
+    canActivate: [blockGuard]
+  },
+
+  // 14. EVENTO PRIVADO (link compartible)
+  {
+    path: 'eventos/privado/:token',
+    loadComponent: () => import('./private-event.component').then(m => m.PrivateEventComponent)
+  },
+
+  // 15. COMODÍN
   {
     path: '**',
     redirectTo: 'home'
