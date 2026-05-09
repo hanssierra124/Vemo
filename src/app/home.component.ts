@@ -714,7 +714,16 @@ if (el) {
         const data = await res.json();
         if (data?.length) { this.availableEmotions = data; this.cdr.detectChanges(); }
       }
-    } catch (e) { console.error('Emociones:', e); }
+    } catch (e: any) {
+      // Backend offline en dev: la app sigue funcionando con la lista vacía
+      // de emociones (el onboarding/Vela manejan ese caso).
+      const isNetworkDown = e?.message === 'Failed to fetch' || e?.name === 'TypeError';
+      if (isNetworkDown) {
+        console.info('[Vemo] Backend offline — emociones no cargadas (la app funciona sin ellas).');
+      } else {
+        console.warn('[Vemo] No se pudieron cargar emociones:', e?.message || e);
+      }
+    }
   }
 
   async selectMood(emotionId: string, emotionName: string) {
@@ -743,12 +752,24 @@ if (el) {
         this.events = events;
         this.explorerEvents = events;
       }
+    } catch (e: any) {
+      // Backend offline: garantizamos que `events`/`explorerEvents` quedan
+      // como arrays vacíos (no undefined) para que los *ngFor del template
+      // no rompan, y el resto de la página renderice normalmente.
+      this.events = this.events || [];
+      this.explorerEvents = this.explorerEvents || [];
+      const isNetworkDown = e?.message === 'Failed to fetch' || e?.name === 'TypeError';
+      if (isNetworkDown) {
+        console.info('[Vemo] Backend offline — sin eventos en home; la página sigue navegable.');
+      } else {
+        console.warn('[Vemo] No se pudieron cargar eventos:', e?.message || e);
+      }
+    } finally {
+      // CRÍTICO: corremos esto SIEMPRE (éxito o fallo) para que la sección
+      // Vela y el mapa no queden colgados esperando un "ready" que nunca llega.
       this.eventsReady = true;
       if (this.mapReady) this.drawHomeMap();
       this.processVelaRecommendations();
-    } catch (e) {
-      console.error('Eventos:', e);
-    } finally {
       this.loading = false;
       this.cdr.detectChanges();
     }

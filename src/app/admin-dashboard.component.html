@@ -8,6 +8,60 @@
       <div class="header-line"></div>
     </header>
 
+    <!-- ══ PANEL DE RE-COORDENACIÓN GEOGRÁFICA ══ -->
+    <section class="geo-tools-panel">
+      <div class="geo-tools-head">
+        <h3 class="geo-tools-title">Corrección de coordenadas de eventos</h3>
+        <p class="geo-tools-sub">
+          Re-geocodifica los eventos existentes con Google Maps si su ubicación
+          en el mapa no coincide con la dirección real. No destructivo: solo
+          actualiza eventos cuya ubicación está mal o no fue verificada.
+        </p>
+      </div>
+
+      <div class="geo-tools-actions">
+        <button type="button" class="geo-btn geo-btn-soft"
+                (click)="runRecoordinate(false)"
+                [disabled]="recoordinating">
+          {{ recoordinating ? 'Procesando…' : 'Solo eventos sin coordenadas' }}
+        </button>
+        <button type="button" class="geo-btn geo-btn-strong"
+                (click)="runRecoordinate(true)"
+                [disabled]="recoordinating">
+          {{ recoordinating ? 'Procesando…' : 'Forzar TODOS los no verificados' }}
+        </button>
+      </div>
+
+      <div class="geo-tools-result" *ngIf="recoordinateResult">
+        <div *ngIf="recoordinateResult.error" class="geo-result-err">
+          ⚠️ {{ recoordinateResult.error }}
+        </div>
+        <div *ngIf="!recoordinateResult.error" class="geo-result-ok">
+          <strong>{{ recoordinateResult.message }}</strong>
+          <ul class="geo-result-stats">
+            <li>Total candidatos: <strong>{{ recoordinateResult.total }}</strong></li>
+            <li>Corregidos: <strong>{{ recoordinateResult.fixed }}</strong></li>
+            <li>Sin match en Google Maps: <strong>{{ recoordinateResult.skipped }}</strong></li>
+            <li *ngIf="recoordinateResult.failed">Fallaron: <strong>{{ recoordinateResult.failed }}</strong></li>
+          </ul>
+          <details *ngIf="recoordinateResult.details?.length">
+            <summary>Ver detalle por evento</summary>
+            <ul class="geo-result-details">
+              <li *ngFor="let d of recoordinateResult.details">
+                <span class="geo-result-status" [class.ok]="d.status === 'fixed'" [class.warn]="d.status === 'no_match'" [class.err]="d.status === 'update_failed'">
+                  {{ d.status }}
+                </span>
+                <strong>{{ d.title }}</strong>
+                <span *ngIf="d.lat">→ {{ d.lat | number:'1.4-4' }}, {{ d.lng | number:'1.4-4' }}</span>
+                <span *ngIf="d.address">— {{ d.address }}</span>
+                <span *ngIf="d.error">— {{ d.error }}</span>
+              </li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <div class="loading-state-centered" *ngIf="loading">
       <div class="vela-liquid-loader"></div>
       <p class="clash-display loader-text">Sincronizando Terminal...</p>

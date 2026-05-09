@@ -3,6 +3,7 @@ import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRe
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { smartGeocodeColombian } from './utils/colombian-geocoding';
 
 @Component({
   selector: 'app-map',
@@ -21,8 +22,15 @@ export class MapComponent implements OnInit, AfterViewInit {
   availableEmotions: any[] = [];
   loading: boolean = true;
   activeEmotionName: string | null = null; // Filtramos por nombre para evitar errores de ID
-  
-  private coordinateCache: any = {}; 
+
+  // ── Geolocalización del usuario + recomendaciones por cercanía ──
+  userLat: number | null = null;
+  userLng: number | null = null;
+  geoStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'error' = 'idle';
+  nearestEvents: any[] = [];
+  private userMarker: any = null;
+
+  private coordinateCache: any = {};
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -88,6 +96,100 @@ export class MapComponent implements OnInit, AfterViewInit {
     }).addTo(this.map);
 
     if (this.events.length > 0) this.drawMapContent();
+
+    // Pedimos la ubicación del usuario después de inicializar el mapa.
+    // No bloqueante: si la deniega o falla, el mapa funciona igual.
+    this.requestUserLocation();
+  }
+
+  /**
+   * Solicita la geolocalización del navegador. NO es invasivo:
+   * si el usuario la rechaza o falla, simplemente no se dibuja
+   * el marcador y nearestEvents queda vacío.
+   */
+  requestUserLocation() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (!navigator?.geolocation) {
+      this.geoStatus = 'error';
+      return;
+    }
+    this.geoStatus = 'requesting';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        this.userLat = pos.coords.latitude;
+        this.userLng = pos.coords.longitude;
+        this.geoStatus = 'granted';
+        this.placeUserMarker();
+        this.computeNearestEvents();
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        console.warn('[Vemo] Geolocalización no disponible:', err.message);
+        this.geoStatus = err.code === err.PERMISSION_DENIED ? 'denied' : 'error';
+        this.cdr.detectChanges();
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }
+
+  /** Pinta un marcador animado con la ubicación del usuario en tiempo real. */
+  private placeUserMarker() {
+    if (!this.map || !this.L || this.userLat == null || this.userLng == null) return;
+    if (this.userMarker) this.map.removeLayer(this.userMarker);
+
+    const userIcon = this.L.divIcon({
+      className: 'user-location-marker',
+      html: `<div class="ulm-pulse"></div><div class="ulm-dot"></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+    });
+
+    this.userMarker = this.L.marker([this.userLat, this.userLng], {
+      icon: userIcon,
+      zIndexOffset: 1000,
+    })
+      .bindPopup('Estás aquí')
+      .addTo(this.map);
+  }
+
+  /**
+   * Distancia Haversine en kilómetros entre dos coordenadas.
+   * Pura, testeable, sin dependencias externas.
+   */
+  private haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371; // radio de la Tierra en km
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  /**
+   * Calcula y guarda los 3 eventos más cercanos al usuario.
+   * Solo considera eventos con latitude/longitude válidas en la DB
+   * (no re-geocodifica para evitar llamadas externas masivas).
+   */
+  private computeNearestEvents() {
+    if (this.userLat == null || this.userLng == null) {
+      this.nearestEvents = [];
+      return;
+    }
+    const candidates = (this.events || [])
+      .map((ev) => {
+        const lat = ev.latitude != null ? parseFloat(ev.latitude) : NaN;
+        const lng = ev.longitude != null ? parseFloat(ev.longitude) : NaN;
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+        const _distanceKm = this.haversineKm(this.userLat!, this.userLng!, lat, lng);
+        return { ...ev, _distanceKm };
+      })
+      .filter((x): x is any => x !== null)
+      .sort((a, b) => a._distanceKm - b._distanceKm);
+
+    this.nearestEvents = candidates.slice(0, 3);
   }
 
   public getColorForEmotion(emotionName: string): string {
@@ -128,39 +230,50 @@ export class MapComponent implements OnInit, AfterViewInit {
     const groupedData: any = {};
 
     for (const ev of eventsToDraw) {
-      let lat = ev.latitude ? parseFloat(ev.latitude) : null;
-      let lng = ev.longitude ? parseFloat(ev.longitude) : null;
+      let lat = ev.latitude != null ? parseFloat(ev.latitude) : null;
+      let lng = ev.longitude != null ? parseFloat(ev.longitude) : null;
 
-      // Geocoding si no hay coordenadas (Exactamente igual que en "Todo el Caos")
-if ((!lat || !lng) && ev.location_name) {
-  // PLAN A: Búsqueda exacta
-  let query = encodeURIComponent(`${ev.location_name}, Barranquilla`);
-  let url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
-  
-  let res = await fetch(url);
-  let data = await res.json();
+      // Validación estricta: rango válido de coordenadas + no ser (0,0)
+      // ya que ese par suele indicar coords no inicializadas en DB.
+      const validCoords =
+        lat !== null && lng !== null &&
+        isFinite(lat) && isFinite(lng) &&
+        lat >= -90 && lat <= 90 &&
+        lng >= -180 && lng <= 180 &&
+        !(lat === 0 && lng === 0);
 
-  // SI EL PLAN A FALLA (Data vacía), VAMOS AL PLAN B
-  if (!data || data.length === 0) {
-    console.warn(`Falló búsqueda exacta para: ${ev.location_name}. Intentando limpieza...`);
-    
-    // TRUCO: Quitamos el símbolo '#' y todo lo que siga después del guión '-' (el número de casa específico)
-    // De "Cra. 8h #42B-103" pasamos a "Cra 8h 42B" (Intersección aproximada)
-    const cleanAddress = ev.location_name.split('-')[0].replace('#', ''); 
-    
-    query = encodeURIComponent(`${cleanAddress}, Barranquilla`);
-    url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
-    
-    res = await fetch(url);
-    data = await res.json();
-  }
+      if (!validCoords) {
+        lat = null;
+        lng = null;
+        if (ev.latitude != null || ev.longitude != null) {
+          console.warn(`[Vemo Map] Evento "${ev.title}" tiene coordenadas inválidas en DB:`, ev.latitude, ev.longitude);
+        }
+      }
 
-  if (data && data.length > 0) {
-    lat = parseFloat(data[0].lat);
-    lng = parseFloat(data[0].lon);
-    this.coordinateCache[ev.location_name] = { lat, lng };
-  }
-}
+      // Fallback a geocoding inteligente solo si NO había coords válidas en DB.
+      // Usamos smartGeocodeColombian: prueba varias variantes de la dirección
+      // colombiana (Carrera/Calle, intersección, con/sin '#', etc.) y valida
+      // que el resultado caiga dentro del bbox de la ciudad. Esto evita que
+      // un evento de "Cra 47 #76" termine pintado en cualquier punto de la
+      // Carrera 47 (la calle entera) cuando Nominatim no encuentra el número.
+      if ((!lat || !lng) && ev.location_name) {
+        // Cache para no re-geocodificar la misma dirección entre re-renders.
+        if (this.coordinateCache[ev.location_name]) {
+          lat = this.coordinateCache[ev.location_name].lat;
+          lng = this.coordinateCache[ev.location_name].lng;
+        } else {
+          const cityLabel = ev.city || 'Barranquilla';
+          const cityKey = (typeof cityLabel === 'string' ? cityLabel : 'Barranquilla').toLowerCase();
+          const hit = await smartGeocodeColombian(ev.location_name, cityLabel, cityKey);
+          if (hit) {
+            lat = hit.lat;
+            lng = hit.lng;
+            this.coordinateCache[ev.location_name] = { lat, lng };
+          } else {
+            console.info(`[Vemo Map] Sin geocodificación válida para "${ev.location_name}" — el evento no se pintará.`);
+          }
+        }
+      }
 
       if (lat && lng) {
         const emotionName = ev.emotions?.name || 'Neutro';
@@ -208,6 +321,11 @@ if ((!lat || !lng) && ev.location_name) {
         this.markerLayers.push(marker);
       });
     });
+  }
+
+  /** Navega al detalle de un evento desde el panel "Cerca de ti". */
+  goToEventDetail(eventId: string) {
+    this.router.navigate(['/event', eventId]);
   }
 
   toggleEmotionFilter(emotion: any) {

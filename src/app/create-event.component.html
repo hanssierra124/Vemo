@@ -52,10 +52,19 @@
             </ul>
           </div>
           <textarea [(ngModel)]="eventData.description" name="description" rows="5"
+                    [maxlength]="descriptionMaxChars"
                     placeholder="Cuéntanos en detalle de qué trata..."
                     (input)="onDescriptionChange()"></textarea>
-          <div class="char-counter" [class.valid]="descriptionCharCount >= descriptionMinChars">
-            {{ descriptionCharCount }}/{{ descriptionMinChars }} caracteres mínimos
+          <div class="char-counter"
+               [class.valid]="descriptionCharCount >= descriptionMinChars && descriptionCharCount <= descriptionMaxChars"
+               [class.over-limit]="descriptionCharCount > descriptionMaxChars"
+               [class.near-limit]="descriptionCharCount > descriptionMaxChars - 50 && descriptionCharCount <= descriptionMaxChars">
+            <span *ngIf="descriptionCharCount < descriptionMinChars">
+              {{ descriptionCharCount }} / {{ descriptionMinChars }} mínimo
+            </span>
+            <span *ngIf="descriptionCharCount >= descriptionMinChars">
+              {{ descriptionCharCount }} / {{ descriptionMaxChars }} caracteres
+            </span>
           </div>
           <span class="field-error" *ngIf="hasError('description')">{{ errors['description'] }}</span>
         </div>
@@ -112,14 +121,24 @@
         <div class="form-group" [class.has-error]="hasError('location')">
           <label>Ubicación <span class="req">*</span></label>
           <div class="address-row">
-            <input type="text" [(ngModel)]="eventData.location_name" name="location" placeholder="Ej: Gran Malecón, Cra 46">
+            <input type="text"
+                   [(ngModel)]="eventData.location_name"
+                   name="location"
+                   placeholder="Ej: Gran Malecón, Cra 46"
+                   (blur)="geocodeAddress()">
             <button type="button" class="btn-geocode" (click)="geocodeAddress()">Buscar</button>
           </div>
           <span class="field-error" *ngIf="hasError('location')">{{ errors['location'] }}</span>
         </div>
 
         <div id="event-map" class="map-container"></div>
-        <p class="map-hint" *ngIf="selectedLat">Ubicación en mapa confirmada</p>
+        <p class="map-hint" *ngIf="selectedLat">
+          📍 Ubicación fijada en el mapa.
+          <strong>Tip:</strong> arrastra el pin azul para ajustar la ubicación con precisión exacta.
+        </p>
+        <p class="map-hint map-hint-warn" *ngIf="!selectedLat && eventData.location_name">
+          Ubicación todavía no confirmada. Aprieta <em>Buscar</em> o haz click en el mapa.
+        </p>
       </div>
 
       <!-- ===== CATEGORÍAS ===== -->
