@@ -50,8 +50,16 @@ export class FavoritesService {
         this.favoritesSubject.next(events);
         localStorage.setItem(this.storageKey, JSON.stringify(events));
       }
-    } catch (e) { 
-      console.error("Error sincronizando favoritos:", e); 
+    } catch (e: any) {
+      // Backend no disponible: mantenemos la cache local que ya se cargó arriba.
+      // No mostramos console.error porque la app sigue funcionando con el snapshot
+      // local — solo informamos para depuración.
+      const isNetworkDown = e?.message === 'Failed to fetch' || e?.name === 'TypeError';
+      if (isNetworkDown) {
+        console.info('[Vemo] Backend offline — favoritos servidos desde cache local.');
+      } else {
+        console.warn('[Vemo] No se pudo sincronizar favoritos:', e?.message || e);
+      }
     }
   }
 

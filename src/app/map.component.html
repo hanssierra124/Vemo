@@ -36,6 +36,7 @@
 
   <div id="main-map" class="full-screen-map"></div>
 
+<<<<<<< HEAD
   <div class="nearby-panel" *ngIf="showNearbyPanel">
     <div class="nearby-panel-header">
       <span class="nearby-title">📍 Cerca de ti</span>
@@ -70,6 +71,38 @@
       </div>
     </div>
   </div>
+=======
+  <!-- Panel "Cerca de ti": top 3 eventos más cercanos al usuario.
+       Solo aparece si la geolocalización fue concedida. -->
+  <aside class="nearest-panel" *ngIf="geoStatus === 'granted'">
+    <div class="np-header">
+      <span class="np-pulse-dot" aria-hidden="true"></span>
+      <span>Cerca de ti</span>
+    </div>
+    <div class="np-list" *ngIf="nearestEvents.length > 0">
+      <button
+        type="button"
+        class="np-item"
+        *ngFor="let ev of nearestEvents"
+        (click)="goToEventDetail(ev.id)"
+        [attr.aria-label]="'Abrir ' + ev.title">
+        <div class="np-thumb"
+          [style.backgroundImage]="ev.image_url ? 'url(' + ev.image_url + ')' : null"></div>
+        <div class="np-info">
+          <span class="np-title">{{ ev.title }}</span>
+          <span class="np-distance">
+            {{ ev._distanceKm < 1
+                ? (ev._distanceKm * 1000 | number:'1.0-0') + ' m'
+                : (ev._distanceKm | number:'1.1-1') + ' km' }}
+          </span>
+        </div>
+      </button>
+    </div>
+    <div class="np-status" *ngIf="nearestEvents.length === 0">
+      No hay eventos con ubicación cerca de ti todavía.
+    </div>
+  </aside>
+>>>>>>> b46b89f146a7b0bc096b8680735201d7f2c8708e
 
   <div class="loading-overlay" *ngIf="loading">
     <div class="spinner"></div>

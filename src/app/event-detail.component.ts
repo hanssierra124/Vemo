@@ -3,6 +3,7 @@ import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRe
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { smartGeocodeColombian } from './utils/colombian-geocoding';
 
 @Component({
   selector: 'app-event-detail',
@@ -95,32 +96,43 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
         this.map.remove();
     }
 
-    // Coordenadas base (Barranquilla)
+    // Coordenadas base (Barranquilla) — solo se usan si el evento NO trae
+    // lat/lng válidas en DB y la geocodificación también falla.
     let lat = 10.9685;
     let lng = -74.7813;
     let zoomLevel = 13;
 
+    // ── PRIORIDAD 1: usar las coordenadas reales del evento si existen ──
+    // Esto evita el bug donde el detalle del evento aparecía en una posición
+    // aproximada por Nominatim aunque el evento ya tuviera lat/lng exactas.
+    const dbLat = this.event.latitude != null ? parseFloat(this.event.latitude) : NaN;
+    const dbLng = this.event.longitude != null ? parseFloat(this.event.longitude) : NaN;
+    const validDbCoords =
+      isFinite(dbLat) && isFinite(dbLng) &&
+      dbLat >= -90 && dbLat <= 90 &&
+      dbLng >= -180 && dbLng <= 180 &&
+      !(dbLat === 0 && dbLng === 0);
+
+    if (validDbCoords) {
+      lat = dbLat;
+      lng = dbLng;
+      zoomLevel = 16;
+    }
+
+    // ── PRIORIDAD 2: geocodificación inteligente solo si no hay coords en DB ──
+    // Reemplazamos el viejo Plan A/B manual por smartGeocodeColombian, que
+    // prueba varias variantes de la dirección colombiana y valida que la
+    // coordenada caiga dentro del bbox de la ciudad. Esto evita que un
+    // evento de "Cra 47 #76" termine pintado en "Calle 30" porque Nominatim
+    // agarró un punto cualquiera de la Carrera 47 entera.
     try {
-      if (this.event.location_name) {
-        // PLAN A: Búsqueda exacta
-        let query = encodeURIComponent(`${this.event.location_name}, Barranquilla`);
-        let url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
-        let res = await fetch(url);
-        let data = await res.json();
-
-        // PLAN B: Búsqueda limpia (Tu truco del Explorador)
-        if (!data || data.length === 0) {
-          console.warn(`Buscando con Plan B para: ${this.event.location_name}`);
-          const cleanAddress = this.event.location_name.split('-')[0].replace('#', ''); 
-          query = encodeURIComponent(`${cleanAddress}, Barranquilla`);
-          url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
-          res = await fetch(url);
-          data = await res.json();
-        }
-
-        if (data && data.length > 0) {
-          lat = parseFloat(data[0].lat);
-          lng = parseFloat(data[0].lon);
+      if (!validDbCoords && this.event.location_name) {
+        const cityLabel = this.event.city || 'Barranquilla';
+        const cityKey = (typeof cityLabel === 'string' ? cityLabel : 'Barranquilla').toLowerCase();
+        const hit = await smartGeocodeColombian(this.event.location_name, cityLabel, cityKey);
+        if (hit) {
+          lat = hit.lat;
+          lng = hit.lng;
           zoomLevel = 16; // Acercamos la cámara al encontrarlo
         }
       }

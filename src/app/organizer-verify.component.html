@@ -23,8 +23,8 @@
       </div>
 
       <div class="input-group">
-        <label>NIT <span class="req">*</span></label>
-        <input type="text" [(ngModel)]="nit" name="nit" placeholder="Número de identificación tributaria" required>
+        <label>NIT <span class="optional-tag">(opcional, lo puedes completar después)</span></label>
+        <input type="text" [(ngModel)]="nit" name="nit" placeholder="Número de identificación tributaria">
       </div>
 
       <!-- Segmentation -->
@@ -67,8 +67,8 @@
 
     <!-- SECTION: Cédula -->
     <div class="form-section">
-      <h3 class="section-title">Verificación de identidad <span class="req">*</span></h3>
-      <p class="section-hint">Sube fotos claras de tu cédula de ciudadanía (frontal y trasera).</p>
+      <h3 class="section-title">Verificación de identidad <span class="optional-tag">(opcional)</span></h3>
+      <p class="section-hint">Sube fotos claras de tu cédula de ciudadanía (frontal y trasera). Puedes completarlo después desde tu perfil — no es necesario para terminar el registro.</p>
 
       <div class="id-upload-grid">
         <div class="upload-area" (click)="frontInput.click()">

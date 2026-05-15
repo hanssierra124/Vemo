@@ -3,6 +3,7 @@ import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { smartGeocodeColombian } from './utils/colombian-geocoding';
 
 @Component({
   selector: 'app-create-event',
@@ -121,6 +122,7 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
   // Description guide
   descriptionCharCount = 0;
   descriptionMinChars = 50;
+  descriptionMaxChars = 1000;
 
   // Cities
   cities = [
@@ -293,7 +295,15 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
       iconSize: [28, 28],
       iconAnchor: [14, 28]
     });
-    this.marker = this.L.marker([lat, lng], { icon: pinIcon }).addTo(this.map);
+    // Pin DRAGGABLE: el organizador puede arrastrarlo para ajustar la
+    // ubicación con precisión visual quirúrgica si la geocodificación
+    // automática quedó cerca pero no exacta.
+    this.marker = this.L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(this.map);
+    this.marker.on('dragend', () => {
+      const pos = this.marker.getLatLng();
+      this.selectedLat = pos.lat;
+      this.selectedLng = pos.lng;
+    });
   }
 
   async reverseGeocode(lat: number, lng: number) {
@@ -307,25 +317,27 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     } catch {}
   }
 
-  async geocodeAddress() {
-    if (!this.eventData.location_name || this.eventData.location_name.length < 5) return;
-    try {
-      const city = this.cities.find(c => c.value === this.eventData.city)?.label || 'Barranquilla';
-      const q = encodeURIComponent(`${this.eventData.location_name}, ${city}, Colombia`);
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1&countrycodes=co`,
-        { headers: { 'Accept-Language': 'es' } }
-      );
-      const data = await res.json();
-      if (data?.length) {
-        const lat = parseFloat(data[0].lat);
-        const lng = parseFloat(data[0].lon);
-        this.selectedLat = lat;
-        this.selectedLng = lng;
-        this.placeMarker(lat, lng);
-        this.map?.setView([lat, lng], 16);
-      }
-    } catch {}
+  /**
+   * Geocodifica la dirección escrita por el organizador con el helper
+   * smartGeocodeColombian (varias variantes + validación bbox de ciudad)
+   * y posiciona el marcador en el mapa. Devuelve true si encontró coords.
+   */
+  async geocodeAddress(): Promise<boolean> {
+    if (!this.eventData.location_name || this.eventData.location_name.length < 5) return false;
+
+    const cityCfg = this.cities.find(c => c.value === this.eventData.city);
+    const cityLabel = cityCfg?.label || 'Barranquilla';
+    const cityKey = (cityCfg?.value || 'barranquilla').replace(/_/g, ' ');
+
+    const hit = await smartGeocodeColombian(this.eventData.location_name, cityLabel, cityKey);
+    if (hit) {
+      this.selectedLat = hit.lat;
+      this.selectedLng = hit.lng;
+      this.placeMarker(hit.lat, hit.lng);
+      this.map?.setView([hit.lat, hit.lng], 17);
+      return true;
+    }
+    return false;
   }
 
   onDescriptionChange() {
@@ -335,6 +347,7 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
   isDescriptionValid(): boolean {
     const d = this.eventData.description;
     if (d.length < this.descriptionMinChars) return false;
+    if (d.length > this.descriptionMaxChars) return false;
     // Check not only emojis
     const textOnly = d.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\s]/gu, '');
     return textOnly.length >= 20;
@@ -359,7 +372,12 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
       this.errors['title'] = 'El título debe tener al menos 3 caracteres';
     }
     if (!this.isDescriptionValid()) {
-      this.errors['description'] = `La descripción debe tener al menos ${this.descriptionMinChars} caracteres de texto real`;
+      const len = this.eventData.description.length;
+      if (len > this.descriptionMaxChars) {
+        this.errors['description'] = `La descripción no puede superar los ${this.descriptionMaxChars} caracteres (actualmente ${len}).`;
+      } else {
+        this.errors['description'] = `La descripción debe tener al menos ${this.descriptionMinChars} caracteres de texto real.`;
+      }
     }
     if (this.postType === 'evento' && !this.eventData.date_event) {
       this.errors['date'] = 'Selecciona la fecha y hora del evento';
@@ -396,6 +414,27 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     }
 
     this.loading = true;
+
+    // ── GARANTÍA DE COORDENADAS PRECISAS ─────────────────────────
+    // Si el organizador no apretó "Buscar" ni hizo click en el mapa,
+    // selectedLat/Lng quedan en null. Sin coords, los mapas (principal y
+    // de detalle) tendrán que adivinar con Nominatim después y van a
+    // mostrar el evento en una posición aproximada/incorrecta.
+    // Aquí intentamos UNA última geocodificación antes de enviar.
+    if ((!this.selectedLat || !this.selectedLng) && this.eventData.location_name) {
+      const ok = await this.geocodeAddress();
+      if (!ok) {
+        this.loading = false;
+        const proceed = confirm(
+          'No pudimos ubicar la dirección automáticamente. ' +
+          'Te recomendamos hacer click en el mapa para fijar la ubicación exacta. ' +
+          '\n\n¿Quieres enviar el evento de todos modos? Aparecerá en una ubicación aproximada.'
+        );
+        if (!proceed) return;
+        this.loading = true;
+      }
+    }
+
     const formData = new FormData();
 
     // Core fields

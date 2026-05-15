@@ -267,12 +267,12 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
   }
 
   async submitVerification() {
-    if (!this.companyName || !this.frontIdFile || !this.backIdFile) {
-      alert('Completa el nombre de empresa y sube ambas fotos de la cédula.');
-      return;
-    }
-    if (!this.nit) {
-      alert('El NIT es obligatorio.');
+    // UX flexible: NIT y cédula ahora son OPCIONALES. El organizador puede
+    // registrar su empresa con solo el nombre y completar NIT + documentos
+    // de identidad después desde su perfil. El backend marca la cuenta como
+    // "pendiente" / "incompleta" hasta que esos campos se llenen.
+    if (!this.companyName) {
+      alert('Completa el nombre de la empresa.');
       return;
     }
 
@@ -282,9 +282,10 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
     try {
       const formData = new FormData();
       formData.append('company_name', this.companyName);
-      formData.append('nit', this.nit);
-      formData.append('front', this.frontIdFile);
-      formData.append('back', this.backIdFile);
+      // NIT y documentos OPCIONALES — solo se adjuntan si existen.
+      if (this.nit) formData.append('nit', this.nit);
+      if (this.frontIdFile) formData.append('front', this.frontIdFile);
+      if (this.backIdFile)  formData.append('back', this.backIdFile);
       if (this.logoFile) formData.append('logo', this.logoFile);
       if (this.address) formData.append('address', this.address);
       if (this.selectedLat) formData.append('latitude', String(this.selectedLat));
