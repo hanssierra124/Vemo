@@ -55,6 +55,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goToAuth() { this.router.navigate(['/auth']); }
+  goToAuthWithRole(role: string) { this.router.navigate(['/auth'], { queryParams: { role } }); }
 
   availableEmotions: any[] = [
     { id: 'alegria',      name: 'Alegría',      emoji: '😄' },
@@ -75,6 +76,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   activeEmotionName: string | null = null;
   mapLoading: boolean = false;
   hudHidden: boolean = false;
+  homeLocating: boolean = false;
+  private homeUserMarker: any = null;
   private coordinateCache: { [key: string]: { lat: number; lng: number } } = {};
   isLegendMinimized: boolean = typeof window !== 'undefined' ? window.innerWidth <= 600 : false;
 
@@ -105,6 +108,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   showMoodModal: boolean = false;
   currentUserMood: string | null = null;
   explorerEvents: any[] = [];
+
+  // ── ORGANIZADORES ─────────────────────────────────────
+  organizers: any[] = [];
 
   // ── VELA RECOMENDACIONES ──────────────────────────────
   recommendedEvents: any[] = [];
@@ -152,6 +158,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadEvents();
     this.loadEmotions();
     this.loadCategories();
+    this.loadOrganizers();
+    (window as any).__vemoDetail = (id: string) => this.goToDetail(id);
 
     // El footer global navega aquí con ?openChat=1 cuando el usuario
     // hace clic en "Chatear con Vela". Lo abrimos y limpiamos el query.
@@ -470,6 +478,7 @@ if (el) {
         iconSize: [52, 52], iconAnchor: [26, 26], popupAnchor: [0, -30]
       });
 
+      const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((ev.location_name || '') + ', Barranquilla, Colombia')}`;
       const marker = L.marker([lat, lng], { icon }).addTo(this.map);
       marker.bindPopup(`
         <div class="vemo-popup-inner">
@@ -477,11 +486,14 @@ if (el) {
           <div class="vpi-info">
             <span class="vpi-emotion" style="color:${color}">● ${ev.emotions?.name || 'Evento'}</span>
             <b class="vpi-title">${ev.title}</b>
-            <span class="vpi-loc">📍 ${ev.location_name}</span>
+            <span class="vpi-loc">📍 ${(ev.location_name || '').slice(0, 40)}</span>
+            <div class="vpi-actions">
+              <button class="vpi-btn-detail" onclick="window.__vemoDetail('${ev.id}')">Ver evento →</button>
+              <a class="vpi-btn-route" href="${mapsUrl}" target="_blank" rel="noopener">🗺 Ver ruta</a>
+            </div>
           </div>
         </div>
-      `);
-      marker.on('click', () => this.goToDetail(ev.id));
+      `, { maxWidth: 260 });
       this.mapMarkers.push(marker);
       staggerIndex++;
     }
@@ -493,6 +505,39 @@ if (el) {
   toggleHomeEmotionFilter(emotion: any) {
     this.activeEmotionName = this.activeEmotionName === emotion.name ? null : emotion.name;
     this.drawHomeMap();
+  }
+
+  locateUserHome() {
+    if (!navigator.geolocation || !this.map) return;
+    this.homeLocating = true;
+    this.cdr.detectChanges();
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const L = (window as any).L;
+        if (!L) { this.homeLocating = false; this.cdr.detectChanges(); return; }
+
+        if (this.homeUserMarker) this.map.removeLayer(this.homeUserMarker);
+
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="width:16px;height:16px;background:#4A90E2;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(74,144,226,0.25);"></div>`,
+          iconSize: [16, 16], iconAnchor: [8, 8]
+        });
+        this.homeUserMarker = L.marker([lat, lng], { icon })
+          .addTo(this.map)
+          .bindPopup('<b style="color:#000">Tu ubicación</b>')
+          .openPopup();
+
+        this.map.setView([lat, lng], 14);
+        this.homeLocating = false;
+        this.cdr.detectChanges();
+      },
+      () => { this.homeLocating = false; this.cdr.detectChanges(); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   getColorForEmotion(name: string): string {
@@ -731,6 +776,17 @@ if (el) {
     this.showMoodModal = false;
     this.processVelaRecommendations();
     this.cdr.detectChanges();
+  }
+
+  async loadOrganizers() {
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/organizers`);
+      if (res.ok) {
+        const data = await res.json();
+        this.organizers = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      }
+    } catch {}
   }
 
   // ── EVENTOS ─────────────────────────────────────────

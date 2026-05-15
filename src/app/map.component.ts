@@ -20,18 +20,29 @@ export class MapComponent implements OnInit, AfterViewInit {
   events: any[] = [];
   availableEmotions: any[] = [];
   loading: boolean = true;
-  activeEmotionName: string | null = null; // Filtramos por nombre para evitar errores de ID
-  
-  private coordinateCache: any = {}; 
+  activeEmotionName: string | null = null;
+  locatingUser = false;
+  nearbyEvents: any[] = [];
+  showNearbyPanel = false;
+  showRoutePanel = false;
+  routeInfo: { distance: string; duration: string; destTitle: string } | null = null;
+  private userMarker: any = null;
+  private userLat: number | null = null;
+  private userLng: number | null = null;
+  private routeLayers: any[] = [];
+  private coordinateCache: any = {};
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    public router: Router
   ) {}
 
   ngOnInit() {
     this.loadData();
+    (window as any).__vemoDetail     = (id: string) => this.router.navigate(['/event', id]);
+    (window as any).__vemoRoute      = (lat: number, lng: number, title: string) => this.getRoute(lat, lng, title);
+    (window as any).__vemoClosePopup = () => this.map?.closePopup();
   }
 
   async ngAfterViewInit() {
@@ -86,6 +97,8 @@ export class MapComponent implements OnInit, AfterViewInit {
       attribution: '&copy; CARTO',
       maxZoom: 20
     }).addTo(this.map);
+
+    this.map.on('popupclose', () => { this.clearRoute(); });
 
     if (this.events.length > 0) this.drawMapContent();
   }
@@ -202,8 +215,25 @@ if ((!lat || !lng) && ev.location_name) {
           iconSize: [50, 50], iconAnchor: [25, 25], popupAnchor: [0, -25]
         });
         const marker = this.L.marker([i.lat, i.lng], { icon: customIcon });
-        marker.bindPopup(`<b style="color:black">${i.title}</b><br><span style="color:${color}">● ${emotionName}</span>`);
-        marker.on('click', () => this.router.navigate(['/event', i.id]));
+        const safeTitle = i.title.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        const thumb = i.image ? `<div style="width:100%;height:72px;border-radius:8px;background:url('${i.image}') center/cover no-repeat;margin-bottom:10px;flex-shrink:0"></div>` : '';
+        marker.bindPopup(`
+          <div style="background:#0d0d12;border:1px solid ${color}55;border-radius:14px;padding:12px;min-width:190px;font-family:system-ui,sans-serif;box-shadow:0 0 24px ${color}25,0 8px 32px rgba(0,0,0,0.6);position:relative">
+            <button onclick="window.__vemoClosePopup()" style="position:absolute;top:8px;right:8px;background:rgba(245,243,239,0.08);border:none;color:rgba(245,243,239,0.5);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif">✕</button>
+            ${thumb}
+            <b style="color:#F5F3EF;font-size:13px;font-weight:700;display:block;margin-bottom:4px;line-height:1.3;padding-right:26px">${i.title}</b>
+            <span style="color:${color};font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:12px">● ${emotionName}</span>
+            <div style="display:flex;gap:7px">
+              <button onclick="window.__vemoDetail('${i.id}')"
+                style="flex:1;padding:8px 0;background:rgba(245,243,239,0.07);color:#F5F3EF;border:1px solid rgba(245,243,239,0.12);border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;font-family:system-ui,sans-serif">
+                Ver evento
+              </button>
+              <button onclick="window.__vemoRoute(${i.lat},${i.lng},'${safeTitle}')"
+                style="flex:1;padding:8px 0;background:${color};color:#000;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;font-family:system-ui,sans-serif">
+                🗺 Ruta
+              </button>
+            </div>
+          </div>`, { maxWidth: 220, className: 'vemo-popup' });
         marker.addTo(this.map);
         this.markerLayers.push(marker);
       });
@@ -211,8 +241,93 @@ if ((!lat || !lng) && ev.location_name) {
   }
 
   toggleEmotionFilter(emotion: any) {
-    // Si ya está activo, desactivamos el filtro. Si no, lo activamos por NOMBRE.
     this.activeEmotionName = (this.activeEmotionName === emotion.name) ? null : emotion.name;
     this.drawMapContent();
+  }
+
+  private getUserLocation(): Promise<{ lat: number; lng: number }> {
+    return new Promise((resolve, reject) => {
+      if (this.userLat !== null && this.userLng !== null) {
+        resolve({ lat: this.userLat, lng: this.userLng });
+        return;
+      }
+      if (!navigator.geolocation) { reject(new Error('no geolocation')); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          this.userLat = pos.coords.latitude;
+          this.userLng = pos.coords.longitude;
+          if (this.userMarker) this.map.removeLayer(this.userMarker);
+          const icon = this.L.divIcon({
+            className: '',
+            html: `<div style="width:18px;height:18px;background:#4A90E2;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(74,144,226,0.25);"></div>`,
+            iconSize: [18, 18], iconAnchor: [9, 9]
+          });
+          this.userMarker = this.L.marker([this.userLat, this.userLng], { icon })
+            .addTo(this.map)
+            .bindPopup('<b style="color:#000">Tu ubicación</b>');
+          resolve({ lat: this.userLat!, lng: this.userLng! });
+        },
+        reject,
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+  }
+
+  async locateUser() {
+    this.locatingUser = true;
+    this.cdr.detectChanges();
+    try {
+      const { lat, lng } = await this.getUserLocation();
+      this.map.setView([lat, lng], 14);
+      this.userMarker?.openPopup();
+      const res = await fetch(`${environment.apiUrl}/api/events/nearby?lat=${lat}&lng=${lng}&radius=5`);
+      if (res.ok) {
+        this.nearbyEvents = await res.json();
+        this.showNearbyPanel = this.nearbyEvents.length > 0;
+      }
+    } catch {}
+    this.locatingUser = false;
+    this.cdr.detectChanges();
+  }
+
+  async getRoute(toLat: number, toLng: number, destTitle: string) {
+    this.clearRoute();
+    try {
+      const { lat: uLat, lng: uLng } = await this.getUserLocation();
+      const url = `https://router.project-osrm.org/route/v1/driving/${uLng},${uLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.code !== 'Ok') return;
+
+      const route = data.routes[0];
+      const coords: [number, number][] = route.geometry.coordinates.map((c: number[]) => [c[1], c[0]]);
+
+      const shadow = this.L.polyline(coords, { color: '#000', weight: 9, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }).addTo(this.map);
+      const line   = this.L.polyline(coords, { color: '#FF4D80', weight: 4, opacity: 1,    lineCap: 'round', lineJoin: 'round' }).addTo(this.map);
+      this.routeLayers = [shadow, line];
+
+      this.map.fitBounds(line.getBounds(), { padding: [80, 80] });
+
+      this.routeInfo = {
+        distance: `${(route.distance / 1000).toFixed(1)} km`,
+        duration: `${Math.round(route.duration / 60)} min`,
+        destTitle
+      };
+      this.showRoutePanel = true;
+      this.cdr.detectChanges();
+    } catch (e) { console.error('Error ruta:', e); }
+  }
+
+  clearRoute() {
+    this.routeLayers.forEach(l => this.map.removeLayer(l));
+    this.routeLayers = [];
+    this.showRoutePanel = false;
+    this.routeInfo = null;
+    this.cdr.detectChanges();
+  }
+
+  closeNearbyPanel() {
+    this.showNearbyPanel = false;
+    this.cdr.detectChanges();
   }
 }

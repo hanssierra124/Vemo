@@ -282,6 +282,31 @@
         <span class="field-error" *ngIf="hasError('image')">{{ errors['image'] }}</span>
       </div>
 
+      <!-- ===== GALERÍA DE FOTOS ===== -->
+      <div class="form-section">
+        <h3 class="section-header">Galería de fotos</h3>
+        <p class="gallery-hint">Agrega fotos adicionales para mostrar el lugar. <strong>No uses fotos generadas por IA.</strong></p>
+
+        <div class="gallery-slots">
+          <div class="gallery-slot" *ngFor="let photo of galleryPhotos; let i = index">
+            <div class="gallery-slot-preview" *ngIf="photo.preview">
+              <img [src]="photo.preview" alt="Vista previa">
+            </div>
+            <div class="gallery-slot-fields">
+              <select [(ngModel)]="photo.purpose" [name]="'gallery_purpose_' + i" class="gallery-select">
+                <option *ngFor="let t of galleryPhotoTypes" [value]="t.value">{{ t.label }}</option>
+              </select>
+              <input type="file" (change)="onGalleryFileSelected($event, i)" accept="image/*,video/*" class="gallery-file-input">
+            </div>
+            <button type="button" class="gallery-remove-btn" (click)="removeGallerySlot(i)" title="Eliminar">✕</button>
+          </div>
+        </div>
+
+        <button type="button" class="gallery-add-btn" (click)="addGallerySlot()" *ngIf="galleryPhotos.length < 5">
+          + Agregar foto
+        </button>
+      </div>
+
       <!-- ===== PRIVACIDAD ===== -->
       <div class="form-section" *ngIf="!isEditMode">
         <h3 class="section-header">Visibilidad del evento</h3>

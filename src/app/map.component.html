@@ -25,7 +25,51 @@
     </div>
   </div>
 
+  <button class="locate-btn" (click)="locateUser()" [disabled]="locatingUser" title="Ver mi ubicación">
+    <svg *ngIf="!locatingUser" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+      <circle cx="12" cy="12" r="8" opacity="0.3"></circle>
+    </svg>
+    <span *ngIf="locatingUser" class="locate-spinner"></span>
+  </button>
+
   <div id="main-map" class="full-screen-map"></div>
+
+  <div class="nearby-panel" *ngIf="showNearbyPanel">
+    <div class="nearby-panel-header">
+      <span class="nearby-title">📍 Cerca de ti</span>
+      <button class="nearby-close" (click)="closeNearbyPanel()">✕</button>
+    </div>
+    <div class="nearby-list">
+      <div class="nearby-item" *ngFor="let ev of nearbyEvents.slice(0, 8)" (click)="router.navigate(['/event', ev.id])">
+        <img [src]="ev.image_url || 'assets/placeholder.jpg'" class="nearby-thumb" [alt]="ev.title">
+        <div class="nearby-info">
+          <p class="nearby-name">{{ ev.title }}</p>
+          <span class="nearby-dist">{{ ev.distance_km | number:'1.1-1' }} km</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="route-panel" *ngIf="showRoutePanel && routeInfo">
+    <div class="route-panel-header">
+      <span class="route-icon">🗺</span>
+      <span class="route-panel-title">Ruta</span>
+      <button class="route-close" (click)="clearRoute()">✕</button>
+    </div>
+    <p class="route-dest">{{ routeInfo.destTitle }}</p>
+    <div class="route-stats">
+      <div class="route-stat">
+        <span class="route-stat-val">{{ routeInfo.distance }}</span>
+        <span class="route-stat-lbl">distancia</span>
+      </div>
+      <div class="route-stat">
+        <span class="route-stat-val">{{ routeInfo.duration }}</span>
+        <span class="route-stat-lbl">conduciendo</span>
+      </div>
+    </div>
+  </div>
 
   <div class="loading-overlay" *ngIf="loading">
     <div class="spinner"></div>

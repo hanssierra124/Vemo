@@ -111,57 +111,6 @@
 
     </div>
   </div>
-  <section class="map-act">
-    <div class="map-act-inner">
-      <div class="map-eyebrow" data-reveal="up">· MAPA EMOCIONAL DE LA CIUDAD</div>
-
-      <div class="map-head" data-reveal="rise">
-        <h2 class="map-title">La ciudad late en <em>colores</em>.</h2>
-        <p class="map-lede">Cada punto es un evento real esta semana. Su color es la emoción que desata. Pasa el cursor para descubrir lo que vibra cerca de ti.</p>
-      </div>
-
-      <div class="map-frame" data-reveal="scale" data-reveal-delay="1">
-        <div class="map-full-canvas">
-          <div id="map-home" class="map-home-el"></div>
-          <div class="map-vig-bottom"></div>
-          <div class="map-vig-left"></div>
-          <div class="map-vig-right"></div>
-          <div class="map-scanlines"></div>
-        </div>
-
-        <aside class="map-legend" [class.minimized]="isLegendMinimized">
-  <div class="ml-topbar" (click)="isLegendMinimized = !isLegendMinimized">
-    <div class="ml-title">EMOCIONES</div>
-    <span class="ml-toggle">{{ isLegendMinimized ? '+' : '−' }}</span>
-  </div>
-
-  <ul class="ml-list">
-    <li *ngFor="let emotion of availableEmotions">
-      <span class="ml-dot" [style.backgroundColor]="getColorForEmotion(emotion.name)"></span>
-      <span class="ml-name">{{ emotion.name }}</span>
-    </li>
-  </ul>
-</aside>
-
-        <div class="map-loading-hud" *ngIf="mapLoading">
-          <div class="mlh-inner">
-            <div class="mlh-radar">
-              <div class="mlh-radar-ring r1"></div>
-              <div class="mlh-radar-ring r2"></div>
-              <div class="mlh-radar-ring r3"></div>
-              <div class="mlh-radar-sweep"></div>
-              <div class="mlh-radar-dot"></div>
-            </div>
-            <div class="mlh-text">
-              <span class="mlh-label">SINTONIZANDO</span>
-              <span class="mlh-sub">Barranquilla · Colombia</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
  <section class="vela-act">
   <div class="vela-presentation-card" data-reveal="rise">
     
@@ -212,6 +161,18 @@
         </span>
         <span class="vdc-arrow" aria-hidden="true">→</span>
       </button>
+
+      <div class="vela-register-row" *ngIf="!isLoggedIn">
+        <p class="vela-register-label">¿Aún no tienes cuenta?</p>
+        <div class="vela-register-btns">
+          <button class="vela-reg-btn vela-reg-btn--user" (click)="goToAuthWithRole('user')">
+            <span>👤</span> Regístrate como Usuario
+          </button>
+          <button class="vela-reg-btn vela-reg-btn--org" (click)="goToAuthWithRole('organizer')">
+            <span>🎪</span> Regístrate como Organizador
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -247,6 +208,11 @@
           </div>
           <h4 class="vrc-title">{{ event.title }}</h4>
           <p class="vrc-reason" *ngIf="event._velaReason">{{ event._velaReason }}</p>
+          <div class="vrc-organizer" *ngIf="event.profiles">
+            <img *ngIf="event.profiles.profile_url" [src]="event.profiles.profile_url" class="vrc-org-avatar" [alt]="event.profiles.company_name || event.profiles.username">
+            <span class="vrc-org-dot" *ngIf="!event.profiles.profile_url"></span>
+            <span class="vrc-org-name">{{ event.profiles.company_name || event.profiles.username }}</span>
+          </div>
           <div class="vrc-meta">
             <span *ngIf="event.date_event">{{ event.date_event | date:'EEE d · HH:mm' }}</span>
             <span class="vrc-dot" *ngIf="event.date_event && event.location_name">·</span>
@@ -380,6 +346,46 @@
     </div>
   </section>
 
+  <section class="organizers-act" *ngIf="organizers.length > 0" data-reveal="up">
+    <div class="org-act-inner">
+      <div class="org-head">
+        <div>
+          <div class="org-eyebrow">· Quiénes crean la ciudad</div>
+          <h2 class="org-title">Organizadores <em>verificados</em></h2>
+        </div>
+        <p class="org-subtitle">Los creadores de cultura que impulsan Barranquilla.</p>
+      </div>
+      <div class="org-scroll-track">
+        <div class="org-card" *ngFor="let org of organizers; let i = index"
+             [style.animation-delay]="(i * 0.08) + 's'">
+          <div class="org-card-header" [class.org-hdr-a]="i % 4 === 0" [class.org-hdr-b]="i % 4 === 1" [class.org-hdr-c]="i % 4 === 2" [class.org-hdr-d]="i % 4 === 3">
+            <div class="org-card-noise"></div>
+          </div>
+          <div class="org-card-body">
+            <div class="org-avatar-ring">
+              <div class="org-avatar-wrap">
+                <img *ngIf="org.profile_url" [src]="org.profile_url" [alt]="org.company_name || org.username" class="org-avatar-img">
+                <span *ngIf="!org.profile_url" class="org-avatar-initials">{{ (org.company_name || org.username)?.charAt(0)?.toUpperCase() }}</span>
+              </div>
+            </div>
+            <div class="org-badge-row">
+              <span class="org-verified-badge">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Verificado
+              </span>
+            </div>
+            <p class="org-name">{{ org.company_name || org.username }}</p>
+            <span class="org-address" *ngIf="org.address">{{ org.address | slice:0:28 }}</span>
+            <a *ngIf="org.public_email" [href]="'mailto:' + org.public_email"
+               class="org-contact-btn" (click)="$event.stopPropagation()">
+              Contactar →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="explorer-act" id="seccion-explorador">
     <div class="exp-header" data-reveal="up">
       <div class="exp-header-left">
@@ -438,6 +444,11 @@
         </div>
         <div class="ec-body">
           <h3 class="ec-title">{{ event.title }}</h3>
+          <div class="ec-organizer" *ngIf="event.profiles">
+            <img *ngIf="event.profiles.profile_url" [src]="event.profiles.profile_url" class="ec-org-avatar" [alt]="event.profiles.company_name || event.profiles.username">
+            <span class="ec-org-dot" *ngIf="!event.profiles.profile_url"></span>
+            <span class="ec-org-name">{{ event.profiles.company_name || event.profiles.username }}</span>
+          </div>
           <div class="ec-footer">
             <span class="ec-location">{{ event.location_name }}</span>
             <span class="ec-date">{{ event.date_event | date:'MMM d' }}</span>

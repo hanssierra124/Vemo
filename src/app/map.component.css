@@ -24,6 +24,121 @@
   --ff-ui:      'Syne', sans-serif;
 }
 
+/* ── MAPA PÁGINA COMPLETA ── */
+:host {
+  display: block;
+  height: calc(100vh - 60px);
+}
+
+.map-page-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #060608;
+  overflow: hidden;
+}
+
+#main-map,
+.full-screen-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.map-controls-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, rgba(6,6,8,0.85) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.filters-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  pointer-events: all;
+  padding-bottom: 4px;
+}
+.filters-scroll::-webkit-scrollbar { display: none; }
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(13,13,18,0.75);
+  backdrop-filter: blur(8px);
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  pointer-events: all;
+}
+.filter-chip:hover { background: rgba(255,77,128,0.18); border-color: rgba(255,77,128,0.45); color: #fff; }
+.filter-chip.active { background: rgba(255,77,128,0.25); border-color: #FF4D80; color: #fff; }
+.filter-chip .emoji { font-size: 14px; }
+.filter-chip .label { font-size: 12px; }
+
+.map-legend-box {
+  position: absolute;
+  bottom: 32px;
+  left: 20px;
+  z-index: 10;
+  background: rgba(13,13,18,0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 18px;
+  min-width: 160px;
+}
+.legend-title {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+.legend-grid { display: flex; flex-direction: column; gap: 6px; }
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.color-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.emotion-label { font-size: 12px; color: rgba(255,255,255,0.7); }
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(6,6,8,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #FF4D80;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-overlay p {
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+}
+
 /* ── MOUSE GLOW ── */
 .mouse-glow {
   position: fixed;
@@ -590,6 +705,127 @@ button { font-family: var(--ff-ui); cursor: pointer; border: none; background: n
 @keyframes textFlicker { 0%,100%{opacity:1} 50%{opacity:0.6} }
 .mlh-sub {
   font-size: 10px; letter-spacing: 2px; color: var(--text-3); text-transform: uppercase;
+}
+
+/* ── POPUP LEAFLET (reset fondo blanco) ── */
+::ng-deep .vemo-popup .leaflet-popup-content-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+}
+::ng-deep .vemo-popup .leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+::ng-deep .vemo-popup .leaflet-popup-tip-container {
+  display: none !important;
+}
+::ng-deep .vemo-popup .leaflet-popup-close-button {
+  display: none !important;
+}
+
+/* ── PANEL DE RUTA ── */
+.route-panel {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  z-index: 10;
+  width: 220px;
+  background: rgba(13,13,18,0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,77,128,0.35);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 0 24px rgba(255,77,128,0.2), 0 8px 32px rgba(0,0,0,0.5);
+  animation: slideUp 0.25s var(--ease-snap) both;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.route-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.route-icon { font-size: 14px; }
+.route-panel-title {
+  flex: 1;
+  font-family: var(--ff-ui);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--glow-pink);
+}
+.route-close {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.route-close:hover { color: var(--text-1); }
+.route-dest {
+  font-family: var(--ff-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0 0 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.route-stats {
+  display: flex;
+  gap: 12px;
+}
+.route-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 8px 6px;
+}
+.route-stat-val {
+  font-family: var(--ff-display);
+  font-size: 18px;
+  color: var(--glow-pink);
+  line-height: 1;
+}
+.route-stat-lbl {
+  font-family: var(--ff-ui);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+/* ── MARCADOR BURBUJA (map.component standalone) ── */
+::ng-deep .vemo-marker-bubble {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease;
+  animation: pinDrop 0.4s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+::ng-deep .vemo-marker-bubble:hover {
+  transform: scale(1.18);
 }
 
 /* ── MARCADORES VEMO (en línea, con animación) ── */
@@ -1418,3 +1654,116 @@ button { font-family: var(--ff-ui); cursor: pointer; border: none; background: n
   .hero-coords { display: none; }
   .step-rail { width: 30px; }
 }
+
+/* ── PANEL EVENTOS CERCANOS ── */
+.nearby-panel {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  z-index: 1000;
+  width: 260px;
+  max-height: 380px;
+  background: rgba(13, 13, 18, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.nearby-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.nearby-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.03em;
+}
+.nearby-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+}
+.nearby-close:hover { color: #fff; }
+.nearby-list {
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.nearby-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.nearby-item:hover { background: rgba(255,255,255,0.06); }
+.nearby-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.nearby-info { flex: 1; min-width: 0; }
+.nearby-name {
+  font-size: 12px;
+  color: #f0f0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 2px;
+}
+.nearby-dist {
+  font-size: 11px;
+  color: #4A90E2;
+  font-weight: 600;
+}
+@media (max-width: 480px) {
+  .nearby-panel { width: calc(100vw - 40px); bottom: 80px; }
+}
+
+/* ── BOTÓN LOCALIZAR USUARIO ── */
+.locate-btn {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(13, 13, 18, 0.85);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.locate-btn:hover:not(:disabled) {
+  background: rgba(74, 144, 226, 0.25);
+  border-color: rgba(74, 144, 226, 0.6);
+}
+.locate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.locate-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #4A90E2;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

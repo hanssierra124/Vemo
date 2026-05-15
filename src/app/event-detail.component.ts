@@ -294,6 +294,15 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     } catch {}
   }
 
+  photoTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      facade: 'Fachada',
+      activity: 'Actividad',
+      interior: 'Interior',
+    };
+    return labels[type] ?? type;
+  }
+
   addToGoogleCalendar() {
     if(!this.event.date_event) return;
     const start = new Date(this.event.date_event).toISOString().replace(/-|:|\.\d\d\d/g, "");

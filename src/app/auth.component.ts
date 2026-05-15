@@ -1,8 +1,8 @@
 import { environment } from '../environments/environment';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-auth',
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.css'
 })
-export class AuthComponent {
+export class AuthComponent implements OnInit {
   isLogin = true;
 
   // Common fields
@@ -45,7 +45,15 @@ export class AuthComponent {
     { value: 'otro', label: 'Otro' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    const roleParam = this.route.snapshot.queryParamMap.get('role');
+    if (roleParam === 'user' || roleParam === 'organizer') {
+      this.role = roleParam;
+      this.isLogin = false;
+    }
+  }
 
   validateRegistration(): boolean {
     this.errors = {};

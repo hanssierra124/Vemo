@@ -59,6 +59,48 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
   selectedCategories: string[] = [];
   selectedFile: File | null = null;
 
+  galleryPhotoTypes = [
+    { value: 'facade', label: 'Foto de la fachada' },
+    { value: 'activity', label: 'Video / foto de la actividad' },
+    { value: 'interior', label: 'Foto dentro del lugar' },
+  ];
+  galleryPhotos: { file: File | null; purpose: string; preview: string | null }[] = [];
+
+  addGallerySlot() {
+    if (this.galleryPhotos.length < 5) {
+      this.galleryPhotos.push({ file: null, purpose: 'fachada', preview: null });
+    }
+  }
+
+  removeGallerySlot(index: number) {
+    this.galleryPhotos.splice(index, 1);
+  }
+
+  onGalleryFileSelected(event: any, index: number) {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    this.galleryPhotos[index].file = file;
+    const reader = new FileReader();
+    reader.onload = (e: any) => { this.galleryPhotos[index].preview = e.target.result; };
+    reader.readAsDataURL(file);
+  }
+
+  private async uploadGalleryPhotos(eventId: string, token: string) {
+    const photos = this.galleryPhotos.filter(gp => gp.file);
+    for (const gp of photos) {
+      const fd = new FormData();
+      fd.append('photo', gp.file!);
+      fd.append('photo_type', gp.purpose);
+      try {
+        await fetch(`${environment.apiUrl}/api/events/${eventId}/photos`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+      } catch {}
+    }
+  }
+
   // Map
   selectedLat: number | null = null;
   selectedLng: number | null = null;
@@ -410,6 +452,8 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
 
       if (res.ok) {
         const data = await res.json();
+        const eventId = data.id || data.event?.id;
+        if (eventId) await this.uploadGalleryPhotos(eventId, token!);
         if (this.isPrivate && data.access_token) {
           this.generatedAccessToken = data.access_token;
           this.privateEventLink = `${window.location.origin}/eventos/privado/${data.access_token}`;
