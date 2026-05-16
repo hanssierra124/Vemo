@@ -267,7 +267,12 @@ export class ProfileComponent implements OnInit {
   closeEventReview() { this.selectedEventForReview = null; }
 
   startAdminEditEvent(event: any) {
-    this.adminEditingEvent = { ...event };
+    // Antes: abríamos un mini-modal con 3 campos (título, descripción, ubicación).
+    // Ahora: navegamos al MISMO formulario que usa el organizador al crear un
+    // evento, en modo edición, con TODO precargado (incluido el mapa, las
+    // categorías, la emoción, las fechas, los match/system fields, etc.).
+    if (!event?.id) return;
+    this.router.navigate(['/edit-event', event.id]);
   }
   cancelAdminEdit() { this.adminEditingEvent = null; }
   async saveAdminEdit() {

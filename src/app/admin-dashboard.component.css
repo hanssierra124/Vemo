@@ -344,3 +344,120 @@
   .geo-tools-actions { flex-direction: column; }
   .geo-btn { width: 100%; }
 }
+
+/* ══════════════════════════════════════════════
+   PANEL DE EDICIÓN DE EVENTOS / EXPERIENCIAS
+   ══════════════════════════════════════════════ */
+.events-editor-panel {
+  max-width: 920px;
+  margin: 0 auto 40px;
+  padding: 28px 32px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 20px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+.eep-head { margin-bottom: 18px; }
+.eep-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.2px; }
+.eep-sub { font-size: 13px; color: rgba(255, 255, 255, 0.65); line-height: 1.5; margin: 0; }
+
+.eep-search-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.eep-search-input {
+  flex: 1; min-width: 200px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.32);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 100px;
+  color: #fff; font-family: inherit; font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.eep-search-input:focus { border-color: rgba(255, 77, 128, 0.45); }
+.eep-search-input::placeholder { color: rgba(255,255,255,0.4); }
+
+.eep-refresh-btn {
+  padding: 10px 18px; border-radius: 100px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.eep-refresh-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); }
+.eep-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.eep-loading, .eep-empty {
+  padding: 24px; text-align: center; color: rgba(255,255,255,0.55);
+  font-size: 13px;
+}
+
+.eep-list { display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; }
+.eep-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.eep-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+
+.eep-thumb {
+  flex: 0 0 60px; width: 60px; height: 60px;
+  border-radius: 12px; background-size: cover; background-position: center;
+  background-color: rgba(255,255,255,0.06);
+}
+.eep-info { flex: 1; min-width: 0; }
+.eep-info-top {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.eep-name {
+  font-size: 14px; font-weight: 700; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 280px;
+}
+.eep-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+  background: rgba(255,255,255,0.08); color: #fff;
+}
+.eep-tag-evento { background: rgba(255, 77, 128, 0.18); color: #ffb3c8; }
+.eep-tag-experiencia { background: rgba(106, 0, 255, 0.18); color: #c9b3ff; }
+.eep-tag-status.ok   { background: rgba(80, 220, 160, 0.18); color: #b9f1d2; }
+.eep-tag-status.warn { background: rgba(255, 179, 71, 0.18); color: #ffd9a3; }
+.eep-tag-status.err  { background: rgba(255, 77, 128, 0.18); color: #ffb3c8; }
+.eep-tag-loc { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+.eep-tag-loc.ok { background: rgba(80, 220, 160, 0.14); color: #b9f1d2; }
+
+.eep-info-meta {
+  font-size: 11px; color: rgba(255,255,255,0.55);
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+}
+.eep-info-meta strong { color: rgba(255,255,255,0.75); font-weight: 600; }
+.eep-loc {
+  max-width: 260px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.eep-dot { opacity: 0.4; }
+
+.eep-edit-btn {
+  flex: 0 0 auto;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #FF4D80, #5B00E8);
+  border: none; border-radius: 100px;
+  color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.eep-edit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(255, 77, 128, 0.32);
+}
+
+@media (max-width: 700px) {
+  .events-editor-panel { padding: 22px 18px; }
+  .eep-item { flex-direction: row; flex-wrap: wrap; }
+  .eep-name { max-width: 100%; }
+  .eep-edit-btn { width: 100%; margin-top: 8px; }
+}

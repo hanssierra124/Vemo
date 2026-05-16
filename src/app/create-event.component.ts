@@ -208,6 +208,11 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     } catch {}
   }
 
+  /** Parse JSON sin tirar excepción; usado para JSONB serializados. */
+  private safeParse(raw: string): any {
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+
   async fetchEventDetails(id: string) {
     try {
       const res = await fetch(`${environment.apiUrl}/api/events/${id}`);
@@ -231,15 +236,42 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
         this.currentImageUrl = data.image_url;
         this.descriptionCharCount = this.eventData.description.length;
 
-        if (data.match_fields) {
-          this.matchFields = { ...this.matchFields, ...data.match_fields };
+        // Supabase JSONB normalmente vuelve como objeto, pero defensivamente
+        // soportamos también string JSON por si algún driver intermedio lo
+        // serializa. Sin esto, los selects de "compañía ideal / horario / energía"
+        // quedan vacíos al editar.
+        const mf = typeof data.match_fields === 'string'
+          ? this.safeParse(data.match_fields)
+          : data.match_fields;
+        if (mf) this.matchFields = { ...this.matchFields, ...mf };
+
+        const sf = typeof data.system_fields === 'string'
+          ? this.safeParse(data.system_fields)
+          : data.system_fields;
+        if (sf) this.systemFields = { ...this.systemFields, ...sf };
+
+        // Privacidad: pre-cargamos el flag para que el toggle aparezca con el
+        // estado real. El access_password NO se devuelve (está hasheado en DB);
+        // si el admin quiere cambiarlo, escribe uno nuevo; si lo deja vacío,
+        // el backend mantiene el actual.
+        this.isPrivate = data.is_private === true;
+        if (data.access_token) {
+          this.generatedAccessToken = data.access_token;
+          this.privateEventLink = `${window.location.origin}/eventos/privado/${data.access_token}`;
         }
-        if (data.system_fields) {
-          this.systemFields = { ...this.systemFields, ...data.system_fields };
-        }
+
         if (data.latitude && data.longitude) {
           this.selectedLat = parseFloat(data.latitude);
           this.selectedLng = parseFloat(data.longitude);
+          // Si el mapa ya se inicializó, dibujamos el pin EN ESTE INSTANTE
+          // para que el admin/organizador vea la ubicación guardada.
+          // Si el mapa todavía no existe, initMap() detectará selectedLat/Lng
+          // ya seteadas y dibujará el pin por sí mismo. Cubrimos ambos casos.
+          if (this.map && this.L) {
+            this.placeMarker(this.selectedLat, this.selectedLng);
+            this.map.setView([this.selectedLat, this.selectedLng], 17);
+            setTimeout(() => this.map?.invalidateSize(), 200);
+          }
         }
       }
     } catch (err) {
@@ -255,9 +287,18 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     this.L = leafletModule.default || leafletModule;
     if (!this.L?.map) return;
 
+    // Centramos inicial: si ya tenemos coords del evento (modo edición),
+    // arrancamos sobre ellas. Si no, sobre Barranquilla por defecto.
+    const initialCenter: [number, number] =
+      this.selectedLat != null && this.selectedLng != null
+        ? [this.selectedLat, this.selectedLng]
+        : [10.9685, -74.7813];
+    const initialZoom = this.selectedLat != null && this.selectedLng != null ? 17 : 13;
+
     this.map = this.L.map('event-map', {
-      center: [10.9685, -74.7813],
-      zoom: 13, zoomControl: true
+      center: initialCenter,
+      zoom: initialZoom,
+      zoomControl: true
     });
 
     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -271,12 +312,28 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
       this.reverseGeocode(e.latlng.lat, e.latlng.lng);
     });
 
+    // Pin precargado (modo edición con coords ya guardadas).
     if (this.selectedLat && this.selectedLng) {
       this.placeMarker(this.selectedLat, this.selectedLng);
-      this.map.setView([this.selectedLat, this.selectedLng], 16);
     }
 
-    setTimeout(() => this.map.invalidateSize(), 400);
+    // invalidateSize en 2 momentos (defensivo: a veces Leaflet renderiza
+    // antes de que el contenedor tenga su altura final). Si en modo edición
+    // las coords llegaron DESPUÉS del initMap, intentamos dibujar el pin otra vez.
+    setTimeout(() => {
+      this.map?.invalidateSize();
+      if (this.selectedLat && this.selectedLng && !this.marker) {
+        this.placeMarker(this.selectedLat, this.selectedLng);
+        this.map?.setView([this.selectedLat, this.selectedLng], 17);
+      }
+    }, 400);
+    setTimeout(() => {
+      this.map?.invalidateSize();
+      if (this.selectedLat && this.selectedLng && !this.marker) {
+        this.placeMarker(this.selectedLat, this.selectedLng);
+        this.map?.setView([this.selectedLat, this.selectedLng], 17);
+      }
+    }, 1200);
   }
 
   placeMarker(lat: number, lng: number) {
@@ -461,8 +518,15 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     // System fields
     formData.append('system_fields', JSON.stringify(this.systemFields));
 
-    // Privacidad
-    if (this.isPrivate) {
+    // Privacidad: enviamos SIEMPRE el flag en modo edición (para que se pueda
+    // cambiar de privado a público y viceversa). En modo creación, solo cuando
+    // el usuario lo activó.
+    if (this.isEditMode) {
+      formData.append('is_private', this.isPrivate ? 'true' : 'false');
+      if (this.isPrivate && this.accessPassword.trim()) {
+        formData.append('access_password', this.accessPassword.trim());
+      }
+    } else if (this.isPrivate) {
       formData.append('is_private', 'true');
       if (this.accessPassword.trim()) formData.append('access_password', this.accessPassword.trim());
     }

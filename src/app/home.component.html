@@ -111,7 +111,11 @@
 
     </div>
   </div>
+
  <section class="vela-act">
+
+<section class="vela-act">
+
   <div class="vela-presentation-card" data-reveal="rise">
     
     <div class="vela-sphere-col">
@@ -123,7 +127,11 @@
     <div class="vela-content-col">
       <div class="vela-eyebrow">· TU COMPAÑERA DE LA CIUDAD</div>
       <h2 class="vela-headline">Hola, soy <em>Vela.</em><br>Cuéntame cómo te sientes.</h2>
+
       <p class="vela-desc">Escojo tres planes pensados para ti. No algoritmos — intuición curada.</p>
+
+      <p class="vela-desc">te ayudo recomendado planes pensados para ti.</p>
+
 
       <div class="vela-results-box">
         <div class="vrb-header">
@@ -162,6 +170,7 @@
         <span class="vdc-arrow" aria-hidden="true">→</span>
       </button>
 
+
       <div class="vela-register-row" *ngIf="!isLoggedIn">
         <p class="vela-register-label">¿Aún no tienes cuenta?</p>
         <div class="vela-register-btns">
@@ -173,6 +182,7 @@
           </button>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -180,7 +190,9 @@
   <div class="vela-recs-strip">
     <div class="vrs-head" data-reveal="up">
       <div class="vrs-eyebrow">· con cariño, para ti</div>
-      <h3 class="vrs-title">Te escogí estos <em>tres</em>.</h3>
+
+      <h3 class="vrs-title">Te escogí estos <em>planes</em>.</h3>
+
       <p class="vrs-msg">{{ velaMessage }}</p>
     </div>
 
@@ -191,7 +203,14 @@
                (click)="goToDetail(event.id)"
                [style.animationDelay]="(i * 0.12) + 's'">
         <div class="vrc-media">
-          <img [src]="event.image_url || 'assets/placeholder.jpg'" [alt]="event.title" loading="lazy">
+          <!-- Imagen real cuando existe; fallback con gradiente + emoji si no.
+               Antes el src caía en 'assets/placeholder.jpg' (archivo inexistente),
+               lo que dejaba la tarjeta visualmente en blanco. -->
+          <img *ngIf="event.image_url" [src]="event.image_url" [alt]="event.title || 'Evento'" loading="lazy"
+               (error)="event.image_url = null">
+          <div *ngIf="!event.image_url" class="vrc-media-fallback">
+            <span class="vrc-fb-emoji">{{ event.emotions?.emoji || '✨' }}</span>
+          </div>
           <div class="vrc-overlay"></div>
           <button class="vrc-fav" [class.on]="isFav(event.id)" (click)="toggleLike(event, $event)" aria-label="Guardar">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -206,13 +225,15 @@
             <span class="vrc-sw" [style.background]="getColorForEmotion(event.emotions.name)"></span>
             {{ event.emotions.name }}
           </div>
-          <h4 class="vrc-title">{{ event.title }}</h4>
+          <h4 class="vrc-title">{{ event.title || 'Sin título' }}</h4>
           <p class="vrc-reason" *ngIf="event._velaReason">{{ event._velaReason }}</p>
+
           <div class="vrc-organizer" *ngIf="event.profiles">
             <img *ngIf="event.profiles.profile_url" [src]="event.profiles.profile_url" class="vrc-org-avatar" [alt]="event.profiles.company_name || event.profiles.username">
             <span class="vrc-org-dot" *ngIf="!event.profiles.profile_url"></span>
             <span class="vrc-org-name">{{ event.profiles.company_name || event.profiles.username }}</span>
           </div>
+
           <div class="vrc-meta">
             <span *ngIf="event.date_event">{{ event.date_event | date:'EEE d · HH:mm' }}</span>
             <span class="vrc-dot" *ngIf="event.date_event && event.location_name">·</span>
@@ -227,6 +248,7 @@
     </div>
   </div>
 </section>
+
 
 
   <section class="moment-act">
@@ -429,7 +451,11 @@
         (click)="goToDetail(event.id)"
         [style.animationDelay]="(i * 0.07) + 's'">
         <div class="ec-media">
-          <img [src]="event.image_url" alt="Event cover" loading="lazy">
+          <img *ngIf="event.image_url" [src]="event.image_url" alt="Event cover" loading="lazy"
+               (error)="event.image_url = null">
+          <div *ngIf="!event.image_url" class="ec-media-fallback">
+            <span class="ec-fb-emoji">{{ event.emotions?.emoji || '✨' }}</span>
+          </div>
           <div class="ec-media-overlay"></div>
           <button class="ec-heart" [class.active]="isFav(event.id)" (click)="toggleLike(event, $event)">❤</button>
           <span class="ec-past-badge" *ngIf="isPastEvent(event)">Finalizado</span>
@@ -443,7 +469,7 @@
           <div class="ec-index">{{ (i + 1).toString().padStart(2, '0') }}</div>
         </div>
         <div class="ec-body">
-          <h3 class="ec-title">{{ event.title }}</h3>
+          <h3 class="ec-title">{{ event.title || 'Sin título' }}</h3>
           <div class="ec-organizer" *ngIf="event.profiles">
             <img *ngIf="event.profiles.profile_url" [src]="event.profiles.profile_url" class="ec-org-avatar" [alt]="event.profiles.company_name || event.profiles.username">
             <span class="ec-org-dot" *ngIf="!event.profiles.profile_url"></span>
@@ -535,4 +561,3 @@
     </button>
   </div>
 
-</div>

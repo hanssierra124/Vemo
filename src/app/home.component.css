@@ -992,15 +992,30 @@ h1 em, h2 em, h3 em,
 .exp-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,77,128,0.3), transparent); }
 
 .exp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-.exp-card { cursor: pointer; border-radius: 20px; overflow: hidden; background: rgba(255,255,255,0.02); border: 1px solid var(--border); transition: all 0.4s var(--ease-snap); animation: cardFadeUp 0.5s var(--ease-film) both; }
+/* Tarjeta del Explorer: visible por defecto. Animación solo añade un suave
+   deslizamiento hacia arriba; si el navegador no procesa la animación
+   (cambio de ruta, animaciones desactivadas, etc.) la tarjeta queda
+   igualmente visible — antes se quedaba en opacity:0. */
+.exp-card { cursor: pointer; border-radius: 20px; overflow: hidden; background: rgba(255,255,255,0.02); border: 1px solid var(--border); transition: all 0.4s var(--ease-snap); opacity: 1; animation: cardFadeUp 0.5s var(--ease-film) both; }
 .exp-card:hover { transform: translateY(-8px); border-color: var(--border-hot); box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 1px rgba(255,77,128,0.2); }
-@keyframes cardFadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cardFadeUp { from { transform: translateY(30px); } to { transform: translateY(0); } }
 
 .exp-skeleton { height: 340px; background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 75%); background-size: 200% 100%; animation: shimmer 1.8s infinite; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 .ec-media { height: 220px; position: relative; overflow: hidden; }
 .ec-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s; }
+/* Fallback cuando el evento no tiene image_url o la imagen falla al cargar.
+   Antes esto dejaba la tarjeta visualmente vacía (cuadro negro). */
+.ec-media-fallback {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 77, 128, 0.35), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(106, 0, 255, 0.32), transparent 55%),
+    linear-gradient(135deg, #15131c, #20182c);
+  display: flex; align-items: center; justify-content: center;
+}
+.ec-fb-emoji { font-size: 64px; opacity: 0.85; filter: drop-shadow(0 6px 22px rgba(0,0,0,0.55)); }
 .exp-card:hover .ec-media img { transform: scale(1.05); }
 .ec-media-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,16,0.9) 0%, rgba(10,10,16,0.2) 60%, transparent 100%); }
 
@@ -1235,13 +1250,16 @@ h1 em, h2 em, h3 em,
   transition: transform 0.35s var(--ease-film), box-shadow 0.35s var(--ease-film);
   display: flex;
   flex-direction: column;
-  opacity: 0;
-  animation: vrcIn 0.6s var(--ease-film) forwards;
+  /* Antes: opacity: 0 + animation vrcIn → si la animación no disparaba (cambio
+     de detección tardío, re-render after route change, etc.) la tarjeta se
+     quedaba invisible. Ahora arrancamos visibles y solo animamos el desplazamiento. */
+  opacity: 1;
+  animation: vrcIn 0.6s var(--ease-film) both;
 }
 
 @keyframes vrcIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: none; }
+  from { transform: translateY(16px); }
+  to   { transform: none; }
 }
 
 .vela-rec-card:hover {
@@ -1263,6 +1281,17 @@ h1 em, h2 em, h3 em,
   display: block;
   transition: transform 6s var(--ease-film);
 }
+/* Mismo fallback que la tarjeta del Explorer: gradiente con emoji centrado
+   cuando event.image_url está vacío o la imagen no carga. */
+.vrc-media-fallback {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 77, 128, 0.35), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(106, 0, 255, 0.32), transparent 55%),
+    linear-gradient(135deg, #15131c, #20182c);
+  display: flex; align-items: center; justify-content: center;
+}
+.vrc-fb-emoji { font-size: 56px; opacity: 0.85; filter: drop-shadow(0 6px 22px rgba(0,0,0,0.55)); }
 
 .vela-rec-card:hover .vrc-media img { transform: scale(1.08); }
 
@@ -1967,4 +1996,187 @@ h1 em, h2 em, h3 em,
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 140px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE-FIRST — Ajustes finos para teléfonos
+   Estos bloques NO sustituyen los breakpoints existentes; los complementan
+   con foco en móvil (~360–480 px) donde la app se sentía apretada.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Prevención global de scroll horizontal en móvil — corta cualquier
+   desbordamiento accidental por un orb, sombra o gradiente que se asome. */
+@media (max-width: 768px) {
+  .vemo-universe { overflow-x: hidden; }
+  .hero-act, .vela-act, .moment-act, .freq-wave-act,
+  .manifesto-act, .organizers-act, .explorer-act,
+  .register-cta-act { max-width: 100vw; }
+}
+
+/* ── PHONES (≤ 600px): refinamientos sobre lo que ya hay ── */
+@media (max-width: 600px) {
+  /* Hero */
+  .hero-act { padding: 90px 20px 50px; min-height: auto; }
+  .hero-overline { margin-bottom: 20px; }
+  .hero-descriptor { font-size: 15px; margin-bottom: 28px; }
+  .hero-mood-tag { margin-top: 18px; font-size: 11px; padding: 7px 14px; }
+
+  /* Vela — más aire lateral para que la tarjeta no toque los bordes */
+  .vela-act { padding: 60px 20px 50px; }
+  .vela-recs-strip { padding: 0 4px; }
+  .vrs-head { padding: 0 4px; }
+  .vela-headline { font-size: 30px !important; line-height: 1.1; }
+  .vela-desc { font-size: 14px; }
+  .vela-eyebrow { font-size: 10px; letter-spacing: 2.4px; margin-bottom: 12px; }
+  .emotion-selection-grid { gap: 6px; }
+  .emo-btn-mini { font-size: 11px; padding: 8px 12px; }
+  .vela-deep-cta { padding: 14px 16px; gap: 10px; flex-wrap: nowrap; }
+  .vdc-title { font-size: 13px; }
+  .vdc-sub { font-size: 11px; }
+
+  /* Modo Explorador */
+  .explorer-act { padding: 60px 20px 80px; }
+  .exp-header { gap: 16px; margin-bottom: 32px; }
+  .exp-header-left { gap: 14px; }
+  .exp-divider { display: none; }
+  .exp-title { font-size: 32px !important; }
+  .exp-overline { font-size: 9px; letter-spacing: 2px; }
+  .exp-filters { gap: 10px; margin-bottom: 24px; }
+  .exp-tab { padding: 8px 14px; font-size: 12px; }
+  .exp-cat-chip { padding: 5px 11px; font-size: 11px; }
+  .ec-media { height: 200px; }
+  .ec-body { padding: 18px 18px; }
+  .ec-title { font-size: 17px; margin-bottom: 10px; }
+
+  /* Vela recomendaciones — pulir tipografía */
+  .vrs-head { margin-bottom: 22px; }
+  .vrs-eyebrow { font-size: 10px; letter-spacing: 2px; margin-bottom: 10px; }
+  .vrs-msg { font-size: 13px; line-height: 1.5; }
+  .vrc-body { padding: 16px 16px 18px; }
+  .vrc-title { font-size: 16px; }
+  .vrc-reason { font-size: 12px; }
+  .vrc-meta { font-size: 11px; }
+
+  /* Moment — más aire lateral */
+  .moment-act { padding: 60px 20px 50px; }
+  .moment-inner { padding: 0 4px; gap: 36px; }
+  .moment-title { font-size: clamp(36px, 10vw, 54px); margin-bottom: 18px; }
+  .moment-body { font-size: 14px; margin-bottom: 22px; }
+  .moment-cta-primary, .moment-cta-ghost { padding: 12px 18px; font-size: 12px; }
+  .moment-viz { max-width: 320px; }
+  .moment-ticker { margin-top: 36px; padding: 14px 0; }
+
+  /* Freq wave */
+  .freq-wave-act { padding: 60px 20px 50px !important; }
+  .freq-eyebrow { font-size: 10px; margin-bottom: 10px; }
+  .freq-title { font-size: clamp(28px, 8vw, 42px) !important; line-height: 1.1; }
+  .freq-aside { font-size: 13px; line-height: 1.55; }
+  .wave-strip { height: 90px; margin-top: 24px; }
+
+  /* Manifesto */
+  .manifesto-act { padding: 70px 20px 70px; }
+  .manifesto-label { font-size: 9px; letter-spacing: 3px; margin-bottom: 16px; }
+  .manifesto-title { font-size: clamp(28px, 8vw, 44px); margin-bottom: 36px; line-height: 1.15; }
+
+  /* Organizers — scroll horizontal compacto */
+  .organizers-act { padding: 50px 0 40px; }
+  .org-act-inner { padding: 0 12px; }
+  .org-title { font-size: clamp(28px, 8vw, 42px); }
+  .org-subtitle { font-size: 13px; }
+  .org-eyebrow { font-size: 9px; letter-spacing: 3px; }
+  .org-scroll-track { gap: 10px; padding: 0 12px; }
+  .org-card { width: 150px; }
+  .org-card-header { height: 88px; }
+  .org-avatar-ring { width: 56px; height: 56px; }
+  .org-name { font-size: 13px; }
+  .org-address { font-size: 10px; }
+  .org-contact-btn { font-size: 10px; padding: 6px 10px; }
+
+  /* Tarjeta de tipo + emoción dentro del Explorer card */
+  .ec-badges { top: 10px; left: 10px; gap: 5px; }
+  .ec-cat { font-size: 9px; padding: 3px 8px; }
+  .ec-heart { top: 10px; right: 10px; width: 30px; height: 30px; font-size: 13px; }
+  .ec-index { font-size: 24px; bottom: 10px; right: 12px; }
+
+  /* CTA de registro — la grid de 2 cards a 1 en móvil ya está; ajustamos texto */
+  .rcta-title { font-size: clamp(30px, 8vw, 48px) !important; }
+  .rcta-desc { font-size: 14px; }
+  .rcta-card { padding: 22px 20px; }
+  .rcta-card-title { font-size: 17px; }
+  .rcta-card-desc { font-size: 13px; }
+}
+
+/* ── PHONES PEQUEÑOS (≤ 480px): foco en lo más comprimido ── */
+@media (max-width: 480px) {
+  .hero-title { font-size: 38px !important; margin-bottom: 22px; line-height: 1; }
+  .hero-overline { font-size: 10px; letter-spacing: 2px; }
+
+  .vela-presentation-card { padding: 22px 18px !important; border-radius: 20px; }
+  .vela-sphere-col { height: 200px; }
+  .vela-big-sphere { width: 180px; height: 180px; }
+  .vela-sphere-text { font-size: 30px; }
+  .vela-headline { font-size: 26px !important; }
+  .vela-desc { font-size: 13px; }
+  .vela-results-box { padding: 16px 12px; border-radius: 18px; }
+  .vrb-msg { font-size: 12px; line-height: 1.5; }
+  .emotion-selection-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .emo-btn-mini { padding: 9px 8px; font-size: 11px; justify-content: flex-start; }
+
+  /* Botones de registro Vela: stack vertical para no apretar texto */
+  .vela-register-btns { flex-direction: column; gap: 8px; }
+  .vela-reg-btn { width: 100%; justify-content: center; font-size: 12px; padding: 11px 14px; }
+
+  /* Vela CTA con dos líneas — apilar */
+  .vela-deep-cta { padding: 12px 14px; }
+  .vdc-spark { font-size: 16px; }
+  .vdc-arrow { font-size: 14px; }
+
+  /* Explorer */
+  .exp-title { font-size: 28px !important; }
+  .exp-tab { padding: 7px 12px; font-size: 11px; }
+  .exp-cat-chip { padding: 4px 10px; font-size: 10px; }
+  .ec-media { height: 180px; }
+  .ec-body { padding: 16px 16px; }
+  .ec-title { font-size: 16px; margin-bottom: 8px; }
+  .ec-footer { font-size: 11px; }
+
+  /* Vela recs */
+  .vrs-title { font-size: 24px !important; }
+  .vela-recs-grid { gap: 12px; }
+  .vrc-media { aspect-ratio: 16 / 10; }
+
+  /* Moment */
+  .moment-title { font-size: 36px; }
+  .moment-cta-row { flex-direction: column; align-items: stretch; }
+  .moment-cta-primary, .moment-cta-ghost { width: 100%; justify-content: center; }
+  .moment-viz { --orbit-r: 28vw; max-width: 280px; }
+
+  /* Freq wave */
+  .freq-title { font-size: 28px !important; }
+  .freq-aside { font-size: 12px; }
+  .wave-strip { height: 70px; }
+
+  /* Manifesto */
+  .manifesto-title { font-size: 26px; margin-bottom: 28px; }
+
+  /* Organizers cards */
+  .org-card { width: 138px; }
+  .org-card-header { height: 78px; }
+  .org-avatar-ring { width: 50px; height: 50px; }
+  .org-card-body { padding: 10px 10px 12px; }
+}
+
+/* ── PHONES MUY PEQUEÑOS (≤ 360px): Galaxy Fold y similares ── */
+@media (max-width: 360px) {
+  .hero-title { font-size: 34px !important; }
+  .vela-headline { font-size: 23px !important; }
+  .vela-big-sphere { width: 160px; height: 160px; }
+  .vela-sphere-text { font-size: 26px; }
+  .exp-title { font-size: 26px !important; }
+  .moment-title { font-size: 32px !important; }
+  .freq-title { font-size: 26px !important; }
+  .manifesto-title { font-size: 24px !important; }
+  .ec-media { height: 160px; }
+  .vrc-body { padding: 14px; }
+  .org-card { width: 130px; }
 }

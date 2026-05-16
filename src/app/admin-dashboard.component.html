@@ -62,6 +62,66 @@
       </div>
     </section>
 
+    <!-- ══ EDITOR DE EVENTOS / EXPERIENCIAS ══ -->
+    <section class="events-editor-panel">
+      <div class="eep-head">
+        <h3 class="eep-title">Editar eventos y experiencias</h3>
+        <p class="eep-sub">
+          Lista completa de eventos y experiencias publicados. Hacé click en
+          <strong>Editar</strong> para modificar cualquier dato — incluida la
+          ubicación. Todos los campos quedan precargados con los valores actuales.
+        </p>
+      </div>
+
+      <div class="eep-search-row">
+        <input
+          type="text"
+          class="eep-search-input"
+          [(ngModel)]="eventSearch"
+          placeholder="Buscar por título, dirección u organizador…">
+        <button type="button" class="eep-refresh-btn" (click)="loadAllEvents()" [disabled]="loadingEvents">
+          {{ loadingEvents ? 'Cargando…' : 'Refrescar' }}
+        </button>
+      </div>
+
+      <div class="eep-loading" *ngIf="loadingEvents && allEvents.length === 0">
+        Cargando eventos…
+      </div>
+
+      <div class="eep-empty" *ngIf="!loadingEvents && filteredEvents.length === 0">
+        No hay eventos que coincidan con la búsqueda.
+      </div>
+
+      <div class="eep-list" *ngIf="filteredEvents.length > 0">
+        <div class="eep-item" *ngFor="let ev of filteredEvents">
+          <div class="eep-thumb"
+               [style.backgroundImage]="ev.image_url ? 'url(' + ev.image_url + ')' : null"></div>
+          <div class="eep-info">
+            <div class="eep-info-top">
+              <h4 class="eep-name">{{ ev.title }}</h4>
+              <span class="eep-tag eep-tag-{{ ev.post_type || 'evento' }}">{{ ev.post_type === 'experiencia' ? 'Experiencia' : 'Evento' }}</span>
+              <span class="eep-tag eep-tag-status" [class.ok]="ev.status === 'approved'" [class.warn]="ev.status === 'pending_review'" [class.err]="ev.status === 'rejected'">
+                {{ ev.status || 'sin estado' }}
+              </span>
+              <span class="eep-tag eep-tag-loc" [class.ok]="ev.location_verified === true">
+                {{ ev.location_verified === true ? '📍 verificada' : '📍 sin verificar' }}
+              </span>
+            </div>
+            <div class="eep-info-meta">
+              <span *ngIf="ev.profiles?.company_name || ev.profiles?.username">
+                Por: <strong>{{ ev.profiles?.company_name || ev.profiles?.username }}</strong>
+              </span>
+              <span class="eep-dot" *ngIf="ev.location_name">·</span>
+              <span *ngIf="ev.location_name" class="eep-loc">{{ ev.location_name }}</span>
+              <span class="eep-dot" *ngIf="ev.date_event">·</span>
+              <span *ngIf="ev.date_event">{{ ev.date_event | date:'short' }}</span>
+            </div>
+          </div>
+          <button type="button" class="eep-edit-btn" (click)="editEvent(ev.id)">Editar</button>
+        </div>
+      </div>
+    </section>
+
     <div class="loading-state-centered" *ngIf="loading">
       <div class="vela-liquid-loader"></div>
       <p class="clash-display loader-text">Sincronizando Terminal...</p>

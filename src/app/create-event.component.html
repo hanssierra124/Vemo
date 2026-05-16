@@ -327,7 +327,9 @@
       </div>
 
       <!-- ===== PRIVACIDAD ===== -->
-      <div class="form-section" *ngIf="!isEditMode">
+      <!-- En modo edición también queda visible para que el admin (u organizador)
+           pueda cambiar la visibilidad y/o la contraseña de un evento existente. -->
+      <div class="form-section">
         <h3 class="section-header">Visibilidad del evento</h3>
         <div class="privacy-toggle-wrap">
           <label class="privacy-toggle">
@@ -345,15 +347,29 @@
           <div class="form-group">
             <label>Contraseña de acceso <span class="opt-label">Opcional</span></label>
             <input type="text" [(ngModel)]="accessPassword" name="accessPassword"
-                   placeholder="Deja vacío si no quieres contraseña"
+                   [placeholder]="isEditMode ? 'Deja vacío para mantener la contraseña actual' : 'Deja vacío si no quieres contraseña'"
                    maxlength="50">
-            <span class="field-hint">Si estableces contraseña, los invitados deberán ingresarla al abrir el link.</span>
+            <span class="field-hint" *ngIf="!isEditMode">Si estableces contraseña, los invitados deberán ingresarla al abrir el link.</span>
+            <span class="field-hint" *ngIf="isEditMode">Si escribes una nueva contraseña, reemplaza la actual. Si dejas el campo vacío, se mantiene la que ya estaba.</span>
+          </div>
+        </div>
+        <!-- Link compartible del evento privado (cuando ya existe) -->
+        <div class="privacy-link-existing" *ngIf="isEditMode && isPrivate && privateEventLink">
+          <div class="form-group">
+            <label>Link compartible actual</label>
+            <div class="address-row">
+              <input type="text" [value]="privateEventLink" readonly>
+              <button type="button" class="btn-geocode" (click)="copyPrivateLink()">Copiar</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ===== LINK GENERADO (evento privado creado) ===== -->
-      <div class="private-link-result" *ngIf="generatedAccessToken">
+      <!-- ===== LINK GENERADO (solo cuando se acaba de CREAR un evento privado) ===== -->
+      <!-- En modo edición no mostramos esta "celebración" porque generatedAccessToken
+           se pre-carga con el token existente del evento, lo cual ocultaría el botón
+           de Guardar. El link ya existente se muestra dentro de la sección Privacidad. -->
+      <div class="private-link-result" *ngIf="generatedAccessToken && !isEditMode">
         <div class="plr-inner">
           <div class="plr-icon">🔗</div>
           <h3 class="plr-title">¡Evento privado creado!</h3>
@@ -368,7 +384,7 @@
       </div>
 
       <!-- ===== SUBMIT ===== -->
-      <button type="submit" [disabled]="loading" class="btn-submit" *ngIf="!generatedAccessToken">
+      <button type="submit" [disabled]="loading" class="btn-submit" *ngIf="isEditMode || !generatedAccessToken">
         {{ loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios' : 'Enviar a Revisión') }}
       </button>
 

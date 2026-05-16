@@ -21,28 +21,21 @@ export class MapComponent implements OnInit, AfterViewInit {
   events: any[] = [];
   availableEmotions: any[] = [];
   loading: boolean = true;
-<<<<<<< HEAD
   activeEmotionName: string | null = null;
   locatingUser = false;
+  // Eventos cerca del usuario: poblado automáticamente al conceder geolocalización
+  // (top 3 más cercanos por Haversine) y reemplazado si el usuario aprieta el
+  // botón "Localizar" (que consulta el endpoint /api/events/nearby).
   nearbyEvents: any[] = [];
   showNearbyPanel = false;
   showRoutePanel = false;
   routeInfo: { distance: string; duration: string; destTitle: string } | null = null;
+  // Estado del permiso del navegador para geolocalización.
+  geoStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'error' = 'idle';
   private userMarker: any = null;
   private userLat: number | null = null;
   private userLng: number | null = null;
   private routeLayers: any[] = [];
-=======
-  activeEmotionName: string | null = null; // Filtramos por nombre para evitar errores de ID
-
-  // ── Geolocalización del usuario + recomendaciones por cercanía ──
-  userLat: number | null = null;
-  userLng: number | null = null;
-  geoStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'error' = 'idle';
-  nearestEvents: any[] = [];
-  private userMarker: any = null;
-
->>>>>>> b46b89f146a7b0bc096b8680735201d7f2c8708e
   private coordinateCache: any = {};
 
   constructor(
@@ -192,7 +185,8 @@ export class MapComponent implements OnInit, AfterViewInit {
    */
   private computeNearestEvents() {
     if (this.userLat == null || this.userLng == null) {
-      this.nearestEvents = [];
+      this.nearbyEvents = [];
+      this.showNearbyPanel = false;
       return;
     }
     const candidates = (this.events || [])
@@ -201,13 +195,14 @@ export class MapComponent implements OnInit, AfterViewInit {
         const lng = ev.longitude != null ? parseFloat(ev.longitude) : NaN;
         if (!isFinite(lat) || !isFinite(lng)) return null;
         if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
-        const _distanceKm = this.haversineKm(this.userLat!, this.userLng!, lat, lng);
-        return { ...ev, _distanceKm };
+        const distance_km = this.haversineKm(this.userLat!, this.userLng!, lat, lng);
+        return { ...ev, distance_km };
       })
       .filter((x): x is any => x !== null)
-      .sort((a, b) => a._distanceKm - b._distanceKm);
+      .sort((a, b) => a.distance_km - b.distance_km);
 
-    this.nearestEvents = candidates.slice(0, 3);
+    this.nearbyEvents = candidates.slice(0, 3);
+    this.showNearbyPanel = this.nearbyEvents.length > 0;
   }
 
   public getColorForEmotion(emotionName: string): string {
@@ -326,10 +321,19 @@ export class MapComponent implements OnInit, AfterViewInit {
       }
 
       items.forEach((i: any) => {
-        const bgImage = i.image || 'assets/placeholder.jpg'; 
+        const bgImage = i.image || 'assets/placeholder.jpg';
+        // Envolvemos la burbuja en un contenedor con dos ondas radar que
+        // pulsan hacia afuera con el color de la emoción del evento. Las
+        // ondas se posicionan absolutas detrás de la burbuja y se animan
+        // con CSS (ver .vemo-radar-wave en map.component.css).
         const customIcon = this.L.divIcon({
           className: 'custom-vemo-marker',
-          html: `<div class="vemo-marker-bubble" style="background-image: url('${bgImage}'); border-color: ${color}; box-shadow: 0 0 15px ${color};"></div>`,
+          html: `
+            <div class="vemo-marker-wrap" style="--radar-color: ${color};">
+              <span class="vemo-radar-wave"></span>
+              <span class="vemo-radar-wave vemo-radar-wave--delay"></span>
+              <div class="vemo-marker-bubble" style="background-image: url('${bgImage}'); border-color: ${color}; box-shadow: 0 0 15px ${color};"></div>
+            </div>`,
           iconSize: [50, 50], iconAnchor: [25, 25], popupAnchor: [0, -25]
         });
         const marker = this.L.marker([i.lat, i.lng], { icon: customIcon });

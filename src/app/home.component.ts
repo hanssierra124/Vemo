@@ -22,9 +22,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   availableCategories: any[] = [];
   activeCategoryId: string | null = null;
   activePostType = 'all';
+  // Crítico: inicializado como [] (antes era `any` sin valor → undefined).
+  // El template hace `*ngIf="organizers.length > 0"` y si era undefined
+  // rompía el render entero, dejando el Modo Explorador y Vela en blanco.
+  organizers: any[] = [];
 
   get filteredExplorerEvents(): any[] {
-    let evs = this.explorerEvents;
+    const list = this.explorerEvents || [];
+    let evs = list;
     if (this.activeCategoryId) {
       evs = evs.filter(e => e.categories?.some((c: any) => String(c.id) === this.activeCategoryId));
     }
@@ -110,7 +115,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   explorerEvents: any[] = [];
 
   // ── ORGANIZADORES ─────────────────────────────────────
-  organizers: any[] = [];
+ 
 
   // ── VELA RECOMENDACIONES ──────────────────────────────
   recommendedEvents: any[] = [];
@@ -783,8 +788,22 @@ if (el) {
       }).catch(() => {});
     }
     this.showMoodModal = false;
+
+    // Si los eventos todavía no se cargaron (clic muy rápido tras entrar a la
+    // página), processVelaRecommendations devolvería recommendedEvents vacío.
+    // Esperamos hasta 4s a que loadEvents termine antes de calcular el match.
+    if (!this.events || this.events.length === 0) {
+      const start = Date.now();
+      while ((!this.events || this.events.length === 0) && Date.now() - start < 4000) {
+        await new Promise(r => setTimeout(r, 150));
+      }
+    }
+
     this.processVelaRecommendations();
     this.cdr.detectChanges();
+    // Segundo pase tras un microtask: garantiza que el *ngFor de
+    // recommendedEvents se monte con los datos actuales antes de pintar.
+    setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   async loadOrganizers() {
@@ -807,6 +826,15 @@ if (el) {
         const events = Array.isArray(data) ? data : (data.data || data.events || []);
         this.events = events;
         this.explorerEvents = events;
+      } else {
+        // El backend respondió pero con error (500, 404, etc.). Antes esto
+        // quedaba en silencio y el Modo Explorador / Vela mostraban "vacío"
+        // sin pista de la causa. Ahora dejamos rastro en consola.
+        let detail = '';
+        try { detail = JSON.stringify(await res.json()); } catch {}
+        console.warn(`[Vemo] /api/events respondió ${res.status}. Detalle:`, detail || '(sin cuerpo JSON)');
+        this.events = this.events || [];
+        this.explorerEvents = this.explorerEvents || [];
       }
     } catch (e: any) {
       // Backend offline: garantizamos que `events`/`explorerEvents` quedan

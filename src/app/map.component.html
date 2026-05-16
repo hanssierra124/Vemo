@@ -1,19 +1,5 @@
 <div class="map-page-wrapper">
 
-  <div class="map-controls-overlay">
-    <div class="filters-scroll">
-      <button class="filter-chip reset" [class.active]="!activeEmotionName"
-        (click)="activeEmotionName = null; drawMapContent()">
-        TODO EL CAOS
-      </button>
-
-      <button *ngFor="let emotion of availableEmotions" class="filter-chip"
-        [class.active]="activeEmotionName === emotion.name" (click)="toggleEmotionFilter(emotion)">
-        <span class="emoji">{{ emotion.emoji }}</span>
-        <span class="label">{{ emotion.name }}</span>
-      </button>
-    </div>
-  </div>
 
   <div class="map-legend-box" *ngIf="!loading && availableEmotions.length > 0">
     <h4 class="clash-display legend-title">Energía de la Ciudad</h4>
@@ -36,7 +22,9 @@
 
   <div id="main-map" class="full-screen-map"></div>
 
-<<<<<<< HEAD
+  <!-- Panel "Cerca de ti": se llena automáticamente al conceder geolocalización
+       (top 3 más cercanos por Haversine) o tras pulsar el botón "Localizar"
+       (que consulta /api/events/nearby y reemplaza la lista). -->
   <div class="nearby-panel" *ngIf="showNearbyPanel">
     <div class="nearby-panel-header">
       <span class="nearby-title">📍 Cerca de ti</span>
@@ -47,7 +35,11 @@
         <img [src]="ev.image_url || 'assets/placeholder.jpg'" class="nearby-thumb" [alt]="ev.title">
         <div class="nearby-info">
           <p class="nearby-name">{{ ev.title }}</p>
-          <span class="nearby-dist">{{ ev.distance_km | number:'1.1-1' }} km</span>
+          <span class="nearby-dist">
+            {{ ev.distance_km < 1
+                ? (ev.distance_km * 1000 | number:'1.0-0') + ' m'
+                : (ev.distance_km | number:'1.1-1') + ' km' }}
+          </span>
         </div>
       </div>
     </div>
@@ -71,38 +63,6 @@
       </div>
     </div>
   </div>
-=======
-  <!-- Panel "Cerca de ti": top 3 eventos más cercanos al usuario.
-       Solo aparece si la geolocalización fue concedida. -->
-  <aside class="nearest-panel" *ngIf="geoStatus === 'granted'">
-    <div class="np-header">
-      <span class="np-pulse-dot" aria-hidden="true"></span>
-      <span>Cerca de ti</span>
-    </div>
-    <div class="np-list" *ngIf="nearestEvents.length > 0">
-      <button
-        type="button"
-        class="np-item"
-        *ngFor="let ev of nearestEvents"
-        (click)="goToEventDetail(ev.id)"
-        [attr.aria-label]="'Abrir ' + ev.title">
-        <div class="np-thumb"
-          [style.backgroundImage]="ev.image_url ? 'url(' + ev.image_url + ')' : null"></div>
-        <div class="np-info">
-          <span class="np-title">{{ ev.title }}</span>
-          <span class="np-distance">
-            {{ ev._distanceKm < 1
-                ? (ev._distanceKm * 1000 | number:'1.0-0') + ' m'
-                : (ev._distanceKm | number:'1.1-1') + ' km' }}
-          </span>
-        </div>
-      </button>
-    </div>
-    <div class="np-status" *ngIf="nearestEvents.length === 0">
-      No hay eventos con ubicación cerca de ti todavía.
-    </div>
-  </aside>
->>>>>>> b46b89f146a7b0bc096b8680735201d7f2c8708e
 
   <div class="loading-overlay" *ngIf="loading">
     <div class="spinner"></div>

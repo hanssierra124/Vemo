@@ -159,11 +159,46 @@
 
   .vemo-header {
     height: 70px;
-    padding: 0 20px;
+    padding: 0 12px;
     color:  rgb(253, 210, 235);
+    gap: 8px;
   }
 
-  .vh-profile-btn span:last-child {
-    display: none;
+  /* Logo: mantenemos el SVG pero el texto VEMO + ciudad se ocultan para
+     liberar espacio. El logo ya es identificable por sí solo. */
+  .vh-text-group { display: none; }
+  .vh-logo-wrap { gap: 0; }
+  .vh-logo-wrap img { height: 22px; }
+
+  /* Pill central más compacto y sin que se desborde */
+  .vh-center {
+    gap: 0;
+    padding: 4px;
+    border-radius: 100px;
+    flex-shrink: 1;
+    min-width: 0;
   }
+
+  .vh-link {
+    padding: 7px 10px;
+    font-size: 11px;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .vh-link svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* Botón "Mi Perfil": solo icono, sin texto */
+  .vh-profile-btn { padding: 8px 10px; gap: 0; }
+  .vh-profile-btn span:last-child { display: none; }
+}
+
+/* En pantallas muy chicas (≤ 380px) ocultamos los textos del nav central
+   y dejamos solo iconos para Explora/Favoritos. "Inicio" queda como texto
+   corto porque no tiene icono. */
+@media (max-width: 380px) {
+  .vh-link { padding: 7px 8px; font-size: 10px; }
+  .vh-link span { display: none; }
+  /* "Inicio" no tiene icono — para que siga clickeable mostramos el texto */
+  .vh-link:first-child { padding: 7px 12px; font-size: 11px; }
+  .vh-link:first-child span { display: inline; }
 }

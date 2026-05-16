@@ -2,6 +2,7 @@ import { environment } from '../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -25,8 +26,58 @@ export class AdminDashboardComponent implements OnInit {
   recoordinating = false;
   recoordinateResult: { fixed?: number; skipped?: number; failed?: number; total?: number; details?: any[]; message?: string; error?: string } | null = null;
 
+  // ── Editor de eventos / experiencias ──
+  allEvents: any[] = [];
+  loadingEvents = false;
+  eventSearch = '';
+
+  get filteredEvents(): any[] {
+    const q = (this.eventSearch || '').trim().toLowerCase();
+    if (!q) return this.allEvents;
+    return this.allEvents.filter(ev =>
+      (ev.title || '').toLowerCase().includes(q) ||
+      (ev.location_name || '').toLowerCase().includes(q) ||
+      (ev.profiles?.username || '').toLowerCase().includes(q) ||
+      (ev.profiles?.company_name || '').toLowerCase().includes(q)
+    );
+  }
+
+  constructor(private router: Router) {}
+
   async ngOnInit() {
     await this.loadVerifications();
+    await this.loadAllEvents();
+  }
+
+  /**
+   * Carga TODOS los eventos / experiencias para que el admin pueda editar
+   * cualquiera (incluso los aprobados ya en producción).
+   */
+  async loadAllEvents() {
+    this.loadingEvents = true;
+    try {
+      const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+      const res = await fetch(`${environment.apiUrl}/api/admin/all-events`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        this.allEvents = await res.json();
+      } else {
+        console.warn('No se pudieron cargar eventos para el editor:', res.status);
+      }
+    } catch (err) {
+      console.warn('Error cargando eventos:', err);
+    } finally {
+      this.loadingEvents = false;
+    }
+  }
+
+  /**
+   * Abre el formulario de edición (reutiliza CreateEventComponent en modo
+   * edit, con todos los datos del evento pre-cargados — incluida la ubicación).
+   */
+  editEvent(eventId: string) {
+    this.router.navigate(['/edit-event', eventId]);
   }
 
   async loadVerifications() {
