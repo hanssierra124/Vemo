@@ -115,7 +115,48 @@ export const routes: Routes = [
     loadComponent: () => import('./private-event.component').then(m => m.PrivateEventComponent)
   },
 
-  // 15. COMODÍN
+  // 15. REGISTRO EXPRESS (Walk-in) — enlace público oculto.
+  // Panel del organizador para gestionar los correos que reciben la
+  // notificación automática. NO se enlaza desde el dashboard principal:
+  // se accede manualmente por URL.
+  {
+    path: 'registro-express/:eventId/admin',
+    loadComponent: () =>
+      import('./walkin-admin.component').then(m => m.WalkinAdminComponent),
+    canActivate: [blockGuard]
+  },
+  // Formulario público para asistentes de último minuto.
+  {
+    path: 'registro-express/:eventId',
+    loadComponent: () =>
+      import('./walkin-register.component').then(m => m.WalkinRegisterComponent)
+  },
+
+  // 16. RESEÑAS — FEED SOCIAL Y PERFILES PÚBLICOS (Fase F3)
+  {
+    path: 'feed',
+    loadComponent: () => import('./feed.component').then(m => m.FeedComponent),
+    canActivate: [blockGuard]
+  },
+  {
+    // Perfil público de usuario
+    path: 'u/:id',
+    loadComponent: () => import('./user-profile.component').then(m => m.UserProfileComponent)
+  },
+  {
+    // Perfil público de organizador
+    path: 'organizer/:id',
+    loadComponent: () => import('./organizer-profile.component').then(m => m.OrganizerProfileComponent)
+  },
+
+  // 16b. MODERACIÓN (cola admin — Fase F4). El backend exige rol admin.
+  {
+    path: 'admin/moderation',
+    loadComponent: () => import('./moderation.component').then(m => m.ModerationComponent),
+    canActivate: [blockGuard]
+  },
+
+  // 17. COMODÍN
   {
     path: '**',
     redirectTo: 'home'

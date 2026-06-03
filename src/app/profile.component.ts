@@ -369,14 +369,20 @@ export class ProfileComponent implements OnInit {
   // ── ADMIN DATA ──
   async loadAdminData() {
     try {
-      const res = await fetch(`${environment.apiUrl}/api/admin/verifications?t=${Date.now()}`);
+      const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+      const res = await fetch(`${environment.apiUrl}/api/admin/verifications?t=${Date.now()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) this.pendingVerifications = await res.json();
     } catch {}
   }
 
   async loadAdminEvents() {
     try {
-      const res = await fetch(`${environment.apiUrl}/api/admin/events-pending`);
+      const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+      const res = await fetch(`${environment.apiUrl}/api/admin/events-pending`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) this.pendingEvents = await res.json();
     } catch {}
   }

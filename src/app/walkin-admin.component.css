@@ -1,0 +1,256 @@
+:host {
+  --wka-glow: #FF4D80;
+  --wka-deep: #6A00FF;
+  --wka-ink: #0E0D12;
+  --wka-surface: #16151B;
+  --wka-border: rgba(255, 255, 255, 0.10);
+  --wka-text-1: #F0F0F0;
+  --wka-text-2: rgba(240, 240, 240, 0.65);
+  --wka-text-3: rgba(240, 240, 240, 0.40);
+  --wka-err: #FF6B6B;
+  --wka-ff: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+.wka-page {
+  min-height: 100vh;
+  background: var(--wka-ink);
+  color: var(--wka-text-1);
+  font-family: var(--wka-ff);
+  padding: 18px 14px 80px;
+}
+
+/* ── Estados ── */
+.wka-state {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 16px;
+  max-width: 460px;
+  margin: 0 auto;
+  color: var(--wka-text-2);
+}
+.wka-state-icon { font-size: 44px; margin-bottom: 12px; }
+.wka-state h1 { font-size: 20px; margin: 0 0 8px; color: var(--wka-text-1); }
+.wka-state p { margin: 0 0 20px; }
+
+.wka-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.10);
+  border-top-color: var(--wka-glow);
+  animation: wka-spin 0.9s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes wka-spin { to { transform: rotate(360deg); } }
+
+/* ── Layout ── */
+.wka-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.wka-head {
+  padding: 6px 4px 0;
+}
+.wka-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--wka-glow);
+  margin-bottom: 6px;
+}
+.wka-title { font-size: clamp(22px, 5.5vw, 30px); font-weight: 700; margin: 0 0 4px; }
+.wka-sub { margin: 0; color: var(--wka-text-2); font-size: 14px; }
+
+/* ── Card ── */
+.wka-card {
+  background: var(--wka-surface);
+  border: 1px solid var(--wka-border);
+  border-radius: 18px;
+  padding: 18px 16px;
+}
+.wka-card-title { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+.wka-card-hint { font-size: 13px; color: var(--wka-text-2); margin: 0 0 14px; line-height: 1.55; }
+
+/* ── Share ── */
+.wka-share {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wka-share-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--wka-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--wka-text-1);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+.wka-share-input:focus { border-color: var(--wka-glow); }
+
+/* ── Form ── */
+.wka-form { display: flex; flex-direction: column; gap: 12px; }
+.wka-form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.wka-field { display: flex; flex-direction: column; gap: 6px; }
+.wka-field label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--wka-text-2);
+}
+.wka-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--wka-border);
+  color: var(--wka-text-1);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+}
+.wka-field input::placeholder { color: var(--wka-text-3); }
+.wka-field input:focus { border-color: var(--wka-glow); background: rgba(255, 255, 255, 0.07); }
+
+.wka-error {
+  background: rgba(255, 107, 107, 0.10);
+  color: var(--wka-err);
+  border: 1px solid rgba(255, 107, 107, 0.30);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ── Lista ── */
+.wka-list-wrap { margin-top: 18px; }
+.wka-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wka-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--wka-border);
+}
+.wka-list-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.wka-list-email {
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60vw;
+}
+.wka-list-label { font-size: 12px; color: var(--wka-text-3); }
+.wka-list-remove {
+  background: transparent;
+  color: var(--wka-err);
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+  min-height: 36px;
+}
+.wka-list-remove:hover {
+  background: rgba(255, 107, 107, 0.10);
+  color: #ff8a8a;
+}
+.wka-list-empty {
+  color: var(--wka-text-3);
+  font-size: 13px;
+  padding: 12px 4px;
+  text-align: center;
+}
+
+/* ── Botones ── */
+.wka-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s;
+  min-height: 46px;
+}
+.wka-btn--primary {
+  background: var(--wka-glow);
+  color: #000;
+}
+.wka-btn--primary:hover { background: #ff6b98; }
+.wka-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.wka-btn--ghost {
+  background: transparent;
+  color: var(--wka-text-2);
+  border-color: var(--wka-border);
+}
+.wka-btn--ghost:hover { color: var(--wka-glow); border-color: var(--wka-glow); }
+
+.wka-footer-note {
+  font-size: 12px;
+  color: var(--wka-text-3);
+  text-align: center;
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+.wka-footer-note code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* ── Breakpoints (mobile-first) ── */
+@media (min-width: 560px) {
+  .wka-share { flex-direction: row; align-items: stretch; }
+  .wka-share-input { flex: 1; }
+  .wka-share .wka-btn { width: auto; min-width: 130px; }
+  .wka-form-row { grid-template-columns: 1fr 1fr; }
+  .wka-form .wka-btn { width: auto; align-self: flex-start; padding-left: 22px; padding-right: 22px; }
+}
+@media (min-width: 720px) {
+  .wka-page { padding: 36px 24px 100px; }
+  .wka-card { padding: 26px 24px; }
+}

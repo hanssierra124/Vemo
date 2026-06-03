@@ -82,7 +82,10 @@ export class AdminDashboardComponent implements OnInit {
 
   async loadVerifications() {
     try {
-      const res = await fetch(`${environment.apiUrl}/api/admin/verifications`);
+      const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+      const res = await fetch(`${environment.apiUrl}/api/admin/verifications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       this.pendingVerifications = await res.json();
     } catch (error) {
       console.error("Error cargando verificaciones:", error);
@@ -171,9 +174,10 @@ export class AdminDashboardComponent implements OnInit {
     }
     
     try {
+      const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
       const res = await fetch(`${environment.apiUrl}/api/admin/decision`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ userId, status, reason })
       });
 

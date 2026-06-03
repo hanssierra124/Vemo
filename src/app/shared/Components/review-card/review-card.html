@@ -1,0 +1,75 @@
+<article class="rc">
+  <header class="rc-head">
+    <a class="rc-author" [routerLink]="['/u', review.user_id]">
+      <span class="rc-avatar" [style.backgroundImage]="review.author?.profile_url ? 'url(' + review.author?.profile_url + ')' : null">
+        <span *ngIf="!review.author?.profile_url">{{ (review.author?.username || '?')[0] }}</span>
+      </span>
+      <span class="rc-name">{{ review.author?.username || 'Usuario' }}</span>
+    </a>
+    <span class="rc-verified" *ngIf="review.is_verified_attendee" title="Asistente verificado">✓</span>
+    <app-star-rating class="rc-stars" [value]="review.rating" [readonly]="true" [size]="14"></app-star-rating>
+  </header>
+
+  <a class="rc-subject" *ngIf="showSubjectLink" [routerLink]="subjectRouterLink()">
+    {{ review.subject_type === 'organizer' ? 'Ver organizador →' : 'Ver evento →' }}
+  </a>
+
+  <h4 class="rc-title" *ngIf="review.title">{{ review.title }}</h4>
+  <div class="rc-body" *ngIf="review.body" [innerHTML]="renderBody(review.body)"></div>
+
+  <footer class="rc-actions">
+    <button class="rc-btn" type="button" [class.active]="liked" [disabled]="busyLike || !isLoggedIn"
+            (click)="toggleLike()" [title]="isLoggedIn ? 'Me gusta' : 'Inicia sesión para reaccionar'">
+      <span class="rc-heart">{{ liked ? '♥' : '♡' }}</span> {{ likeCount }}
+    </button>
+    <button class="rc-btn" type="button" (click)="toggleComments()">
+      💬 {{ review.comment_count || 0 }}
+    </button>
+    <button class="rc-btn rc-report" type="button" *ngIf="isLoggedIn && !reportSent"
+            (click)="toggleReport()" title="Reportar">⚑</button>
+    <span class="rc-reported" *ngIf="reportSent">Reportado ✓</span>
+  </footer>
+
+  <!-- Selector de motivo del reporte -->
+  <div class="rc-report-box" *ngIf="reportOpen">
+    <span class="rc-report-label">¿Por qué reportas esta reseña?</span>
+    <div class="rc-report-reasons">
+      <button class="rc-reason" type="button" *ngFor="let r of reasons"
+              [disabled]="reporting" (click)="submitReport(r.value)">{{ r.label }}</button>
+    </div>
+  </div>
+
+  <!-- Hilo de comentarios -->
+  <section class="rc-comments" *ngIf="showComments">
+    <p class="rc-loading" *ngIf="loadingComments">Cargando comentarios…</p>
+
+    <div class="rc-comment" *ngFor="let c of comments">
+      <a class="rc-c-author" [routerLink]="['/u', c.user_id]">{{ c.author?.username || 'Usuario' }}</a>
+      <p class="rc-c-body">{{ c.body }}</p>
+      <button class="rc-reply-toggle" type="button" *ngIf="isLoggedIn" (click)="openReply(c.id)">Responder</button>
+
+      <!-- Respuestas -->
+      <div class="rc-reply" *ngFor="let r of c.replies">
+        <a class="rc-c-author" [routerLink]="['/u', r.user_id]">{{ r.author?.username || 'Usuario' }}</a>
+        <p class="rc-c-body">{{ r.body }}</p>
+      </div>
+
+      <!-- Caja de respuesta -->
+      <div class="rc-reply-box" *ngIf="replyOpenFor === c.id">
+        <input class="rc-input" [(ngModel)]="replyText" [disabled]="posting"
+               placeholder="Escribe una respuesta…" (keyup.enter)="submitReply(c)" />
+        <button class="rc-send" type="button" [disabled]="posting || !replyText.trim()" (click)="submitReply(c)">Enviar</button>
+      </div>
+    </div>
+
+    <p class="rc-empty" *ngIf="commentsLoaded && comments.length === 0">Sé el primero en comentar.</p>
+
+    <!-- Nuevo comentario -->
+    <div class="rc-new" *ngIf="isLoggedIn">
+      <input class="rc-input" [(ngModel)]="newComment" [disabled]="posting"
+             placeholder="Añade un comentario…" (keyup.enter)="submitComment()" />
+      <button class="rc-send" type="button" [disabled]="posting || !newComment.trim()" (click)="submitComment()">Comentar</button>
+    </div>
+    <p class="rc-login-hint" *ngIf="!isLoggedIn">Inicia sesión para comentar.</p>
+  </section>
+</article>

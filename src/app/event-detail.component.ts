@@ -4,20 +4,35 @@ import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { smartGeocodeColombian } from './utils/colombian-geocoding';
+import { StarRatingComponent } from './shared/Components/star-rating/star-rating';
+import { ReviewCardComponent } from './shared/Components/review-card/review-card';
+import { ReviewService } from './review.service';
+import { Review, ReviewStats } from './models/review.model';
+import { renderSafeMarkdown } from './utils/markdown';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, StarRatingComponent, ReviewCardComponent],
   templateUrl: './event-detail.component.html',
   styleUrls: ['./event-detail.component.css']
 })
 export class EventDetailComponent implements OnInit, AfterViewInit {
   event: any = null;
   loading: boolean = true;
-  userRating: number = 0;
-  userComment: string = '';
+
+  // ── Estado de reseñas (sistema nuevo, media-estrella) ──
+  userRating: number = 0;       // 0.5..5
+  userTitle: string = '';
+  userComment: string = '';     // cuerpo markdown
   hasReviewed: boolean = false;
+  editing: boolean = false;
+  eventReviews: Review[] = [];
+  reviewStats: ReviewStats | null = null;
+  myReview: Review | null = null;
+  me: { id: string; username: string | null; profile_url: string | null } | null = null;
+  readonly MAX_TITLE_LEN = 120;
+  readonly MAX_BODY_LEN = 10000;
 
   photos: any[] = [];
   lightboxOpen = false;
@@ -38,7 +53,6 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   submitting: boolean = false;
   submitError: string | null = null;
   submitSuccess: boolean = false;
-  readonly MAX_COMMENT_LEN = 500;
 
   private map: any;
   private L: any; // Instancia global de Leaflet
@@ -47,11 +61,13 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private location: Location,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit() {
     const eventId = this.route.snapshot.paramMap.get('id');
+    this.loadMe();
     if (eventId) this.loadEventDetail(eventId);
   }
 
@@ -75,6 +91,7 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
         this.event = await res.json();
         this.cdr.detectChanges();
         this.loadPhotos(id);
+        this.loadReviewsAndStats(id);
         if (isPlatformBrowser(this.platformId) && this.L) {
           setTimeout(() => {
             this.initSingleMap();
@@ -187,30 +204,92 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     return new Date(this.event.date_event) < new Date();
   }
 
-  setRating(val: number) {
-    if (this.submitting) return;
+  // ── Carga del usuario actual (para detectar su propia reseña) ──
+  private async loadMe() {
+    const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+    if (!token) { this.me = null; return; }
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/auth/profile?t=${Date.now()}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const u = data?.user;
+        if (u?.id) this.me = { id: u.id, username: u.username ?? null, profile_url: u.profile_url ?? null };
+      }
+    } catch { /* sin sesión: se reseña como invitado bloqueado en submit */ }
+  }
+
+  // ── Carga reseñas + estadísticas del evento (endpoints nuevos) ──
+  async loadReviewsAndStats(id: string) {
+    try {
+      const [page, stats] = await Promise.all([
+        this.reviewService.listForSubject('event', id, { sort: 'recent', limit: 20 }),
+        this.reviewService.eventStats(id),
+      ]);
+      this.eventReviews = page.items || [];
+      this.reviewStats = stats;
+      this.myReview = this.me ? (this.eventReviews.find(r => r.user_id === this.me!.id) || null) : null;
+      this.hasReviewed = !!this.myReview;
+    } catch (e) {
+      // No rompemos la página si las reseñas fallan; el resto del detalle sigue.
+      console.info('[Vemo] No se pudieron cargar reseñas:', (e as Error)?.message);
+    } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  /** Reseñas de la comunidad excluyendo la del usuario (que se muestra aparte). */
+  get communityReviews(): Review[] {
+    if (!this.myReview) return this.eventReviews;
+    return this.eventReviews.filter(r => r.id !== this.myReview!.id);
+  }
+
+  onRatingChange(val: number) {
     this.userRating = val;
     if (this.submitError) this.submitError = null;
   }
 
+  startEdit() {
+    if (!this.myReview) return;
+    this.editing = true;
+    this.userRating = this.myReview.rating;
+    this.userTitle = this.myReview.title || '';
+    this.userComment = this.myReview.body || '';
+    this.submitError = null;
+    this.submitSuccess = false;
+    this.cdr.detectChanges();
+  }
+
+  cancelEdit() {
+    this.editing = false;
+    this.userRating = 0;
+    this.userTitle = '';
+    this.userComment = '';
+    this.submitError = null;
+    this.cdr.detectChanges();
+  }
+
   async submitReview() {
-    // Idempotency: ignore rapid double-clicks while a request is in flight
     if (this.submitting) return;
     if (!this.event?.id) return;
 
-    // Validation
-    if (this.userRating < 1 || this.userRating > 5) {
-      this.submitError = 'Por favor selecciona una calificación entre 1 y 5 estrellas.';
+    if (this.userRating < 0.5 || this.userRating > 5) {
+      this.submitError = 'Selecciona una calificación de 0.5 a 5 estrellas.';
       return;
     }
-    const comment = (this.userComment || '').trim();
-    if (comment.length > this.MAX_COMMENT_LEN) {
-      this.submitError = `El comentario no puede superar ${this.MAX_COMMENT_LEN} caracteres.`;
+    const title = (this.userTitle || '').trim();
+    const body = (this.userComment || '').trim();
+    if (title.length > this.MAX_TITLE_LEN) {
+      this.submitError = `El título no puede superar ${this.MAX_TITLE_LEN} caracteres.`;
+      return;
+    }
+    if (body.length > this.MAX_BODY_LEN) {
+      this.submitError = `La reseña no puede superar ${this.MAX_BODY_LEN} caracteres.`;
       return;
     }
 
-    // Auth
-    const token = localStorage.getItem('token') || localStorage.getItem('vemo_token');
+    const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
     if (!token) {
       this.submitError = 'Debes iniciar sesión para dejar una reseña.';
       return;
@@ -222,51 +301,28 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
 
     try {
-      const res = await fetch(`${environment.apiUrl}/api/events/${this.event.id}/reviews`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          event_id: this.event.id,
+      if (this.editing && this.myReview) {
+        await this.reviewService.update(this.myReview.id, {
           rating: this.userRating,
-          comment: comment || null
-        })
-      });
-
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        const msg = errBody?.message || errBody?.error || `Error ${res.status}`;
-        throw new Error(msg);
+          title: title || null,
+          body: body || null,
+        });
+      } else {
+        await this.reviewService.create({
+          subject_type: 'event',
+          subject_id: this.event.id,
+          rating: this.userRating,
+          title: title || null,
+          body: body || null,
+        });
       }
 
-      const created = await res.json().catch(() => null);
-
-      // Update local list so the new review appears immediately without
-      // re-fetching the whole event (which would re-init the map).
-      const optimistic = created && (created.id || created.rating !== undefined)
-        ? created
-        : {
-            rating: this.userRating,
-            comment: comment,
-            username: this.getCurrentUsername() || 'Tú',
-            created_at: new Date().toISOString(),
-          };
-
-      this.event = {
-        ...this.event,
-        reviews: [optimistic, ...(this.event.reviews || [])]
-      };
-
-      this.hasReviewed = true;
       this.submitSuccess = true;
+      this.editing = false;
+      this.userTitle = '';
       this.userComment = '';
-
-      // Best-effort sync with backend for accurate usernames/IDs
-      this.refreshReviews().catch(() => { /* fallback already shown */ });
+      await this.loadReviewsAndStats(this.event.id);
     } catch (e: any) {
-      console.error('Error enviando reseña:', e);
       this.submitError = e?.message || 'No pudimos enviar tu reseña. Inténtalo de nuevo.';
     } finally {
       this.submitting = false;
@@ -274,26 +330,33 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private async refreshReviews() {
-    if (!this.event?.id) return;
-    const res = await fetch(`${environment.apiUrl}/api/events/${this.event.id}/reviews`);
-    if (!res.ok) return;
-    const reviews = await res.json();
-    if (Array.isArray(reviews)) {
-      this.event = { ...this.event, reviews };
+  async deleteMyReview() {
+    if (!this.myReview) return;
+    if (!confirm('¿Eliminar tu reseña? Esta acción no se puede deshacer.')) return;
+    try {
+      await this.reviewService.remove(this.myReview.id);
+      this.hasReviewed = false;
+      this.myReview = null;
+      this.userRating = 0;
+      await this.loadReviewsAndStats(this.event.id);
+    } catch (e: any) {
+      this.submitError = e?.message || 'No se pudo eliminar la reseña.';
       this.cdr.detectChanges();
     }
   }
 
-  private getCurrentUsername(): string | null {
-    try {
-      const raw = localStorage.getItem('vemo_user') || localStorage.getItem('user');
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      return parsed?.username || parsed?.name || parsed?.email || null;
-    } catch {
-      return null;
-    }
+  /** Render seguro del cuerpo markdown para [innerHTML]. */
+  renderBody(md: string | null): string {
+    return renderSafeMarkdown(md);
+  }
+
+  /** Filas del histograma (de 5 a 0.5), con % relativo al pico. */
+  histogramRows(): { star: number; count: number; pct: number }[] {
+    const h = this.reviewStats?.histogram || {};
+    const steps = [5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5];
+    const counts = steps.map(s => h[String(s)] || 0);
+    const max = Math.max(1, ...counts);
+    return steps.map((s, i) => ({ star: s, count: counts[i], pct: Math.round((counts[i] / max) * 100) }));
   }
 
   async loadPhotos(id: string) {

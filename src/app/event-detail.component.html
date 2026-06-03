@@ -92,44 +92,79 @@
 
         <div class="content-block reviews-section glass-effect" *ngIf="isPostEvent()">
           <h3 class="clash-display section-tag">Reseñas de la Comunidad</h3>
-          
-          <div class="review-form" *ngIf="!hasReviewed">
-            <p class="small-tag prompt-tag">¿Cómo fue tu experiencia?</p>
-            <div class="star-rating">
-              <svg *ngFor="let s of [1,2,3,4,5]" (click)="setRating(s)" [class.active]="userRating >= s" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+
+          <!-- Resumen: promedio + histograma -->
+          <div class="rv-summary" *ngIf="reviewStats">
+            <div class="rv-avg-box">
+              <div class="rv-avg-number">{{ reviewStats.rating_count ? (reviewStats.rating_avg | number:'1.1-1') : '—' }}</div>
+              <app-star-rating [value]="reviewStats.rating_avg" [readonly]="true" [size]="16"></app-star-rating>
+              <div class="rv-avg-count">{{ reviewStats.rating_count }} reseña(s)</div>
             </div>
+            <div class="rv-histogram">
+              <div class="rv-hist-row" *ngFor="let row of histogramRows()">
+                <span class="rv-hist-label">{{ row.star }}</span>
+                <span class="rv-hist-track"><span class="rv-hist-fill" [style.width.%]="row.pct"></span></span>
+                <span class="rv-hist-count">{{ row.count }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario: crear o editar -->
+          <div class="review-form" *ngIf="!hasReviewed || editing">
+            <p class="small-tag prompt-tag">{{ editing ? 'Edita tu reseña' : '¿Cómo fue tu experiencia?' }}</p>
+            <app-star-rating [value]="userRating" [size]="32" [showValue]="true"
+                             (valueChange)="onRatingChange($event)"></app-star-rating>
+
+            <input class="review-title-input"
+                   [(ngModel)]="userTitle"
+                   [maxlength]="MAX_TITLE_LEN"
+                   [disabled]="submitting"
+                   placeholder="Título (opcional)" />
+
             <textarea class="review-input"
                       [(ngModel)]="userComment"
-                      [maxlength]="MAX_COMMENT_LEN"
+                      [maxlength]="MAX_BODY_LEN"
                       [disabled]="submitting"
-                      placeholder="Escribe tu comentario opcional..."></textarea>
+                      placeholder="Escribe tu reseña… admite **negrita**, _cursiva_ y enlaces."></textarea>
+            <p class="rv-md-hint">Markdown soportado: **negrita**, _cursiva_, [enlace](https://…)</p>
 
-            <div *ngIf="submitError" class="review-feedback review-feedback-error">
-              {{ submitError }}
+            <div *ngIf="submitError" class="review-feedback review-feedback-error">{{ submitError }}</div>
+
+            <div class="rv-form-actions">
+              <button class="btn-submit-review" type="button"
+                      (click)="submitReview()"
+                      [disabled]="submitting || userRating === 0">
+                {{ submitting ? 'Enviando…' : (editing ? 'Guardar cambios' : 'Publicar Reseña') }}
+              </button>
+              <button class="btn-cancel-review" type="button" *ngIf="editing"
+                      (click)="cancelEdit()" [disabled]="submitting">Cancelar</button>
             </div>
-
-            <button class="btn-submit-review"
-                    type="button"
-                    (click)="submitReview()"
-                    [disabled]="submitting || userRating === 0">
-              {{ submitting ? 'Enviando…' : 'Enviar Reseña' }}
-            </button>
           </div>
 
-          <div *ngIf="hasReviewed && submitSuccess" class="review-feedback review-feedback-success">
+          <div *ngIf="submitSuccess && !editing" class="review-feedback review-feedback-success">
             ¡Gracias! Tu reseña fue publicada.
           </div>
-          
+
+          <!-- Tu reseña (cuando ya existe y no se está editando) -->
+          <div class="review-item my-review" *ngIf="myReview && !editing">
+            <div class="review-header">
+              <p class="reviewer-name">Tu reseña
+                <span class="rv-verified" *ngIf="myReview.is_verified_attendee" title="Asistente verificado">✓ Verificado</span>
+              </p>
+              <app-star-rating [value]="myReview.rating" [readonly]="true" [size]="14"></app-star-rating>
+            </div>
+            <p class="review-title" *ngIf="myReview.title">{{ myReview.title }}</p>
+            <p class="review-comment-text" *ngIf="myReview.body" [innerHTML]="renderBody(myReview.body)"></p>
+            <div class="rv-form-actions">
+              <button class="btn-cancel-review" type="button" (click)="startEdit()">Editar</button>
+              <button class="btn-cancel-review danger" type="button" (click)="deleteMyReview()">Eliminar</button>
+            </div>
+          </div>
+
+          <!-- Lista de reseñas de la comunidad (con like + comentarios) -->
           <div class="review-list">
-             <div class="review-item" *ngFor="let rev of event.reviews">
-                <div class="review-header">
-                  <p class="reviewer-name">{{ rev.username }}</p>
-                  <div class="star-rating static">
-                    <svg *ngFor="let s of [1,2,3,4,5]" [class.active]="rev.rating >= s" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                  </div>
-                </div>
-                <p class="review-comment-text">{{ rev.comment }}</p>
-             </div>
+            <app-review-card *ngFor="let rev of communityReviews" [review]="rev"></app-review-card>
+            <p class="rv-empty" *ngIf="communityReviews.length === 0">Sé el primero en reseñar este evento.</p>
           </div>
         </div>
 

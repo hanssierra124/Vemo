@@ -1,0 +1,200 @@
+<div class="wkr-page">
+
+  <!-- Cargando evento -->
+  <div class="wkr-state" *ngIf="loadingEvent">
+    <div class="wkr-spinner" aria-hidden="true"></div>
+    <p class="wkr-state-text">Cargando información del evento…</p>
+  </div>
+
+  <!-- Error al cargar el evento -->
+  <div class="wkr-state" *ngIf="!loadingEvent && eventError">
+    <div class="wkr-state-icon" aria-hidden="true">⚠️</div>
+    <h1 class="wkr-state-title">No se pudo abrir el registro</h1>
+    <p class="wkr-state-text">{{ eventError }}</p>
+    <button type="button" class="wkr-btn wkr-btn--ghost" (click)="goHome()">
+      Volver al inicio
+    </button>
+  </div>
+
+  <!-- Pantalla de éxito -->
+  <div class="wkr-state wkr-state--success" *ngIf="!loadingEvent && !eventError && state === 'success'">
+    <div class="wkr-success-icon" aria-hidden="true">✓</div>
+    <h1 class="wkr-state-title">¡Registro confirmado!</h1>
+    <p class="wkr-state-text">
+      Avisamos al equipo del evento en tiempo real.
+      <ng-container *ngIf="notifiedCount > 0">
+        Se notificó a <strong>{{ notifiedCount }}</strong>
+        {{ notifiedCount === 1 ? 'contacto' : 'contactos' }}.
+      </ng-container>
+    </p>
+    <div class="wkr-success-actions">
+      <button type="button" class="wkr-btn" (click)="registerAnother()">
+        Registrar otra persona
+      </button>
+      <button type="button" class="wkr-btn wkr-btn--ghost" (click)="goHome()">
+        Ir al inicio
+      </button>
+    </div>
+  </div>
+
+  <!-- Formulario walk-in -->
+  <main class="wkr-wrap" *ngIf="!loadingEvent && !eventError && state !== 'success'">
+    <header class="wkr-hero" [class.wkr-hero--no-img]="!event?.image_url">
+      <img
+        *ngIf="event?.image_url as img"
+        [src]="img"
+        [alt]="event?.title || 'Evento'"
+        class="wkr-hero-img"
+        loading="lazy"
+      >
+      <div class="wkr-hero-overlay"></div>
+      <div class="wkr-hero-text">
+        <span class="wkr-badge">Registro Express</span>
+        <h1 class="wkr-title">{{ event?.title || 'Evento' }}</h1>
+        <p class="wkr-meta" *ngIf="event?.location_name">
+          <span aria-hidden="true">📍</span> {{ event?.location_name }}
+        </p>
+        <p class="wkr-meta" *ngIf="event?.date_event">
+          <span aria-hidden="true">📅</span> {{ formatDate(event?.date_event ?? null) }}
+        </p>
+      </div>
+    </header>
+
+    <section class="wkr-card" aria-labelledby="wkr-form-title">
+      <h2 id="wkr-form-title" class="wkr-card-title">Tus datos</h2>
+      <p class="wkr-card-hint">
+        Completa el formulario para confirmar tu ingreso. El equipo organizador
+        recibirá la notificación en tiempo real.
+      </p>
+
+      <form #f="ngForm" (ngSubmit)="submit(f)" class="wkr-form" novalidate>
+
+        <div class="wkr-field">
+          <label for="wkr-name">Nombre completo</label>
+          <input
+            id="wkr-name"
+            name="full_name"
+            type="text"
+            autocomplete="name"
+            required
+            minlength="3"
+            maxlength="120"
+            [(ngModel)]="attendee.full_name"
+            #fullName="ngModel"
+            placeholder="Ej. María Pérez"
+          >
+          <small class="wkr-err" *ngIf="fullName.touched && fullName.invalid">
+            Ingresa tu nombre completo (mínimo 3 caracteres).
+          </small>
+        </div>
+
+        <div class="wkr-row">
+          <div class="wkr-field">
+            <label for="wkr-doc">Documento</label>
+            <input
+              id="wkr-doc"
+              name="document_id"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              required
+              minlength="4"
+              maxlength="20"
+              [(ngModel)]="attendee.document_id"
+              #doc="ngModel"
+              placeholder="C.C. o pasaporte"
+            >
+            <small class="wkr-err" *ngIf="doc.touched && doc.invalid">
+              El documento es obligatorio.
+            </small>
+          </div>
+
+          <div class="wkr-field wkr-field--narrow">
+            <label for="wkr-age">Edad</label>
+            <input
+              id="wkr-age"
+              name="age"
+              type="number"
+              inputmode="numeric"
+              min="13"
+              max="120"
+              [(ngModel)]="attendee.age"
+              #age="ngModel"
+              placeholder="Ej. 22"
+            >
+            <small class="wkr-err" *ngIf="age.touched && age.invalid">
+              Edad entre 13 y 120.
+            </small>
+          </div>
+        </div>
+
+        <div class="wkr-field">
+          <label for="wkr-email">Correo electrónico</label>
+          <input
+            id="wkr-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            [(ngModel)]="attendee.email"
+            #email="ngModel"
+            placeholder="tucorreo@ejemplo.com"
+          >
+          <small
+            class="wkr-err"
+            *ngIf="email.touched && (email.invalid || !isValidEmail(attendee.email))"
+          >
+            Ingresa un correo válido.
+          </small>
+        </div>
+
+        <div class="wkr-field">
+          <label for="wkr-phone">Teléfono / WhatsApp</label>
+          <input
+            id="wkr-phone"
+            name="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            required
+            minlength="7"
+            maxlength="20"
+            [(ngModel)]="attendee.phone"
+            #phone="ngModel"
+            placeholder="Ej. 300 123 4567"
+          >
+          <small class="wkr-err" *ngIf="phone.touched && phone.invalid">
+            Ingresa un teléfono válido (al menos 7 dígitos).
+          </small>
+        </div>
+
+        <label class="wkr-checkbox">
+          <input
+            type="checkbox"
+            name="accepts_communications"
+            [(ngModel)]="attendee.accepts_communications"
+          >
+          <span>Acepto recibir información del evento y futuras ediciones.</span>
+        </label>
+
+        <p class="wkr-submit-error" *ngIf="submitError" role="alert">
+          {{ submitError }}
+        </p>
+
+        <button
+          type="submit"
+          class="wkr-btn wkr-btn--primary"
+          [disabled]="state === 'submitting'"
+        >
+          {{ state === 'submitting' ? 'Registrando…' : 'Confirmar mi ingreso' }}
+        </button>
+
+        <p class="wkr-legal">
+          Al registrarte aceptas que tus datos sean compartidos con el equipo del
+          evento únicamente con fines logísticos y de seguridad.
+        </p>
+      </form>
+    </section>
+  </main>
+
+</div>

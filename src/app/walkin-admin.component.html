@@ -1,0 +1,138 @@
+<div class="wka-page">
+
+  <div class="wka-state" *ngIf="loading">
+    <div class="wka-spinner" aria-hidden="true"></div>
+    <p>Cargando…</p>
+  </div>
+
+  <div class="wka-state" *ngIf="!loading && eventError">
+    <div class="wka-state-icon" aria-hidden="true">⚠️</div>
+    <h1>No se pudo cargar el evento</h1>
+    <p>{{ eventError }}</p>
+    <button type="button" class="wka-btn wka-btn--ghost" (click)="goHome()">
+      Volver al inicio
+    </button>
+  </div>
+
+  <main class="wka-wrap" *ngIf="!loading && !eventError">
+
+    <header class="wka-head">
+      <span class="wka-tag">Registro Express · Panel</span>
+      <h1 class="wka-title">{{ event?.title || 'Evento' }}</h1>
+      <p class="wka-sub" *ngIf="event?.location_name">{{ event?.location_name }}</p>
+    </header>
+
+    <!-- Link compartible -->
+    <section class="wka-card">
+      <h2 class="wka-card-title">Enlace de registro</h2>
+      <p class="wka-card-hint">
+        Comparte este enlace con asistentes de último minuto. No está visible
+        en el dashboard del organizador.
+      </p>
+      <div class="wka-share">
+        <input
+          type="text"
+          [value]="shareUrl"
+          readonly
+          aria-label="URL para compartir"
+          class="wka-share-input"
+        >
+        <button
+          type="button"
+          class="wka-btn wka-btn--primary"
+          (click)="copyShareUrl()"
+        >
+          {{ copyOk ? '¡Copiado!' : 'Copiar' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Destinatarios de notificación -->
+    <section class="wka-card">
+      <h2 class="wka-card-title">Destinatarios de notificación</h2>
+      <p class="wka-card-hint">
+        Cada vez que alguien se registre desde el enlace, enviaremos un correo
+        automático a estos contactos (seguridad, organización, etc.).
+      </p>
+
+      <form class="wka-form" (ngSubmit)="addRecipient()" #addForm="ngForm" novalidate>
+        <div class="wka-form-row">
+          <div class="wka-field">
+            <label for="wka-email">Correo</label>
+            <input
+              id="wka-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="seguridad@evento.com"
+              [(ngModel)]="newEmail"
+              required
+            >
+          </div>
+          <div class="wka-field">
+            <label for="wka-label">Etiqueta (opcional)</label>
+            <input
+              id="wka-label"
+              name="label"
+              type="text"
+              maxlength="60"
+              placeholder="Ej. Coord. de seguridad"
+              [(ngModel)]="newLabel"
+            >
+          </div>
+        </div>
+
+        <p class="wka-error" *ngIf="formError" role="alert">{{ formError }}</p>
+
+        <button
+          type="submit"
+          class="wka-btn wka-btn--primary"
+          [disabled]="adding || !newEmail.trim()"
+        >
+          {{ adding ? 'Agregando…' : 'Agregar destinatario' }}
+        </button>
+      </form>
+
+      <div class="wka-list-wrap">
+        <p class="wka-error" *ngIf="recipientsError" role="alert">
+          {{ recipientsError }}
+        </p>
+
+        <div *ngIf="recipientsLoading" class="wka-list-empty">Cargando…</div>
+
+        <div
+          *ngIf="!recipientsLoading && recipients.length === 0 && !recipientsError"
+          class="wka-list-empty"
+        >
+          Aún no hay destinatarios. Agrega al menos un correo para activar las
+          notificaciones automáticas.
+        </div>
+
+        <ul class="wka-list" *ngIf="recipients.length > 0">
+          <li
+            class="wka-list-item"
+            *ngFor="let r of recipients; trackBy: trackById"
+          >
+            <div class="wka-list-text">
+              <span class="wka-list-email">{{ r.email }}</span>
+              <span class="wka-list-label" *ngIf="r.label">{{ r.label }}</span>
+            </div>
+            <button
+              type="button"
+              class="wka-list-remove"
+              (click)="removeRecipient(r)"
+              [attr.aria-label]="'Quitar ' + r.email"
+            >
+              Quitar
+            </button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <p class="wka-footer-note">
+      Esta sección no aparece en el dashboard principal. Guarda el enlace si
+      necesitas volver: <code>/registro-express/{{ eventId }}/admin</code>
+    </p>
+  </main>
+</div>
