@@ -31,6 +31,9 @@
           <span class="verified-tick" *ngIf="userData.verification_status === 'approved'" title="Verificado">✓</span>
         </div>
         <p class="user-email">{{ userData.email }}</p>
+        <button class="btn-public-profile" *ngIf="userData.id" (click)="goToMyPublicProfile()">
+          👁️ Ver mi perfil público
+        </button>
       </div>
     </header>
 
@@ -45,6 +48,7 @@
 
         <div class="admin-quick-actions">
           <button class="btn-admin-config" (click)="goToPlatformConfig()">⚙️ Config. Plataforma</button>
+          <button class="btn-admin-config" (click)="goToModeration()">🛡️ Moderación</button>
         </div>
 
         <div class="tab-system">

@@ -96,17 +96,20 @@ export class ReviewService {
     return this.request<Paged<Review>>(`/api/reviews?${q}`, { headers: this.headers() });
   }
 
+  /**
+   * Reseñas paginadas de un usuario (GET /api/users/:id/reviews).
+   * Reservado para una futura sección "ver todas las reseñas" en el perfil
+   * público (hoy el perfil solo muestra los previews recent/popular).
+   */
   listForUser(userId: string, opts?: ListReviewsOptions): Promise<Paged<Review>> {
     const q = this.query(opts).replace(/^&/, '');
     return this.request<Paged<Review>>(`/api/users/${userId}/reviews${q ? `?${q}` : ''}`, { headers: this.headers() });
   }
 
   // --- STATS ---------------------------------------------------------
+  // Nota: organizerStats() se eliminó por redundante — el endpoint
+  // /api/organizers/:id/profile ya devuelve `stats` (ReviewStats).
   eventStats(eventId: string): Promise<ReviewStats> {
     return this.request<ReviewStats>(`/api/events/${eventId}/review-stats`);
-  }
-
-  organizerStats(organizerId: string): Promise<ReviewStats> {
-    return this.request<ReviewStats>(`/api/organizers/${organizerId}/review-stats`);
   }
 }

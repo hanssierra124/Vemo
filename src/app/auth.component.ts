@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { CurrentUserService } from './current-user.service';
 
 @Component({
   selector: 'app-auth',
@@ -45,7 +46,7 @@ export class AuthComponent implements OnInit {
     { value: 'otro', label: 'Otro' }
   ];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(private router: Router, private route: ActivatedRoute, private currentUser: CurrentUserService) {}
 
   ngOnInit() {
     const roleParam = this.route.snapshot.queryParamMap.get('role');
@@ -121,6 +122,7 @@ export class AuthComponent implements OnInit {
 
       if (data.token) {
         localStorage.setItem('vemo_token', data.token);
+        this.currentUser.clear(); // refresca el usuario cacheado tras login
         this.router.navigate(['/profile']);
       } else {
         const err = (data.error || '').toLowerCase();
@@ -193,6 +195,7 @@ export class AuthComponent implements OnInit {
 
     if (data.token) {
       localStorage.setItem('vemo_token', data.token);
+      this.currentUser.clear(); // refresca el usuario cacheado tras registro
 
       if (this.role === 'organizer') {
         this.router.navigate(['/onboarding/verify']);

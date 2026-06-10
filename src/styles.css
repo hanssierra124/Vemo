@@ -6,11 +6,51 @@ html, body {
   font-weight: 400;
   /* line-height: 1.5; */
   margin: 0;
+  /* Fondo base oscuro del tema VEMO. Las páginas de tema claro (auth,
+     create-event) pintan su propio fondo a pantalla completa por encima. */
+  background-color: #0E0D12;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
-  
+
 }
+
+/* ═══════════════════════════════════════════════════════
+   VEMO · DESIGN TOKENS (globales) — fuente única de verdad
+   del branding para TODA la app (antes vivían sueltos en cada
+   componente). Permiten usar var(--glow) etc. en cualquier vista.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --glow:       #FF4D80;   /* Vemo Glow (rosa) */
+  --deep:       #6A00FF;   /* Vemo Deep (morado) */
+  --gold:       #FFD700;
+  --ink:        #0E0D12;   /* fondo base */
+  --surface:    #14131A;   /* paneles */
+  --panel:      #1B1820;
+  --border:     rgba(255,255,255,0.08);
+  --border-hot: rgba(255,77,128,0.35);
+  --text-1:     #F0F0F0;
+  --text-2:     rgba(240,240,240,0.6);
+  --text-3:     rgba(240,240,240,0.3);
+  --grad-hot:   linear-gradient(135deg, #FF4D80 0%, #6A00FF 100%);
+  --grad-warm:  linear-gradient(135deg, #FF4D80 0%, #FFD700 100%);
+  --ease-film:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ff-display: 'Clash Display', 'Inter', sans-serif;
+  --ff-serif:   'Instrument Serif', Georgia, serif;
+  --ff-ui:      'Inter', 'Clash Display', sans-serif;
+}
+
+/* Utilidad tipográfica de marca (display) disponible globalmente. */
+.clash-display {
+  font-family: 'Clash Display', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbar fino acorde al tema oscuro. */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,77,128,0.4) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(255,77,128,0.5); background-clip: padding-box; }
 
 :root {
   --neutral-white: #FFFFFF;

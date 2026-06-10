@@ -1,19 +1,24 @@
 import { environment } from '../environments/environment';
 import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { smartGeocodeColombian } from './utils/colombian-geocoding';
 import { StarRatingComponent } from './shared/Components/star-rating/star-rating';
 import { ReviewCardComponent } from './shared/Components/review-card/review-card';
 import { ReviewService } from './review.service';
+import { AttendanceService } from './attendance.service';
+import { CheckinService } from './checkin.service';
+import { EngagementService } from './engagement.service';
+import { SocialService } from './social.service';
 import { Review, ReviewStats } from './models/review.model';
+import { AttendanceStatus, Attendee } from './models/attendance.model';
 import { renderSafeMarkdown } from './utils/markdown';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, StarRatingComponent, ReviewCardComponent],
+  imports: [CommonModule, FormsModule, RouterLink, StarRatingComponent, ReviewCardComponent],
   templateUrl: './event-detail.component.html',
   styleUrls: ['./event-detail.component.css']
 })
@@ -33,6 +38,22 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   me: { id: string; username: string | null; profile_url: string | null } | null = null;
   readonly MAX_TITLE_LEN = 120;
   readonly MAX_BODY_LEN = 10000;
+
+  // ── Asistiré Inteligente (A1) ──
+  myAttendanceStatus: AttendanceStatus | null = null;
+  goingCount = 0;
+  attendanceBusy = false;
+  attendanceError: string | null = null;
+
+  // ── Check-in QR del organizador (A2) ──
+  qrDataUrl: string | null = null;
+  checkinUrl = '';
+  qrBusy = false;
+  qrError: string | null = null;
+
+  // ── Networking (A6): quién asiste + visibilidad ──
+  attendees: Attendee[] = [];
+  myVisibility: 'public' | 'private' = 'public';
 
   photos: any[] = [];
   lightboxOpen = false;
@@ -62,7 +83,11 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     private location: Location,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private attendanceService: AttendanceService,
+    private checkinService: CheckinService,
+    private engagementService: EngagementService,
+    private socialService: SocialService
   ) {}
 
   ngOnInit() {
@@ -92,6 +117,10 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
         this.loadPhotos(id);
         this.loadReviewsAndStats(id);
+        this.goingCount = this.event?.going_count || 0;
+        this.loadMyAttendance(id);
+        this.loadAttendees(id);
+        this.engagementService.track(id, 'view'); // señal A3
         if (isPlatformBrowser(this.platformId) && this.L) {
           setTimeout(() => {
             this.initSingleMap();
@@ -243,6 +272,106 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   get communityReviews(): Review[] {
     if (!this.myReview) return this.eventReviews;
     return this.eventReviews.filter(r => r.id !== this.myReview!.id);
+  }
+
+  // ── Asistiré Inteligente (A1) ───────────────────────────────────────
+  private async loadMyAttendance(id: string) {
+    if (!this.me) return; // invitado: sin estado personal
+    try {
+      const res = await this.attendanceService.getMine(id);
+      this.myAttendanceStatus = res.status;
+      if (res.visibility === 'public' || res.visibility === 'private') this.myVisibility = res.visibility;
+    } catch { /* sin estado */ } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  // ── Networking (A6) ─────────────────────────────────────────────────
+  async loadAttendees(id: string) {
+    try {
+      const page = await this.attendanceService.listAttendees(id, null, 30);
+      this.attendees = page.items || [];
+    } catch { /* sin lista */ } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  async toggleVisibility() {
+    if (!this.event?.id) return;
+    const next = this.myVisibility === 'public' ? 'private' : 'public';
+    this.myVisibility = next; // optimista
+    this.cdr.detectChanges();
+    try {
+      await this.attendanceService.setVisibility(this.event.id, next);
+      this.loadAttendees(this.event.id);
+    } catch {
+      this.myVisibility = next === 'public' ? 'private' : 'public'; // revertir
+      this.cdr.detectChanges();
+    }
+  }
+
+  async followAttendee(a: Attendee) {
+    if (a.is_me || a.is_following) return;
+    a.is_following = true; // optimista
+    this.cdr.detectChanges();
+    try {
+      await this.socialService.follow(a.id);
+    } catch {
+      a.is_following = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async toggleAttendance() {
+    if (this.attendanceBusy) return;
+    if (!this.event?.id) return;
+    const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+    if (!token) { this.attendanceError = 'Inicia sesión para marcar tu asistencia.'; return; }
+
+    this.attendanceBusy = true;
+    this.attendanceError = null;
+    this.cdr.detectChanges();
+    try {
+      if (this.myAttendanceStatus === 'going') {
+        const res = await this.attendanceService.cancel(this.event.id);
+        this.myAttendanceStatus = 'cancelled';
+        this.goingCount = res.going_count ?? Math.max(0, this.goingCount - 1);
+      } else {
+        this.engagementService.track(this.event.id, 'rsvp_click'); // señal A3
+        const res = await this.attendanceService.markGoing(this.event.id);
+        this.myAttendanceStatus = 'going';
+        this.goingCount = res.going_count ?? this.goingCount + 1;
+      }
+      this.loadAttendees(this.event.id); // refrescar "quién asiste" (A6)
+    } catch (e: any) {
+      this.attendanceError = e?.message || 'No se pudo actualizar tu asistencia.';
+    } finally {
+      this.attendanceBusy = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  // ── Check-in QR (A2): sólo el organizador dueño del evento ───────────
+  get isEventOwner(): boolean {
+    return !!(this.me && this.event && this.me.id === this.event.organizer_id);
+  }
+
+  async generateCheckinQr() {
+    if (this.qrBusy || !this.event?.id) return;
+    this.qrBusy = true;
+    this.qrError = null;
+    this.cdr.detectChanges();
+    try {
+      const { token } = await this.checkinService.getToken(this.event.id);
+      this.checkinUrl = `${window.location.origin}/checkin/${this.event.id}?t=${token}`;
+      const QRCode = (await import('qrcode')).default;
+      this.qrDataUrl = await QRCode.toDataURL(this.checkinUrl, { width: 240, margin: 2 });
+    } catch (e: any) {
+      this.qrError = e?.message || 'No se pudo generar el QR.';
+    } finally {
+      this.qrBusy = false;
+      this.cdr.detectChanges();
+    }
   }
 
   onRatingChange(val: number) {

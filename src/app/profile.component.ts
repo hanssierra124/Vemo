@@ -474,6 +474,13 @@ export class ProfileComponent implements OnInit {
 
   viewImage(url: string | null) { if (url) window.open(url, '_blank'); }
   goToPlatformConfig() { this.router.navigate(['/platform-config']); }
+  goToModeration() { this.router.navigate(['/admin/moderation']); }
+
+  /** Abre el perfil público (reseñas, seguidores) del propio usuario. */
+  goToMyPublicProfile() {
+    if (!this.userData?.id) return;
+    this.router.navigate(['/u', this.userData.id]);
+  }
 
   logout() {
     localStorage.clear(); sessionStorage.clear();

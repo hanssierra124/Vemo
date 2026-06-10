@@ -1,9 +1,15 @@
 .rc {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 14px 16px;
+  background: var(--surface, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 16px 18px;
   margin-bottom: 14px;
+  transition: border-color .25s ease, transform .25s var(--ease-film, ease), box-shadow .25s ease;
+}
+.rc:hover {
+  border-color: var(--border-hot, rgba(255,77,128,0.35));
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
 }
 .rc-head { display: flex; align-items: center; gap: 10px; }
 .rc-author { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #fff; }
@@ -35,7 +41,9 @@
 .rc-btn:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.4); color: #fff; }
 .rc-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .rc-btn.active { color: #FF4D80; border-color: rgba(255, 77, 128, 0.5); background: rgba(255, 77, 128, 0.08); }
-.rc-heart { font-size: 15px; line-height: 1; }
+.rc-heart { font-size: 15px; line-height: 1; transition: transform .2s var(--ease-film, ease); }
+.rc-btn.active .rc-heart { animation: heartpop .4s var(--ease-film, ease); }
+@keyframes heartpop { 0% { transform: scale(1); } 40% { transform: scale(1.4); } 100% { transform: scale(1); } }
 .rc-report { margin-left: auto; padding: 5px 12px; }
 .rc-reported { margin-left: auto; font-size: 12px; color: #4ade80; align-self: center; }
 .rc-report-box { margin-top: 10px; padding: 12px; background: rgba(255, 77, 128, 0.06);
@@ -55,6 +63,22 @@
 .rc-c-body { margin: 2px 0 4px; color: rgba(255, 255, 255, 0.8); font-size: 13px; line-height: 1.45; word-break: break-word; }
 .rc-reply-toggle { background: none; border: none; color: rgba(255, 255, 255, 0.5); font-size: 12px; cursor: pointer; padding: 0; }
 .rc-reply-toggle:hover { color: #FFD700; }
+.rc-reply-toggle.rc-delete { margin-left: 12px; }
+.rc-reply-toggle.rc-delete:hover { color: #ff7a90; }
+.rc-reply-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Historial de ediciones */
+.rc-edited { background: none; border: none; padding: 0; margin: 4px 0 0; cursor: pointer;
+  color: rgba(255,255,255,0.45); font-size: 12px; font-style: italic; }
+.rc-edited:hover { color: #FFD700; }
+.rc-revisions { margin: 8px 0; padding: 10px 12px; border-left: 2px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
+.rc-revision { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.rc-revision:last-child { border-bottom: none; }
+.rc-rev-date { color: rgba(255,255,255,0.4); font-size: 11px; margin-right: 8px; }
+.rc-rev-rating { color: #FFD700; font-size: 12px; }
+.rc-rev-title { color: #fff; font-size: 13px; font-weight: 600; margin: 2px 0 0; }
+.rc-rev-body { color: rgba(255,255,255,0.7); font-size: 13px; margin: 2px 0 0; white-space: pre-wrap; }
 .rc-reply { margin: 6px 0 6px 18px; padding-left: 10px; border-left: 2px solid rgba(255, 255, 255, 0.1); }
 .rc-reply-box, .rc-new { display: flex; gap: 8px; margin-top: 8px; }
 .rc-reply-box { margin-left: 18px; }

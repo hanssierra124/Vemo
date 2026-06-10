@@ -380,6 +380,9 @@
   gap: 14px;
   margin-top: 12px;
 }
+.organizer-link { text-decoration: none; cursor: pointer; border-radius: 12px; transition: background 0.2s; }
+.organizer-link:hover { background: rgba(255,255,255,0.04); }
+.organizer-cta { margin-left: auto; color: #FFD700; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .organizer-avatar {
   width: 46px;
   height: 46px;
@@ -414,6 +417,43 @@
   border-radius: 20px;
   padding: 2px 8px;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   ASISTIRÉ INTELIGENTE (A1)
+   ══════════════════════════════════════════════════════════════════ */
+.attend-block { text-align: center; }
+.attend-btn {
+  width: 100%; box-sizing: border-box; padding: 14px 20px; border: none; cursor: pointer;
+  border-radius: 30px; font-size: 15px; font-weight: 700; color: #1a1a1a;
+  background: linear-gradient(135deg, #FF4D80, #FFD700);
+  transition: transform .15s ease, box-shadow .2s ease;
+}
+.attend-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,77,128,0.35); }
+.attend-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.attend-btn.going {
+  background: transparent; color: #fff; border: 1px solid rgba(74,222,128,0.5);
+}
+.attend-btn.going:hover:not(:disabled) { border-color: #ff7a90; color: #ff7a90; box-shadow: none; }
+.attend-count { margin: 10px 0 0; color: rgba(255,255,255,0.7); font-size: 13px; }
+.attend-count strong { color: #FFD700; }
+.attend-error { margin: 8px 0 0; color: #ff7a90; font-size: 12px; }
+.ck-qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ck-qr-img { width: 220px; height: 220px; border-radius: 14px; background: #fff; padding: 10px; }
+.ck-qr-link { font-size: 11px; color: rgba(255,255,255,0.5); word-break: break-all; text-decoration: none; }
+.ck-qr-link:hover { color: #FFD700; }
+.attend-visibility { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 10px;
+  font-size: 12px; color: rgba(255,255,255,0.65); cursor: pointer; }
+.att-people { display: flex; flex-wrap: wrap; gap: 12px; }
+.att-person { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 76px; text-align: center; }
+.att-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg,#FF4D80,#FFD700);
+  background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #1a1a1a; font-size: 18px; text-transform: uppercase; text-decoration: none; }
+.att-name { font-size: 11px; color: #fff; text-decoration: none; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-name:hover { color: #FFD700; }
+.att-follow { background: transparent; border: 1px solid rgba(255,77,128,0.5); color: #FF4D80; border-radius: 16px;
+  padding: 3px 12px; font-size: 11px; cursor: pointer; }
+.att-follow:hover { background: rgba(255,77,128,0.12); }
+.att-following { font-size: 10px; color: #4ade80; }
 
 /* ══════════════════════════════════════════════════════════════════
    SISTEMA DE RESEÑAS (F3) — resumen, histograma, formulario media-estrella

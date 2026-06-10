@@ -16,39 +16,65 @@ import { ReviewCardComponent } from './shared/Components/review-card/review-card
   imports: [CommonModule, RouterLink, ReviewCardComponent],
   template: `
     <div class="feed-wrap">
-      <h1 class="feed-title clash-display">Tu feed</h1>
+      <header class="feed-header">
+        <span class="feed-eyebrow">VEMO SOCIAL</span>
+        <h1 class="feed-title clash-display">Tu feed</h1>
+        <p class="feed-sub">La actividad de las personas y organizadores que sigues.</p>
+      </header>
 
+      <!-- No autenticado -->
       <div class="feed-state" *ngIf="!isLoggedIn">
-        Inicia sesión para ver la actividad de las personas que sigues.
+        <div class="feed-state-icon">🔒</div>
+        <p class="feed-state-text">Inicia sesión para ver la actividad de las personas que sigues.</p>
         <a routerLink="/auth" class="feed-cta">Iniciar sesión</a>
       </div>
 
-      <div class="feed-state" *ngIf="isLoggedIn && loaded && items.length === 0">
-        <ng-container *ngIf="emptyReason === 'no_follows'">
-          Aún no sigues a nadie. Explora reseñas y sigue a otras personas para llenar tu feed.
-        </ng-container>
-        <ng-container *ngIf="emptyReason !== 'no_follows'">Tu feed está vacío por ahora.</ng-container>
+      <!-- Skeletons mientras carga -->
+      <div class="feed-list" *ngIf="isLoggedIn && !loaded">
+        <div class="feed-skeleton" *ngFor="let s of [1,2,3]">
+          <div class="sk-line"></div>
+          <div class="sk-card"></div>
+        </div>
       </div>
 
-      <div class="feed-list" *ngIf="isLoggedIn">
-        <div class="feed-item" *ngFor="let it of items">
-          <p class="feed-line">
-            <a class="feed-actor" [routerLink]="['/u', it.actor?.id]">{{ it.actor?.username || 'Alguien' }}</a>
-            <ng-container [ngSwitch]="it.verb">
-              <span *ngSwitchCase="'review_created'"> publicó una reseña</span>
-              <span *ngSwitchCase="'review_liked'"> le dio ♥ a una reseña<span *ngIf="it.review?.author"> de {{ it.review?.author?.username }}</span></span>
-              <span *ngSwitchCase="'comment_created'"> comentó una reseña</span>
-              <span *ngSwitchCase="'user_followed'"> ahora sigue a
-                <a class="feed-actor" [routerLink]="['/u', it.target_user?.id]">{{ it.target_user?.username || 'alguien' }}</a>
-              </span>
-            </ng-container>
-            <span class="feed-time">· {{ timeAgo(it.created_at) }}</span>
-          </p>
+      <!-- Vacío -->
+      <div class="feed-state" *ngIf="isLoggedIn && loaded && items.length === 0">
+        <div class="feed-state-icon">✨</div>
+        <p class="feed-state-text" *ngIf="emptyReason === 'no_follows'">
+          Aún no sigues a nadie. Explora eventos, abre una reseña y sigue a sus autores u organizadores para llenar tu feed.
+        </p>
+        <p class="feed-state-text" *ngIf="emptyReason !== 'no_follows'">
+          Tu feed está vacío por ahora. Sigue a más personas para ver su actividad.
+        </p>
+        <a routerLink="/map" class="feed-cta">Explorar eventos</a>
+      </div>
+
+      <!-- Lista -->
+      <div class="feed-list" *ngIf="isLoggedIn && loaded && items.length">
+        <article class="feed-item" *ngFor="let it of items">
+          <div class="feed-line">
+            <a class="feed-actor-avatar" [routerLink]="['/u', it.actor?.id]"
+               [style.backgroundImage]="it.actor?.profile_url ? 'url(' + it.actor?.profile_url + ')' : null">
+              <span *ngIf="!it.actor?.profile_url">{{ (it.actor?.username || '?')[0] }}</span>
+            </a>
+            <p class="feed-text">
+              <a class="feed-actor" [routerLink]="['/u', it.actor?.id]">{{ it.actor?.username || 'Alguien' }}</a>
+              <ng-container [ngSwitch]="it.verb">
+                <span *ngSwitchCase="'review_created'"><span class="feed-verb">✍️ publicó una reseña</span></span>
+                <span *ngSwitchCase="'review_liked'"><span class="feed-verb">♥ le gustó una reseña</span><span *ngIf="it.review?.author"> de {{ it.review?.author?.username }}</span></span>
+                <span *ngSwitchCase="'comment_created'"><span class="feed-verb">💬 comentó una reseña</span></span>
+                <span *ngSwitchCase="'user_followed'"><span class="feed-verb">＋ ahora sigue a</span>
+                  <a class="feed-actor" [routerLink]="['/u', it.target_user?.id]">{{ it.target_user?.username || 'alguien' }}</a>
+                </span>
+              </ng-container>
+              <span class="feed-time">· {{ timeAgo(it.created_at) }}</span>
+            </p>
+          </div>
 
           <app-review-card *ngIf="it.review" [review]="it.review" [currentUserId]="currentUserId" [showSubjectLink]="true"></app-review-card>
 
           <p class="feed-comment" *ngIf="it.verb === 'comment_created' && it.comment">“{{ it.comment.body }}”</p>
-        </div>
+        </article>
 
         <button class="feed-more" *ngIf="nextCursor" [disabled]="loadingMore" (click)="loadMore()">
           {{ loadingMore ? 'Cargando…' : 'Cargar más' }}
@@ -57,21 +83,53 @@ import { ReviewCardComponent } from './shared/Components/review-card/review-card
     </div>
   `,
   styles: [`
-    .feed-wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 80px; }
-    .feed-title { font-size: 32px; color: #fff; margin-bottom: 20px; }
-    .feed-state { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 24px; text-align: center; }
-    .feed-cta { display: inline-block; margin-top: 12px; color: #FFD700; text-decoration: none; font-weight: 700; }
-    .feed-item { margin-bottom: 18px; }
-    .feed-line { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 8px; }
-    .feed-actor { color: #fff; font-weight: 700; text-decoration: none; }
-    .feed-actor:hover { color: #FFD700; }
-    .feed-time { color: rgba(255,255,255,0.4); font-size: 12px; }
-    .feed-comment { color: rgba(255,255,255,0.8); font-style: italic; margin: 6px 0 0; padding-left: 12px;
-      border-left: 2px solid rgba(255,255,255,0.12); }
-    .feed-more { display: block; margin: 16px auto 0; background: transparent; color: #fff;
-      border: 1px solid rgba(255,255,255,0.25); border-radius: 30px; padding: 10px 28px; cursor: pointer; }
-    .feed-more:hover:not(:disabled) { border-color: #FFD700; color: #FFD700; }
+    :host { display: block; background-color: var(--ink, #0E0D12); min-height: 100vh;
+      background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(106,0,255,0.10), transparent 70%); }
+    .feed-wrap { max-width: 680px; margin: 0 auto; padding: 40px 16px 100px; }
+
+    .feed-header { margin-bottom: 28px; }
+    .feed-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
+      background: var(--grad-warm); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .feed-title { font-size: 40px; color: var(--text-1); margin: 6px 0 4px; line-height: 1; }
+    .feed-sub { color: var(--text-2); font-size: 14px; margin: 0; }
+
+    .feed-state { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+      color: var(--text-2); background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px 28px; margin-top: 8px; }
+    .feed-state-icon { font-size: 40px; filter: saturate(1.2); }
+    .feed-state-text { margin: 0; max-width: 380px; line-height: 1.5; }
+    .feed-cta { display: inline-block; margin-top: 6px; background: var(--grad-warm); color: #1a1a1a;
+      font-weight: 700; text-decoration: none; padding: 11px 26px; border-radius: 30px;
+      transition: transform .2s var(--ease-film), box-shadow .2s; }
+    .feed-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,77,128,0.3); }
+
+    .feed-item { margin-bottom: 22px; }
+    .feed-line { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .feed-actor-avatar { width: 34px; height: 34px; border-radius: 50%; flex: 0 0 34px; text-decoration: none;
+      background: var(--grad-warm); background-size: cover; background-position: center;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; color: #1a1a1a; text-transform: uppercase; font-size: 14px; }
+    .feed-text { color: var(--text-2); font-size: 14px; margin: 0; line-height: 1.4; }
+    .feed-actor { color: var(--text-1); font-weight: 700; text-decoration: none; }
+    .feed-actor:hover { color: var(--glow); }
+    .feed-verb { color: var(--text-2); }
+    .feed-time { color: var(--text-3); font-size: 12px; }
+    .feed-comment { color: var(--text-1); font-style: italic; margin: 8px 0 0; padding: 10px 14px;
+      background: var(--surface); border-left: 2px solid var(--glow); border-radius: 0 10px 10px 0; }
+
+    .feed-more { display: block; margin: 20px auto 0; background: transparent; color: var(--text-1);
+      border: 1px solid var(--border); border-radius: 30px; padding: 11px 30px; cursor: pointer; transition: all .2s; }
+    .feed-more:hover:not(:disabled) { border-color: var(--glow); color: var(--glow); }
+    .feed-more:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Skeletons */
+    .feed-skeleton { margin-bottom: 22px; }
+    .sk-line { height: 14px; width: 60%; border-radius: 8px; margin-bottom: 12px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+      background-size: 200% 100%; animation: sk 1.2s ease-in-out infinite; }
+    .sk-card { height: 120px; border-radius: 16px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      background-size: 200% 100%; animation: sk 1.2s ease-in-out infinite; }
+    @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   `],
 })
 export class FeedComponent implements OnInit {

@@ -440,6 +440,14 @@
 
 .user-email { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 8px; }
 
+.btn-public-profile {
+  margin-top: 12px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+  padding: 8px 18px; border-radius: 50px; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-public-profile:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: #FFD700; }
+
 /* =========================================
    EVENTS HEADER & FILTER PILLS
    ========================================= */

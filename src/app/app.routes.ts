@@ -149,6 +149,40 @@ export const routes: Routes = [
     loadComponent: () => import('./organizer-profile.component').then(m => m.OrganizerProfileComponent)
   },
 
+  // 16a. MIS EVENTOS (Asistiré Inteligente — Fase A1)
+  {
+    path: 'mis-eventos',
+    loadComponent: () => import('./my-events.component').then(m => m.MyEventsComponent),
+    canActivate: [blockGuard]
+  },
+
+  // 16c. CHECK-IN (Asistiré Inteligente — Fase A2): destino del QR del evento
+  {
+    path: 'checkin/:eventId',
+    loadComponent: () => import('./checkin.component').then(m => m.CheckinComponent)
+  },
+
+  // 16d. ANALÍTICA DEL ORGANIZADOR (Asistiré Inteligente — Fase A3)
+  {
+    path: 'organizer/event/:id/analytics',
+    loadComponent: () => import('./event-analytics.component').then(m => m.EventAnalyticsComponent),
+    canActivate: [blockGuard]
+  },
+
+  // 16e. NOTIFICACIONES (Asistiré Inteligente — Fase A5)
+  {
+    path: 'notificaciones',
+    loadComponent: () => import('./notifications.component').then(m => m.NotificationsComponent),
+    canActivate: [blockGuard]
+  },
+
+  // 16f. DESCUBRIR — personas + eventos recomendados (Fase A6)
+  {
+    path: 'descubrir',
+    loadComponent: () => import('./discover.component').then(m => m.DiscoverComponent),
+    canActivate: [blockGuard]
+  },
+
   // 16b. MODERACIÓN (cola admin — Fase F4). El backend exige rol admin.
   {
     path: 'admin/moderation',

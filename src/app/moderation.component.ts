@@ -15,7 +15,11 @@ import { renderSafeMarkdown } from './utils/markdown';
   imports: [CommonModule],
   template: `
     <div class="mod-wrap">
-      <h1 class="mod-title clash-display">Moderación</h1>
+      <header class="mod-header">
+        <span class="mod-eyebrow">PANEL ADMIN</span>
+        <h1 class="mod-title clash-display">Moderación</h1>
+        <p class="mod-subtitle">Reportes de la comunidad: resuelve, oculta contenido o suspende autores.</p>
+      </header>
 
       <div class="mod-tabs">
         <button *ngFor="let t of tabs" class="mod-tab" [class.active]="status === t.value"
@@ -47,9 +51,12 @@ import { renderSafeMarkdown } from './utils/markdown';
         <div class="mod-actions" *ngIf="r.status === 'open'">
           <button class="mod-btn warn" *ngIf="r.target && r.target.type === 'review' && r.target.status === 'visible'"
                   [disabled]="busy" (click)="hideReview(r)">Ocultar reseña</button>
+          <button class="mod-btn ok" *ngIf="r.target && r.target.type === 'review' && r.target.status !== 'visible'"
+                  [disabled]="busy" (click)="unhideReview(r)">Mostrar reseña</button>
           <button class="mod-btn warn" *ngIf="r.target && r.target.type === 'comment' && r.target.status === 'visible'"
                   [disabled]="busy" (click)="hideComment(r)">Ocultar comentario</button>
           <button class="mod-btn danger" *ngIf="r.target?.author" [disabled]="busy" (click)="suspend(r)">Suspender autor</button>
+          <button class="mod-btn" *ngIf="r.target?.author" [disabled]="busy" (click)="unsuspend(r)">Reactivar autor</button>
           <button class="mod-btn ok" [disabled]="busy" (click)="resolve(r, 'resolved')">Resolver</button>
           <button class="mod-btn" [disabled]="busy" (click)="resolve(r, 'dismissed')">Descartar</button>
         </div>
@@ -62,8 +69,14 @@ import { renderSafeMarkdown } from './utils/markdown';
     </div>
   `,
   styles: [`
-    .mod-wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; }
-    .mod-title { font-size: 30px; color: #fff; margin-bottom: 16px; }
+    :host { display: block; background-color: #0E0D12; min-height: 100vh; }
+    .mod-wrap { max-width: 760px; margin: 0 auto; padding: 40px 16px 90px; }
+    .mod-header { margin-bottom: 22px; }
+    .mod-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
+      background: var(--grad-warm, linear-gradient(135deg,#FF4D80,#FFD700));
+      -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .mod-title { font-size: 38px; color: var(--text-1, #fff); margin: 6px 0 4px; line-height: 1; }
+    .mod-subtitle { color: var(--text-2, rgba(255,255,255,0.6)); font-size: 14px; margin: 0; }
     .mod-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
     .mod-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.7);
       border-radius: 20px; padding: 6px 16px; cursor: pointer; font-size: 13px; }
@@ -183,6 +196,15 @@ export class ModerationComponent implements OnInit {
     } catch (e: any) { this.error = e?.message; } finally { this.busy = false; this.cdr.detectChanges(); }
   }
 
+  async unhideReview(r: ModerationReport) {
+    if (this.busy || !r.target) return;
+    this.busy = true;
+    try {
+      await this.mod.unhideReview(r.target.id);
+      r.target.status = 'visible';
+    } catch (e: any) { this.error = e?.message; } finally { this.busy = false; this.cdr.detectChanges(); }
+  }
+
   async hideComment(r: ModerationReport) {
     if (this.busy || !r.target) return;
     this.busy = true;
@@ -199,6 +221,16 @@ export class ModerationComponent implements OnInit {
     try {
       await this.mod.suspendUser(r.target.author.id);
       alert('Usuario suspendido.');
+    } catch (e: any) { this.error = e?.message; } finally { this.busy = false; this.cdr.detectChanges(); }
+  }
+
+  async unsuspend(r: ModerationReport) {
+    if (this.busy || !r.target?.author) return;
+    if (!confirm(`¿Reactivar a ${r.target.author.username || 'este usuario'}? Volverá a poder publicar e interactuar.`)) return;
+    this.busy = true;
+    try {
+      await this.mod.unsuspendUser(r.target.author.id);
+      alert('Usuario reactivado.');
     } catch (e: any) { this.error = e?.message; } finally { this.busy = false; this.cdr.detectChanges(); }
   }
 }

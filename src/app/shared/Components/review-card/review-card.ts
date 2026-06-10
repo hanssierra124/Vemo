@@ -10,11 +10,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { StarRatingComponent } from '../star-rating/star-rating';
-import { ReviewAuthor } from '../../../models/review.model';
+import { ReviewAuthor, ReviewRevision } from '../../../models/review.model';
 import { ReviewComment } from '../../../models/social.model';
 import { ReportReason, REPORT_REASONS } from '../../../models/moderation.model';
 import { SocialService } from '../../../social.service';
 import { ModerationService } from '../../../moderation.service';
+import { ReviewService } from '../../../review.service';
 import { renderSafeMarkdown } from '../../../utils/markdown';
 
 export interface ReviewCardData {
@@ -30,6 +31,7 @@ export interface ReviewCardData {
   is_verified_attendee?: boolean;
   author?: ReviewAuthor | null;
   liked_by_me?: boolean;
+  edited_at?: string | null;
 }
 
 @Component({
@@ -64,9 +66,16 @@ export class ReviewCardComponent implements OnInit {
   reportSent = false;
   readonly reasons = REPORT_REASONS;
 
+  // Historial de revisiones
+  revisionsOpen = false;
+  revisions: ReviewRevision[] = [];
+  revisionsLoaded = false;
+  loadingRevisions = false;
+
   constructor(
     private social: SocialService,
     private moderation: ModerationService,
+    private reviews: ReviewService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -169,6 +178,32 @@ export class ReviewCardComponent implements OnInit {
     }
   }
 
+  /** El visitante autenticado solo puede borrar sus propios comentarios. */
+  canDelete(c: ReviewComment): boolean {
+    return !!this.currentUserId && c.user_id === this.currentUserId;
+  }
+
+  /** Borra un comentario o respuesta propio. `parent` se pasa si es respuesta. */
+  async deleteComment(c: ReviewComment, parent?: ReviewComment) {
+    if (this.posting || !this.canDelete(c)) return;
+    if (!confirm('¿Eliminar este comentario?')) return;
+    this.posting = true;
+    try {
+      await this.social.deleteComment(c.id);
+      if (parent) {
+        parent.replies = (parent.replies || []).filter(r => r.id !== c.id);
+      } else {
+        this.comments = this.comments.filter(x => x.id !== c.id);
+      }
+      this.review.comment_count = Math.max(0, (this.review.comment_count || 1) - 1);
+    } catch (_) {
+      /* feedback mínimo */
+    } finally {
+      this.posting = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   // ── Reportar ────────────────────────────────────────────────────────
   toggleReport() {
     this.reportOpen = !this.reportOpen;
@@ -188,6 +223,32 @@ export class ReviewCardComponent implements OnInit {
       this.reportOpen = false;
     } finally {
       this.reporting = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  // ── Historial de revisiones ──────────────────────────────────────────
+  get wasEdited(): boolean {
+    return !!this.review.edited_at;
+  }
+
+  async toggleRevisions() {
+    this.revisionsOpen = !this.revisionsOpen;
+    if (this.revisionsOpen && !this.revisionsLoaded) {
+      await this.loadRevisions();
+    }
+    this.cdr.detectChanges();
+  }
+
+  private async loadRevisions() {
+    this.loadingRevisions = true;
+    try {
+      this.revisions = await this.reviews.revisions(this.review.id);
+      this.revisionsLoaded = true;
+    } catch (_) {
+      this.revisions = [];
+    } finally {
+      this.loadingRevisions = false;
       this.cdr.detectChanges();
     }
   }

@@ -39,7 +39,8 @@
 
         <div class="content-block glass-effect organizer-block" *ngIf="event.profiles">
           <h3 class="clash-display section-tag">Organizado por</h3>
-          <div class="organizer-row">
+          <a class="organizer-row organizer-link"
+             [routerLink]="event.organizer_id ? ['/organizer', event.organizer_id] : null">
             <div class="organizer-avatar">
               <img *ngIf="event.profiles.profile_url" [src]="event.profiles.profile_url" [alt]="event.profiles.company_name || event.profiles.username" class="organizer-avatar-img">
               <span *ngIf="!event.profiles.profile_url">{{ (event.profiles.company_name || event.profiles.username)?.charAt(0)?.toUpperCase() }}</span>
@@ -48,12 +49,63 @@
               <p class="organizer-name">{{ event.profiles.company_name || event.profiles.username }}</p>
               <span class="organizer-badge">Organizador verificado</span>
             </div>
-          </div>
+            <span class="organizer-cta" *ngIf="event.organizer_id">Ver perfil →</span>
+          </a>
         </div>
 
         <div class="content-block glass-effect" *ngIf="event.description">
           <h3 class="clash-display section-tag">Sobre esta experiencia</h3>
           <p class="event-description-text event-description-body">{{ event.description }}</p>
+        </div>
+
+        <div class="content-block glass-effect attend-block">
+          <h3 class="clash-display section-tag">¿Vas a ir?</h3>
+          <button class="attend-btn" type="button"
+                  [class.going]="myAttendanceStatus === 'going'"
+                  [disabled]="attendanceBusy"
+                  (click)="toggleAttendance()">
+            <span *ngIf="myAttendanceStatus === 'going'">✓ Asistiré · toca para cancelar</span>
+            <span *ngIf="myAttendanceStatus !== 'going'">{{ attendanceBusy ? 'Guardando…' : 'Asistiré' }}</span>
+          </button>
+          <p class="attend-count"><strong>{{ goingCount }}</strong> persona(s) asistirán</p>
+          <label class="attend-visibility" *ngIf="myAttendanceStatus === 'going'">
+            <input type="checkbox" [checked]="myVisibility === 'public'" (change)="toggleVisibility()" />
+            Mostrar que asistiré a otros
+          </label>
+          <p class="attend-error" *ngIf="attendanceError">{{ attendanceError }}</p>
+        </div>
+
+        <div class="content-block glass-effect" *ngIf="attendees.length">
+          <h3 class="clash-display section-tag">Quién asiste</h3>
+          <div class="att-people">
+            <div class="att-person" *ngFor="let a of attendees">
+              <a class="att-avatar" [routerLink]="['/u', a.id]"
+                 [style.backgroundImage]="a.profile_url ? 'url(' + a.profile_url + ')' : null">
+                <span *ngIf="!a.profile_url">{{ (a.username || '?')[0] }}</span>
+              </a>
+              <a class="att-name" [routerLink]="['/u', a.id]">{{ a.is_me ? 'Tú' : (a.username || 'Usuario') }}</a>
+              <button class="att-follow" *ngIf="!a.is_me && !a.is_following" (click)="followAttendee(a)">Seguir</button>
+              <span class="att-following" *ngIf="!a.is_me && a.is_following">Siguiendo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-block glass-effect" *ngIf="isEventOwner">
+          <h3 class="clash-display section-tag">Panel del organizador</h3>
+          <a class="attend-btn" [routerLink]="['/organizer/event', event.id, 'analytics']">Ver analítica del evento</a>
+        </div>
+
+        <div class="content-block glass-effect" *ngIf="isEventOwner">
+          <h3 class="clash-display section-tag">Check-in del evento</h3>
+          <button class="attend-btn" type="button" *ngIf="!qrDataUrl" [disabled]="qrBusy" (click)="generateCheckinQr()">
+            {{ qrBusy ? 'Generando…' : 'Generar QR de check-in' }}
+          </button>
+          <div class="ck-qr-wrap" *ngIf="qrDataUrl">
+            <img [src]="qrDataUrl" alt="QR de check-in" class="ck-qr-img" />
+            <p class="attend-count">Muestra este QR en la entrada. Los asistentes lo escanean para registrar su llegada.</p>
+            <a [href]="checkinUrl" target="_blank" rel="noopener" class="ck-qr-link">{{ checkinUrl }}</a>
+          </div>
+          <p class="attend-error" *ngIf="qrError">{{ qrError }}</p>
         </div>
 
         <div class="content-block glass-effect">
@@ -163,7 +215,7 @@
 
           <!-- Lista de reseñas de la comunidad (con like + comentarios) -->
           <div class="review-list">
-            <app-review-card *ngFor="let rev of communityReviews" [review]="rev"></app-review-card>
+            <app-review-card *ngFor="let rev of communityReviews" [review]="rev" [currentUserId]="me?.id || null"></app-review-card>
             <p class="rv-empty" *ngIf="communityReviews.length === 0">Sé el primero en reseñar este evento.</p>
           </div>
         </div>
