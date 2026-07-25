@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavBar } from './shared/Components/nav-bar/nav-bar';
 import { Footer } from './shared/Components/footer/footer';
+import { AccessibilityPanel } from './shared/Components/accessibility-panel/accessibility-panel';
 // Fíjate: Ya NO importamos Leaflet aquí
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavBar, Footer],
+  imports: [RouterOutlet, NavBar, Footer, AccessibilityPanel],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

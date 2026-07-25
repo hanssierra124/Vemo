@@ -3,13 +3,16 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CreatorTypePicker } from './shared/Components/creator-type-picker/creator-type-picker';
+import { CreatorTypesService } from './creator-types.service';
+import { CreatorType } from './models/creator-type.model';
 
 declare var WidgetCheckout: any;
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CreatorTypePicker],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -48,8 +51,13 @@ export class ProfileComponent implements OnInit {
     public_email: '',
     schedule_weekdays: '',
     schedule_weekends: '',
-    description: ''
+    description: '',
+    creator_type: null as string | null,
+    creator_tags: [] as string[]
   };
+
+  // Creadores de espacios (para pintar los badges en la vista de solo lectura)
+  creatorTypesCatalog: CreatorType[] = [];
 
   // QR
   showQRModal = false;
@@ -63,12 +71,24 @@ export class ProfileComponent implements OnInit {
   wompiPublicKey = 'pub_test_Q5yDA9xoKdePzhSGeVe9HAez7CTSG9IW';
   promotionPrice = 5000000;
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private creatorTypesService: CreatorTypesService
+  ) {}
 
   ngOnInit() {
     this.resetLocalState();
     this.getProfileData();
     this.loadWompiScript();
+    this.creatorTypesService.getCreatorTypes().then(types => {
+      this.creatorTypesCatalog = types;
+      this.cdr.detectChanges();
+    });
+  }
+
+  creatorTagLabel(tagId: string): string {
+    return this.creatorTypesService.tagLabel(this.creatorTypesCatalog, this.userData?.creator_type, tagId);
   }
 
   resetLocalState() {
@@ -200,7 +220,9 @@ export class ProfileComponent implements OnInit {
       public_email: this.userData.public_email || '',
       schedule_weekdays: this.userData.schedule_weekdays || '',
       schedule_weekends: this.userData.schedule_weekends || '',
-      description: this.userData.description || ''
+      description: this.userData.description || '',
+      creator_type: this.userData.creator_type || null,
+      creator_tags: this.userData.creator_tags || []
     };
     this.isEditingProfile = true;
   }

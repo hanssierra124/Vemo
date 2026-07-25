@@ -75,6 +75,28 @@
           <p class="attend-error" *ngIf="attendanceError">{{ attendanceError }}</p>
         </div>
 
+        <div class="content-block glass-effect mood-block" *ngIf="canConfirmMood() && !myMoodConfirmed">
+          <h3 class="clash-display section-tag">¿Cómo estuvo el ambiente?</h3>
+          <button class="attend-btn" type="button" (click)="showMoodModal = true">Confirmar ambiente</button>
+        </div>
+        <div class="content-block glass-effect mood-block" *ngIf="myMoodConfirmed">
+          <h3 class="clash-display section-tag">¡Gracias por tu feedback!</h3>
+          <p class="attend-count">Confirmaste: {{ myMoodConfirmed.emoji }} {{ myMoodConfirmed.name }}</p>
+        </div>
+
+        <div class="content-block glass-effect mood-summary-block" *ngIf="moodSummary && moodSummary.total > 0">
+          <h3 class="clash-display section-tag">Así se sintió la gente</h3>
+          <div class="mood-summary-top" *ngIf="topMoodItem">
+            <span class="mood-summary-emoji">{{ topMoodItem.emotion.emoji }}</span>
+            <span>{{ topMoodItem.emotion.name }} fue lo más sentido ({{ topMoodItem.count }} de {{ moodSummary.total }})</span>
+          </div>
+          <div class="mood-summary-list">
+            <span class="mood-summary-chip" *ngFor="let it of moodSummary.items">
+              {{ it.emotion.emoji }} {{ it.emotion.name }} · {{ it.count }}
+            </span>
+          </div>
+        </div>
+
         <div class="content-block glass-effect" *ngIf="attendees.length">
           <h3 class="clash-display section-tag">Quién asiste</h3>
           <div class="att-people">
@@ -251,6 +273,13 @@
   <button class="lb-nav lb-next" (click)="$event.stopPropagation(); nextPhoto()" *ngIf="allPhotos.length > 1" aria-label="Siguiente">›</button>
   <div class="lb-counter" *ngIf="allPhotos.length > 1">{{ lightboxIndex + 1 }} / {{ allPhotos.length }}</div>
 </div>
+
+<app-mood-confirm-modal
+  *ngIf="showMoodModal && event"
+  [eventId]="event.id"
+  (confirmed)="onMoodConfirmed($event)"
+  (closed)="onMoodModalClosed()">
+</app-mood-confirm-modal>
 
 <ng-template #loadingState>
   <div class="vemo-loader-container">

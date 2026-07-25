@@ -12,6 +12,8 @@ import { OrganizerProfile } from './models/profile.model';
 import { ReviewCardComponent } from './shared/Components/review-card/review-card';
 import { StarRatingComponent } from './shared/Components/star-rating/star-rating';
 import { FollowListComponent } from './shared/Components/follow-list/follow-list';
+import { CreatorTypesService } from './creator-types.service';
+import { CreatorType } from './models/creator-type.model';
 
 @Component({
   selector: 'app-organizer-profile',
@@ -29,6 +31,9 @@ import { FollowListComponent } from './shared/Components/follow-list/follow-list
           <span class="op-badge">✦ Organizador</span>
           <h1 class="op-name clash-display">{{ data.organizer.company_name || data.organizer.username }}</h1>
           <p class="op-meta" *ngIf="data.organizer.address">📍 {{ data.organizer.address }}</p>
+          <div class="op-creator-tags" *ngIf="data.organizer.creator_tags?.length">
+            <span class="op-creator-badge" *ngFor="let tag of data.organizer.creator_tags">{{ tagLabel(tag) }}</span>
+          </div>
           <div class="op-follow-counts">
             <button type="button" class="op-count-btn" (click)="openFollowModal('followers')">
               <b>{{ data.organizer.followers_count }}</b> seguidores
@@ -95,6 +100,8 @@ import { FollowListComponent } from './shared/Components/follow-list/follow-list
     .op-badge { font-size: 11px; letter-spacing: 1px; color: var(--gold); font-weight: 700; }
     .op-name { font-size: 28px; color: var(--text-1); margin: 2px 0; }
     .op-meta { color: var(--text-2); font-size: 13px; margin: 2px 0; }
+    .op-creator-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+    .op-creator-badge { font-size: 11px; font-weight: 700; color: #fff; padding: 3px 10px; border-radius: 100px; background: var(--grad-hot); }
     .op-follow-counts { margin-top: 6px; }
     .op-count-btn { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-2); font-size: 13px; transition: color .2s; }
     .op-count-btn:hover { color: var(--text-1); }
@@ -142,6 +149,7 @@ export class OrganizerProfileComponent implements OnInit {
   followError: string | null = null;
   currentUserId: string | null = null;
   followModal: 'followers' | 'following' | null = null;
+  private creatorTypesCatalog: CreatorType[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -149,6 +157,7 @@ export class OrganizerProfileComponent implements OnInit {
     private profiles: ProfilePublicService,
     private social: SocialService,
     private currentUser: CurrentUserService,
+    private creatorTypes: CreatorTypesService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -158,10 +167,15 @@ export class OrganizerProfileComponent implements OnInit {
 
   ngOnInit() {
     this.currentUser.getMyId().then((id) => { this.currentUserId = id; this.cdr.detectChanges(); });
+    this.creatorTypes.getCreatorTypes().then((types) => { this.creatorTypesCatalog = types; this.cdr.detectChanges(); });
     this.route.paramMap.subscribe((p) => {
       const id = p.get('id');
       if (id) this.load(id);
     });
+  }
+
+  tagLabel(tagId: string): string {
+    return this.creatorTypes.tagLabel(this.creatorTypesCatalog, this.data?.organizer.creator_type, tagId);
   }
 
   openFollowModal(mode: 'followers' | 'following') {

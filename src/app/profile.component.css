@@ -438,6 +438,13 @@
 }
 .info-icon { font-size: 14px; flex-shrink: 0; }
 
+.creator-tags-row { flex-wrap: wrap; background: none; padding: 4px 0; }
+.creator-badge {
+  font-size: 12px; font-weight: 600; color: #fff;
+  padding: 4px 12px; border-radius: 100px;
+  background: linear-gradient(135deg, #FF4D80 0%, #6A00FF 100%);
+}
+
 .user-email { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 8px; }
 
 .btn-public-profile {

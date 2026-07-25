@@ -159,6 +159,18 @@
       </div>
     </div>
 
+    <!-- SECTION: Creadores de espacios -->
+    <div class="form-section">
+      <h3 class="section-title">Creadores de espacios <span class="optional-tag">(opcional)</span></h3>
+      <p class="section-hint">Cuéntanos qué tipo de creador eres para conectar mejor tu perfil con la comunidad.</p>
+      <app-creator-type-picker
+        [selectedType]="creatorType"
+        [selectedTags]="creatorTags"
+        (selectedTypeChange)="creatorType = $event"
+        (selectedTagsChange)="creatorTags = $event">
+      </app-creator-type-picker>
+    </div>
+
     <!-- SECTION: Categorías -->
     <div class="form-section" *ngIf="availableCategories.length > 0">
       <h3 class="section-title">Categorías de tu negocio</h3>

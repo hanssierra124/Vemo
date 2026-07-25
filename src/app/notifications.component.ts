@@ -101,7 +101,12 @@ export class NotificationsComponent implements OnInit {
   }
 
   icon(type: string): string {
-    return { reminder_7d: '🗓️', reminder_24h: '⏰', reminder_1h: '⌛', event_start: '🎉', generic: '🔔' }[type] || '🔔';
+    return {
+      reminder_7d: '🗓️', reminder_24h: '⏰', reminder_1h: '⌛', event_start: '🎉',
+      event_decision: '📋', verification_decision: '🛡️', event_updated: '🔄',
+      mood_confirm: '🎭', nearby_recommendation: '📍',
+      generic: '🔔',
+    }[type] || '🔔';
   }
 
   private async load() {
@@ -134,8 +139,30 @@ export class NotificationsComponent implements OnInit {
       n.read_at = new Date().toISOString();
       this.notifications.markRead(n.id).catch(() => {});
     }
-    if (n.event_id) this.router.navigate(['/event', n.event_id]);
+    this.navigateFor(n);
     this.cdr.detectChanges();
+  }
+
+  // title/body ya vienen redactados desde el backend — el front solo decide
+  // a dónde saltar según el `type` (y el `event_id` cuando aplica).
+  private navigateFor(n: AppNotification) {
+    switch (n.type) {
+      case 'mood_confirm':
+        // Abre el detalle del evento con el picker de emociones ya desplegado.
+        if (n.event_id) this.router.navigate(['/event', n.event_id], { queryParams: { confirmMood: '1' } });
+        return;
+      case 'verification_decision':
+        this.router.navigate(['/onboarding/verify']);
+        return;
+      case 'nearby_recommendation':
+        this.router.navigate(['/descubrir']);
+        return;
+      case 'event_decision':
+      case 'event_updated':
+      default:
+        if (n.event_id) this.router.navigate(['/event', n.event_id]);
+        else this.router.navigate(['/profile']);
+    }
   }
 
   async markAll() {

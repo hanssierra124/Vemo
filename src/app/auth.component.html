@@ -89,6 +89,16 @@
           </select>
           <span class="field-error" *ngIf="hasError('businessType')">{{ errors['businessType'] }}</span>
         </div>
+
+        <div class="input-group creator-type-group">
+          <label>Creador de espacios <small>(opcional)</small></label>
+          <app-creator-type-picker
+            [selectedType]="creatorType"
+            [selectedTags]="creatorTags"
+            (selectedTypeChange)="creatorType = $event"
+            (selectedTagsChange)="creatorTags = $event">
+          </app-creator-type-picker>
+        </div>
       </div>
 
       <!-- ===== CAMPOS ESPECÍFICOS USUARIO ===== -->

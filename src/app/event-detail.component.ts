@@ -6,19 +6,23 @@ import { FormsModule } from '@angular/forms';
 import { smartGeocodeColombian } from './utils/colombian-geocoding';
 import { StarRatingComponent } from './shared/Components/star-rating/star-rating';
 import { ReviewCardComponent } from './shared/Components/review-card/review-card';
+import { MoodConfirmModal } from './shared/Components/mood-confirm-modal/mood-confirm-modal';
 import { ReviewService } from './review.service';
 import { AttendanceService } from './attendance.service';
 import { CheckinService } from './checkin.service';
 import { EngagementService } from './engagement.service';
 import { SocialService } from './social.service';
+import { MoodService } from './mood.service';
 import { Review, ReviewStats } from './models/review.model';
 import { AttendanceStatus, Attendee } from './models/attendance.model';
+import { Emotion } from './models/emotion.model';
+import { MoodSummary, MoodSummaryItem } from './models/mood.model';
 import { renderSafeMarkdown } from './utils/markdown';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, StarRatingComponent, ReviewCardComponent],
+  imports: [CommonModule, FormsModule, RouterLink, StarRatingComponent, ReviewCardComponent, MoodConfirmModal],
   templateUrl: './event-detail.component.html',
   styleUrls: ['./event-detail.component.css']
 })
@@ -55,6 +59,12 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
   attendees: Attendee[] = [];
   myVisibility: 'public' | 'private' = 'public';
 
+  // ── Notificaciones inteligentes (B): confirmar mood + resumen ──
+  showMoodModal = false;
+  private autoOpenMood = false;
+  myMoodConfirmed: Emotion | null = null;
+  moodSummary: MoodSummary | null = null;
+
   photos: any[] = [];
   lightboxOpen = false;
   lightboxIndex = 0;
@@ -87,11 +97,13 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     private attendanceService: AttendanceService,
     private checkinService: CheckinService,
     private engagementService: EngagementService,
-    private socialService: SocialService
+    private socialService: SocialService,
+    private moodService: MoodService
   ) {}
 
   ngOnInit() {
     const eventId = this.route.snapshot.paramMap.get('id');
+    this.autoOpenMood = this.route.snapshot.queryParamMap.get('confirmMood') === '1';
     this.loadMe();
     if (eventId) this.loadEventDetail(eventId);
   }
@@ -121,6 +133,11 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
         this.loadMyAttendance(id);
         this.loadAttendees(id);
         this.engagementService.track(id, 'view'); // señal A3
+        if (this.isPostEvent()) this.loadMoodSummary(id);
+        // Viene del tap en una notificación mood_confirm: abrimos el picker
+        // directo. El backend valida asistencia/horario igual, así que si
+        // no aplica el modal simplemente mostrará el error correspondiente.
+        if (this.autoOpenMood) { this.showMoodModal = true; this.autoOpenMood = false; }
         if (isPlatformBrowser(this.platformId) && this.L) {
           setTimeout(() => {
             this.initSingleMap();
@@ -349,6 +366,37 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
       this.attendanceBusy = false;
       this.cdr.detectChanges();
     }
+  }
+
+  // ── Notificaciones inteligentes (B): confirmar mood + resumen ────────
+  canConfirmMood(): boolean {
+    return this.isPostEvent() && (this.myAttendanceStatus === 'going' || this.myAttendanceStatus === 'attended');
+  }
+
+  onMoodConfirmed(emotion: Emotion) {
+    this.showMoodModal = false;
+    this.myMoodConfirmed = emotion;
+    if (this.event?.id) this.loadMoodSummary(this.event.id);
+    this.cdr.detectChanges();
+  }
+
+  onMoodModalClosed() {
+    this.showMoodModal = false;
+    this.cdr.detectChanges();
+  }
+
+  async loadMoodSummary(id: string) {
+    try {
+      this.moodSummary = await this.moodService.getMoodSummary(id);
+    } catch { /* resumen opcional: no rompe el detalle si falla */ } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  /** Emoción más votada del resumen (para el titular "así se sintió la gente"). */
+  get topMoodItem(): MoodSummaryItem | null {
+    if (!this.moodSummary?.items?.length) return null;
+    return [...this.moodSummary.items].sort((a, b) => b.count - a.count)[0];
   }
 
   // ── Check-in QR (A2): sólo el organizador dueño del evento ───────────

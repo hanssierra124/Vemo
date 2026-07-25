@@ -3,11 +3,12 @@ import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CreatorTypePicker } from './shared/Components/creator-type-picker/creator-type-picker';
 
 @Component({
   selector: 'app-organizer-verify',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CreatorTypePicker],
   templateUrl: './organizer-verify.component.html',
   styleUrls: ['./organizer-verify.component.css']
 })
@@ -57,6 +58,10 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
   // Segmentation
   organizerSize: 'pequeno' | 'mediano' | 'grande' = 'pequeno';
 
+  // Creadores de espacios (tipo + tags)
+  creatorType: string | null = null;
+  creatorTags: string[] = [];
+
   // Verification status (loaded from profile)
   verificationStatus: string | null = null;
   rejectionReason: string | null = null;
@@ -90,6 +95,8 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
         this.rejectionReason = data.user?.rejection_reason || null;
         if (data.user?.company_name) this.companyName = data.user.company_name;
         if (data.user?.nit) this.nit = data.user.nit;
+        if (data.user?.creator_type) this.creatorType = data.user.creator_type;
+        if (data.user?.creator_tags) this.creatorTags = data.user.creator_tags;
       }
     } catch {}
   }
@@ -296,6 +303,8 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
       if (scheduleJson !== '[]') formData.append('schedule_json', scheduleJson);
       if (this.selectedCategories.length) formData.append('categories', JSON.stringify(this.selectedCategories));
       formData.append('organizer_size', this.organizerSize);
+      if (this.creatorType) formData.append('creator_type', this.creatorType);
+      if (this.creatorTags.length) formData.append('creator_tags', JSON.stringify(this.creatorTags));
 
       const res = await fetch(`${environment.apiUrl}/api/organizer/verify`, {
         method: 'POST',

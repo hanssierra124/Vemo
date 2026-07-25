@@ -204,6 +204,18 @@
                 <textarea [(ngModel)]="editProfile.description" rows="2" placeholder="Sobre tu negocio"></textarea>
               </div>
             </div>
+            <div class="edit-row">
+              <div class="edit-field creator-type-field">
+                <label>Creador de espacios</label>
+                <app-creator-type-picker
+                  theme="dark"
+                  [selectedType]="editProfile.creator_type"
+                  [selectedTags]="editProfile.creator_tags"
+                  (selectedTypeChange)="editProfile.creator_type = $event"
+                  (selectedTagsChange)="editProfile.creator_tags = $event">
+                </app-creator-type-picker>
+              </div>
+            </div>
             <div class="edit-actions">
               <button class="btn-cancel" (click)="cancelEditProfile()">Cancelar</button>
               <button class="btn-save" (click)="saveProfile()">Guardar</button>
@@ -223,6 +235,10 @@
             <div class="info-item" *ngIf="!userData.schedule_json && userData.schedule_weekdays"><span class="info-icon">🕐</span> L-V: {{ userData.schedule_weekdays }}</div>
             <div class="info-item" *ngIf="!userData.schedule_json && userData.schedule_weekends"><span class="info-icon">🕐</span> Fin de semana: {{ userData.schedule_weekends }}</div>
             <div class="info-item" *ngIf="userData.description"><span class="info-icon">📝</span> {{ userData.description }}</div>
+            <div class="info-item creator-tags-row" *ngIf="userData.creator_tags?.length">
+              <span class="info-icon">✦</span>
+              <span class="creator-badge" *ngFor="let tag of userData.creator_tags">{{ creatorTagLabel(tag) }}</span>
+            </div>
             <div class="empty-profile-hint" *ngIf="!userData.address && !userData.public_phone && !userData.description">
               Tu perfil público está vacío. <button class="btn-text-link inline" (click)="startEditProfile()">Completar ahora</button>
             </div>

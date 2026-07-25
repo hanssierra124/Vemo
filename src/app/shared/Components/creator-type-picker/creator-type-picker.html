@@ -1,0 +1,29 @@
+<div class="ctp-wrap" [class.ctp-dark]="theme === 'dark'" *ngIf="!loading && types.length">
+  <div class="ctp-block">
+    <span class="ctp-label">¿Qué tipo de creador de espacios eres?</span>
+    <div class="ctp-types">
+      <button
+        type="button"
+        *ngFor="let type of types"
+        class="ctp-type-btn"
+        [class.active]="selectedType === type.id"
+        (click)="chooseType(type.id)">
+        {{ type.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="ctp-block" *ngIf="selectedType">
+    <span class="ctp-label">Selecciona lo que más te describe</span>
+    <div class="ctp-tags">
+      <button
+        type="button"
+        *ngFor="let tag of currentTags"
+        class="ctp-tag-btn"
+        [class.active]="isTagSelected(tag.id)"
+        (click)="toggleTag(tag.id)">
+        {{ tag.name }}
+      </button>
+    </div>
+  </div>
+</div>

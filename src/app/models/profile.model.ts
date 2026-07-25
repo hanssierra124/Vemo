@@ -32,6 +32,8 @@ export interface UserProfile {
 export interface OrganizerPublic extends PublicUser {
   address: string | null;
   public_email: string | null;
+  creator_type: string | null;
+  creator_tags: string[] | null;
 }
 
 export interface OrganizerProfile {
