@@ -6,16 +6,24 @@
 // ════════════════════════════════════════════════════════════════════
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AnalyticsService } from './analytics.service';
 import { PredictionService } from './prediction.service';
+import { RosterService, RosterAttendee, EventInsights, TallyEntry } from './roster.service';
 import { EventAnalytics } from './models/analytics.model';
 import { EventPrediction } from './models/prediction.model';
+import {
+  INTERESES_DISPONIBLES, NEGATIVOS_DISPONIBLES, COMPANY_OPTIONS, TIME_OPTIONS,
+  OUTING_FREQUENCY_OPTIONS, SPONTANEITY_OPTIONS, BUDGET_RANGE_OPTIONS, TRANSPORT_OPTIONS,
+  SOCIAL_ENERGY_OPTIONS, INTENTION_OPTIONS, TARGET_COMPANY_OPTIONS, TIME_AVAILABLE_OPTIONS,
+  PreferenceOption,
+} from './shared/user-preferences-options';
 
 @Component({
   selector: 'app-event-analytics',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="an-wrap" *ngIf="data; else stateTpl">
       <header class="an-head">
@@ -101,6 +109,72 @@ import { EventPrediction } from './models/prediction.model';
           </div>
         </div>
       </section>
+
+      <!-- ══════ CENTRO DE COMANDO: asistentes reales + insights ══════ -->
+      <section class="an-card cc-card">
+        <h3 class="an-section">Asistentes reales
+          <span class="cc-sub">{{ roster.length }} en total · {{ insights?.totals?.new || 0 }} nuevos · {{ insights?.totals?.recurring || 0 }} recurrentes</span>
+        </h3>
+        <p class="cc-note">Muchos de estos rasgos hoy vienen de lo que la persona marcó en su propio perfil de Vemo (todavía no son inferencia de IA).</p>
+
+        <div class="cc-table-wrap" *ngIf="roster.length; else noRoster">
+          <table class="cc-table">
+            <thead>
+              <tr>
+                <th>Nombre</th><th>Origen</th><th>Estado</th><th>Nuevo/Recurrente</th>
+                <th>Inscripción</th><th>Edad</th><th>Intereses</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of roster">
+                <td>{{ a.name }}</td>
+                <td><span class="cc-pill" [class.walkin]="a.source === 'walkin'">{{ a.source === 'walkin' ? 'Registro express' : 'App' }}</span></td>
+                <td>{{ a.status === 'attended' ? '✓ Asistió' : 'Va a ir' }}</td>
+                <td>{{ a.is_recurring ? 'Recurrente' : 'Nuevo' }}</td>
+                <td>{{ a.registered_at ? (a.registered_at | date:'d MMM, h:mm a') : '—' }}</td>
+                <td>{{ a.age ?? '—' }}</td>
+                <td class="cc-chips-cell">
+                  <span class="cc-mini-chip" *ngFor="let i of a.interests">{{ labelFor(interestOptions, i) }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noRoster><p class="an-empty">Aún no hay asistentes registrados para este evento.</p></ng-template>
+      </section>
+
+      <section class="an-card" *ngIf="insights">
+        <h3 class="an-section">Insights de tu audiencia</h3>
+        <div class="cc-charts-grid">
+          <div class="cc-chart-box" *ngFor="let c of chartConfigs">
+            <h4 class="cc-chart-title">{{ c.title }}</h4>
+            <canvas [id]="c.canvasId" height="160"></canvas>
+            <p class="an-empty" *ngIf="!tallyFor(c.key).length">Sin datos todavía.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vela: preguntar sobre estos insights -->
+      <section class="an-card cc-vela">
+        <h3 class="an-section">Pregúntale a Vela sobre este evento</h3>
+        <div class="cc-vela-log" *ngIf="velaMessages.length">
+          <div class="cc-vela-msg" [class.mine]="m.role === 'organizer'" *ngFor="let m of velaMessages">
+            <b>{{ m.role === 'organizer' ? 'Tú' : 'Vela' }}</b>
+            <p>{{ m.text }}</p>
+          </div>
+        </div>
+        <div class="cc-vela-input-row">
+          <input type="text" [(ngModel)]="velaInput" placeholder="Ej: ¿qué tipo de gente viene a mis eventos?"
+                 (keyup.enter)="askVela()" [disabled]="velaBusy">
+          <button type="button" (click)="askVela()" [disabled]="velaBusy || !velaInput.trim()">
+            {{ velaBusy ? 'Pensando…' : 'Preguntar' }}
+          </button>
+        </div>
+        <div class="cc-meeting-cta">
+          <span>¿Prefieres que te lo expliquemos nosotros?</span>
+          <a [href]="meetingCtaHref">Agendar una reunión →</a>
+        </div>
+      </section>
     </div>
 
     <ng-template #stateTpl>
@@ -157,6 +231,34 @@ import { EventPrediction } from './models/prediction.model';
     .pred-conf-fill { display: block; height: 100%; background: linear-gradient(90deg,#6A00FF,#FFD700); }
     .pred-conf-val { color: #FFD700; font-weight: 700; }
     @media (max-width: 560px) { .an-demo { grid-template-columns: 1fr; } .pred-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ══════ CENTRO DE COMANDO ══════ */
+    .cc-sub { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.45); margin-left: 10px; }
+    .cc-note { font-size: 11px; color: rgba(255,255,255,0.4); margin: -6px 0 14px; font-style: italic; }
+    .cc-table-wrap { overflow-x: auto; }
+    .cc-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    .cc-table th { text-align: left; color: rgba(255,255,255,0.5); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .cc-table td { padding: 8px 10px; color: rgba(255,255,255,0.85); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .cc-pill { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; background: rgba(106,0,255,0.18); color: #c9a3ff; }
+    .cc-pill.walkin { background: rgba(255,215,0,0.15); color: #FFD700; }
+    .cc-chips-cell { white-space: normal; max-width: 220px; }
+    .cc-mini-chip { display: inline-block; font-size: 10px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); border-radius: 100px; padding: 2px 8px; margin: 1px; }
+    .cc-charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .cc-chart-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; }
+    .cc-chart-title { font-size: 12px; color: rgba(255,255,255,0.7); margin: 0 0 8px; }
+    .cc-vela-log { max-height: 260px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .cc-vela-msg { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
+    .cc-vela-msg b { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #FFD700; display: block; margin-bottom: 2px; }
+    .cc-vela-msg.mine { background: rgba(106,0,255,0.1); }
+    .cc-vela-msg p { margin: 0; color: rgba(255,255,255,0.85); line-height: 1.5; white-space: pre-wrap; }
+    .cc-vela-input-row { display: flex; gap: 8px; }
+    .cc-vela-input-row input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 13px; }
+    .cc-vela-input-row input:focus { outline: none; border-color: #FF4D80; }
+    .cc-vela-input-row button { background: linear-gradient(135deg,#FF4D80,#FFD700); border: none; color: #1a1a1a; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+    .cc-vela-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .cc-meeting-cta { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: rgba(255,255,255,0.5); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .cc-meeting-cta a { color: #FFD700; text-decoration: none; font-weight: 600; }
+    .cc-meeting-cta a:hover { text-decoration: underline; }
   `],
 })
 export class EventAnalyticsComponent implements OnInit {
@@ -167,10 +269,39 @@ export class EventAnalyticsComponent implements OnInit {
   maxHour = 0;
   maxAge = 1;
 
+  // ── Centro de Comando: roster + insights ──
+  roster: RosterAttendee[] = [];
+  insights: EventInsights | null = null;
+  readonly interestOptions = INTERESES_DISPONIBLES;
+
+  velaMessages: { role: 'organizer' | 'vela'; text: string }[] = [];
+  velaInput = '';
+  velaBusy = false;
+  // TODO(Vemo): reemplazar por el canal real de contacto del equipo (correo/WhatsApp/Calendly).
+  meetingCtaHref = 'mailto:hola@vemo.app?subject=Quiero%20entender%20mejor%20mi%20audiencia';
+
+  readonly chartConfigs: { key: keyof EventInsights; title: string; canvasId: string; options: PreferenceOption[] }[] = [
+    { key: 'interests', title: 'Qué los mueve', canvasId: 'chart-interests', options: INTERESES_DISPONIBLES },
+    { key: 'negative_preferences', title: 'Qué evitan', canvasId: 'chart-avoid', options: NEGATIVOS_DISPONIBLES },
+    { key: 'preferred_company', title: 'Compañía habitual', canvasId: 'chart-company', options: COMPANY_OPTIONS },
+    { key: 'preferred_time', title: 'Hora preferida', canvasId: 'chart-time', options: TIME_OPTIONS },
+    { key: 'neighborhood', title: 'Barrio', canvasId: 'chart-neighborhood', options: [] },
+    { key: 'outing_frequency', title: 'Frecuencia de salida', canvasId: 'chart-frequency', options: OUTING_FREQUENCY_OPTIONS },
+    { key: 'spontaneity', title: 'Espontaneidad', canvasId: 'chart-spontaneity', options: SPONTANEITY_OPTIONS },
+    { key: 'budget_range', title: 'Presupuesto', canvasId: 'chart-budget', options: BUDGET_RANGE_OPTIONS },
+    { key: 'transport_mode', title: 'Transporte', canvasId: 'chart-transport', options: TRANSPORT_OPTIONS },
+    { key: 'social_energy', title: 'Energía social', canvasId: 'chart-energy', options: SOCIAL_ENERGY_OPTIONS },
+    { key: 'intention', title: 'Intención al salir', canvasId: 'chart-intention', options: INTENTION_OPTIONS },
+    { key: 'current_mood', title: 'Cómo quisieron sentirse (Vela)', canvasId: 'chart-mood', options: [] },
+    { key: 'mood_company', title: 'Compañía real (Vela)', canvasId: 'chart-mood-company', options: TARGET_COMPANY_OPTIONS },
+    { key: 'mood_time_available', title: 'Tiempo disponible (Vela)', canvasId: 'chart-mood-time', options: TIME_AVAILABLE_OPTIONS },
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private analytics: AnalyticsService,
     private predictionService: PredictionService,
+    private rosterService: RosterService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -187,6 +318,7 @@ export class EventAnalyticsComponent implements OnInit {
       this.maxAge = Math.max(1, ...Object.values(this.data.demographics.age_buckets));
       // Predicción: best-effort, no bloquea la analítica.
       this.predictionService.getPrediction(id).then((p) => { this.prediction = p; this.cdr.detectChanges(); }).catch(() => {});
+      this.loadRoster(id);
     } catch (e: any) {
       this.error = e?.message === 'Solo el organizador del evento puede hacer esto.'
         ? 'Esta analítica es solo para el organizador del evento.'
@@ -203,5 +335,80 @@ export class EventAnalyticsComponent implements OnInit {
   ageEntries(): { k: string; v: number }[] {
     const b = this.data?.demographics.age_buckets || {};
     return ['<18', '18-24', '25-34', '35-44', '45+'].map((k) => ({ k, v: b[k] || 0 }));
+  }
+
+  // ── Centro de Comando ──
+  private async loadRoster(eventId: string) {
+    try {
+      const [rosterRes, insightsRes] = await Promise.all([
+        this.rosterService.getRoster(eventId),
+        this.rosterService.getInsights(eventId),
+      ]);
+      this.roster = rosterRes.roster;
+      this.insights = insightsRes;
+      this.cdr.detectChanges();
+      setTimeout(() => this.renderCharts(), 0);
+    } catch (e) {
+      console.info('[Vemo] No se pudo cargar el Centro de Comando:', (e as Error)?.message);
+    }
+  }
+
+  tallyFor(key: keyof EventInsights): TallyEntry[] {
+    const v = this.insights ? (this.insights as any)[key] : null;
+    return Array.isArray(v) ? v : [];
+  }
+
+  labelFor(options: PreferenceOption[], value: string): string {
+    if (!options.length) return value;
+    return options.find((o) => o.value === value)?.label || value;
+  }
+
+  private async renderCharts() {
+    if (!this.insights) return;
+    const { default: Chart } = await import('chart.js/auto');
+    for (const cfg of this.chartConfigs) {
+      const canvas = document.getElementById(cfg.canvasId) as HTMLCanvasElement | null;
+      const entries = this.tallyFor(cfg.key);
+      if (!canvas || !entries.length) continue;
+      const top = entries.slice(0, 8);
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: top.map((e) => this.labelFor(cfg.options, e.value)),
+          datasets: [{
+            data: top.map((e) => e.count),
+            backgroundColor: 'rgba(255,77,128,0.55)',
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: 'rgba(255,255,255,0.5)', precision: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } },
+            y: { ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 11 } }, grid: { display: false } },
+          },
+        },
+      });
+    }
+  }
+
+  async askVela() {
+    const message = this.velaInput.trim();
+    const eventId = this.data?.event?.id;
+    if (!message || !eventId || this.velaBusy) return;
+    this.velaMessages.push({ role: 'organizer', text: message });
+    this.velaInput = '';
+    this.velaBusy = true;
+    this.cdr.detectChanges();
+    try {
+      const res = await this.rosterService.askVela(eventId, message);
+      this.velaMessages.push({ role: 'vela', text: res.reply });
+    } catch (e: any) {
+      this.velaMessages.push({ role: 'vela', text: e?.message || 'No pude procesar tu pregunta. Intenta de nuevo.' });
+    } finally {
+      this.velaBusy = false;
+      this.cdr.detectChanges();
+    }
   }
 }

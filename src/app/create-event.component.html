@@ -220,6 +220,37 @@
         </label>
       </div>
 
+      <!-- ===== PERFIL OBJETIVO PARA EL TABLERO (Centro de Comando) ===== -->
+      <div class="form-section">
+        <h3 class="section-header">Para el tablero de tu evento <span class="opt-label">Opcional</span></h3>
+        <p class="section-subtitle">Esto alimenta los insights de "Centro de comando" — no afecta las recomendaciones de Vela a los usuarios.</p>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Compañía real esperada</label>
+            <select [(ngModel)]="targetCompany" name="target_company">
+              <option value="">Sin definir</option>
+              <option *ngFor="let opt of targetCompanyOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>Tiempo disponible esperado</label>
+            <select [(ngModel)]="targetTimeAvailable" name="target_time_available">
+              <option value="">Sin definir</option>
+              <option *ngFor="let opt of timeAvailableOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Intención principal de tus asistentes</label>
+          <select [(ngModel)]="targetIntention" name="target_intention">
+            <option value="">Sin definir</option>
+            <option *ngFor="let opt of intentionOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+      </div>
+
       <!-- ===== DATOS ADICIONALES (evento vs experiencia) ===== -->
       <div class="form-section" *ngIf="postType === 'evento'">
         <h3 class="section-header">Detalles del evento</h3>
@@ -362,6 +393,7 @@
               <button type="button" class="btn-geocode" (click)="copyPrivateLink()">Copiar</button>
             </div>
           </div>
+          <app-share-event [url]="privateEventLink || ''" [title]="eventData.title" theme="light"></app-share-event>
         </div>
       </div>
 
@@ -378,6 +410,9 @@
             <span class="plr-url">{{ privateEventLink }}</span>
             <button type="button" class="plr-copy-btn"
                     (click)="copyPrivateLink()">Copiar</button>
+          </div>
+          <div class="plr-share">
+            <app-share-event [url]="privateEventLink || ''" [title]="eventData.title" theme="light"></app-share-event>
           </div>
           <button type="button" class="plr-done-btn" (click)="router.navigate(['/profile'])">Ir a mi perfil →</button>
         </div>

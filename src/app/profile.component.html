@@ -326,12 +326,142 @@
         <div *ngIf="userData.role === 'user' || (!userData.role)" class="user-view">
           <div class="deck-header">
             <h2 class="clash-display section-title">Mi Perfil</h2>
+            <div class="deck-actions">
+              <button class="btn-edit-profile" (click)="startEditPreferences()">✏️ Editar Preferencias</button>
+            </div>
           </div>
 
-          <div class="user-info-section" *ngIf="userData.birth_date || userData.phone">
+          <!-- Editable Preferences -->
+          <div class="edit-profile-form" *ngIf="isEditingPreferences">
+            <h3>Datos personales</h3>
+            <div class="edit-row">
+              <div class="edit-field">
+                <label>Fecha de nacimiento</label>
+                <input type="date" [(ngModel)]="editPreferences.birth_date">
+              </div>
+              <div class="edit-field">
+                <label>Celular</label>
+                <input type="tel" [(ngModel)]="editPreferences.phone" placeholder="Ej: 3001234567">
+              </div>
+            </div>
+
+            <h3>¿Qué te mueve?</h3>
+            <div class="pref-chip-grid">
+              <div *ngFor="let opt of interesesDisponibles" class="pref-chip"
+                   [class.active]="editPreferences.interests.includes(opt.value)"
+                   (click)="toggleInList(editPreferences.interests, opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>¿Qué prefieres evitar? <span class="opt-tag">Opcional</span></h3>
+            <div class="pref-chip-grid">
+              <div *ngFor="let opt of negativosDisponibles" class="pref-chip negative"
+                   [class.active]="editPreferences.negative_preferences.includes(opt.value)"
+                   (click)="toggleInList(editPreferences.negative_preferences, opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>¿Con quién sueles ir?</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of companyOptions" class="pref-option"
+                   [class.active]="editPreferences.preferred_company === opt.value"
+                   (click)="selectSingle('preferred_company', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>Hora preferida</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of timeOptions" class="pref-option"
+                   [class.active]="editPreferences.preferred_time === opt.value"
+                   (click)="selectSingle('preferred_time', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>Barrio donde vives</h3>
+            <div class="edit-row">
+              <div class="edit-field">
+                <select class="pref-select" [(ngModel)]="editPreferences.neighborhood">
+                  <option value="">Selecciona tu barrio</option>
+                  <option *ngFor="let b of barriosDisponibles" [value]="b">{{ b }}</option>
+                </select>
+                <button *ngIf="editPreferences.neighborhood" type="button" class="btn-clear-inline" (click)="editPreferences.neighborhood = ''">✕ Quitar ubicación</button>
+              </div>
+            </div>
+
+            <h3>Frecuencia de salida</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of outingFrequencyOptions" class="pref-option"
+                   [class.active]="editPreferences.outing_frequency === opt.value"
+                   (click)="selectSingle('outing_frequency', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>¿Planeas o improvisas tus salidas?</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of spontaneityOptions" class="pref-option"
+                   [class.active]="editPreferences.spontaneity === opt.value"
+                   (click)="selectSingle('spontaneity', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>Presupuesto habitual</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of budgetRangeOptions" class="pref-option"
+                   [class.active]="editPreferences.budget_range === opt.value"
+                   (click)="selectSingle('budget_range', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+                <small>{{ opt.desc }}</small>
+              </div>
+            </div>
+
+            <h3>Transporte</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of transportOptions" class="pref-option"
+                   [class.active]="editPreferences.transport_mode === opt.value"
+                   (click)="selectSingle('transport_mode', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>Energía social</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of socialEnergyOptions" class="pref-option"
+                   [class.active]="editPreferences.social_energy === opt.value"
+                   (click)="selectSingle('social_energy', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <h3>¿Qué buscas al salir?</h3>
+            <div class="pref-option-grid">
+              <div *ngFor="let opt of intentionOptions" class="pref-option"
+                   [class.active]="editPreferences.intention === opt.value"
+                   (click)="selectSingle('intention', opt.value)">
+                <span>{{ opt.emoji }}</span> {{ opt.label }}
+              </div>
+            </div>
+
+            <div class="edit-actions">
+              <button class="btn-cancel" (click)="cancelEditPreferences()">Cancelar</button>
+              <button class="btn-save" (click)="savePreferences()">Guardar</button>
+            </div>
+          </div>
+
+          <!-- Preferences Info Display -->
+          <div class="user-info-section" *ngIf="!isEditingPreferences && (userData.birth_date || userData.phone || userData.interests?.length)">
             <div class="info-item" *ngIf="userData.birth_date"><span class="info-icon">🎂</span> {{ userData.birth_date | date:'mediumDate' }}</div>
             <div class="info-item" *ngIf="userData.phone"><span class="info-icon">📱</span> {{ userData.phone }}</div>
             <div class="info-item" *ngIf="userData.interests?.length"><span class="info-icon">❤️</span> {{ userData.interests.join(', ') }}</div>
+            <div class="info-item" *ngIf="userData.neighborhood"><span class="info-icon">📍</span> {{ userData.neighborhood }}</div>
+          </div>
+          <div class="empty-profile-hint" *ngIf="!isEditingPreferences && !userData.birth_date && !userData.phone && !userData.interests?.length">
+            Aún no has completado tus preferencias. <button class="btn-text-link inline" (click)="startEditPreferences()">Completar ahora</button>
           </div>
 
           <!-- Visit History -->

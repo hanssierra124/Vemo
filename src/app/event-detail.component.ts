@@ -7,6 +7,7 @@ import { smartGeocodeColombian } from './utils/colombian-geocoding';
 import { StarRatingComponent } from './shared/Components/star-rating/star-rating';
 import { ReviewCardComponent } from './shared/Components/review-card/review-card';
 import { MoodConfirmModal } from './shared/Components/mood-confirm-modal/mood-confirm-modal';
+import { ShareEventComponent } from './shared/Components/share-event/share-event';
 import { ReviewService } from './review.service';
 import { AttendanceService } from './attendance.service';
 import { CheckinService } from './checkin.service';
@@ -22,7 +23,7 @@ import { renderSafeMarkdown } from './utils/markdown';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, StarRatingComponent, ReviewCardComponent, MoodConfirmModal],
+  imports: [CommonModule, FormsModule, RouterLink, StarRatingComponent, ReviewCardComponent, MoodConfirmModal, ShareEventComponent],
   templateUrl: './event-detail.component.html',
   styleUrls: ['./event-detail.component.css']
 })
@@ -243,6 +244,11 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
       const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
       window.open(url, '_blank');
     }
+  }
+
+  get shareUrl(): string {
+    if (typeof window === 'undefined' || !this.event?.id) return '';
+    return `${window.location.origin}/event/${this.event.id}`;
   }
 
   isPostEvent(): boolean {

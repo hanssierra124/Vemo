@@ -3,6 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import {
+  INTERESES_DISPONIBLES, NEGATIVOS_DISPONIBLES, COMPANY_OPTIONS, TIME_OPTIONS,
+  BARRIOS_DISPONIBLES, OUTING_FREQUENCY_OPTIONS, SPONTANEITY_OPTIONS,
+} from './shared/user-preferences-options';
 
 @Component({
   selector: 'app-user-interests',
@@ -15,56 +19,32 @@ export class UserInterestsComponent implements OnInit {
 
   // Step control
   currentStep = 1;
-  totalSteps = 4;
+  totalSteps = 5;
 
-  // Step 1: Positive interests
-  interesesDisponibles = [
-    { id: 'musica', nombre: 'Música en vivo', emoji: '🎵', seleccionado: false },
-    { id: 'gastronomia', nombre: 'Gastronomía', emoji: '🍽️', seleccionado: false },
-    { id: 'arte', nombre: 'Arte y Cultura', emoji: '🎨', seleccionado: false },
-    { id: 'deportes', nombre: 'Deportes', emoji: '⚽', seleccionado: false },
-    { id: 'fiesta', nombre: 'Fiesta y Rumba', emoji: '🎉', seleccionado: false },
-    { id: 'aire_libre', nombre: 'Aire Libre', emoji: '🌿', seleccionado: false },
-    { id: 'teatro', nombre: 'Teatro y Shows', emoji: '🎭', seleccionado: false },
-    { id: 'bienestar', nombre: 'Bienestar y Yoga', emoji: '🧘', seleccionado: false },
-    { id: 'tecnologia', nombre: 'Tecnología', emoji: '💻', seleccionado: false },
-    { id: 'fotografia', nombre: 'Fotografía', emoji: '📸', seleccionado: false },
-    { id: 'turismo', nombre: 'Turismo local', emoji: '🗺️', seleccionado: false },
-    { id: 'educacion', nombre: 'Talleres y Cursos', emoji: '📚', seleccionado: false }
-  ];
+  // Step 1: Positive interests (copia local mutable — no compartimos referencias
+  // con el vocabulario importado, porque cada chip lleva su propio `seleccionado`).
+  interesesDisponibles = INTERESES_DISPONIBLES.map(o => ({ id: o.value, nombre: o.label, emoji: o.emoji, seleccionado: false }));
 
   // Step 2: Negative preferences
-  negativosDisponibles = [
-    { id: 'multitudes', nombre: 'Multitudes grandes', emoji: '👥', seleccionado: false },
-    { id: 'ruido', nombre: 'Mucho ruido', emoji: '🔊', seleccionado: false },
-    { id: 'alcohol', nombre: 'Ambientes con alcohol', emoji: '🍺', seleccionado: false },
-    { id: 'sol_extremo', nombre: 'Sol extremo', emoji: '☀️', seleccionado: false },
-    { id: 'noche', nombre: 'Actividades nocturnas', emoji: '🌙', seleccionado: false },
-    { id: 'espacios_cerrados', nombre: 'Espacios cerrados', emoji: '🏢', seleccionado: false },
-    { id: 'precios_altos', nombre: 'Precios altos', emoji: '💸', seleccionado: false },
-    { id: 'largo_duracion', nombre: 'Eventos muy largos', emoji: '⏳', seleccionado: false }
-  ];
+  negativosDisponibles = NEGATIVOS_DISPONIBLES.map(o => ({ id: o.value, nombre: o.label, emoji: o.emoji, seleccionado: false }));
 
   // Step 3: Preferences (company & time)
-  companyOptions = [
-    { value: 'solo', label: 'Solo/a', emoji: '🧍' },
-    { value: 'pareja', label: 'En pareja', emoji: '💑' },
-    { value: 'amigos', label: 'Con amigos', emoji: '👫' },
-    { value: 'familia', label: 'En familia', emoji: '👨‍👩‍👧' },
-    { value: 'cualquiera', label: 'Cualquiera', emoji: '🤷' }
-  ];
-
-  timeOptions = [
-    { value: 'manana', label: 'Mañana', emoji: '🌅' },
-    { value: 'tarde', label: 'Tarde', emoji: '☀️' },
-    { value: 'noche', label: 'Noche', emoji: '🌙' },
-    { value: 'todo_dia', label: 'Cualquier hora', emoji: '🕐' }
-  ];
+  companyOptions = COMPANY_OPTIONS;
+  timeOptions = TIME_OPTIONS;
 
   selectedCompany = '';
   selectedTime = '';
 
-  // Step 4: Location permission + open feedback
+  // Step 4: Barrio + hábitos de salida
+  barriosDisponibles = BARRIOS_DISPONIBLES;
+  outingFrequencyOptions = OUTING_FREQUENCY_OPTIONS;
+  spontaneityOptions = SPONTANEITY_OPTIONS;
+
+  selectedBarrio = '';
+  selectedOutingFrequency = '';
+  selectedSpontaneity = '';
+
+  // Step 5: Location permission + open feedback
   locationGranted = false;
   locationDenied = false;
   missingInCity = '';
@@ -100,9 +80,14 @@ export class UserInterestsComponent implements OnInit {
       case 1: return this.positiveCount >= 1;
       case 2: return true; // negatives are optional
       case 3: return true; // preferences are optional
-      case 4: return true;
+      case 4: return true; // barrio/hábitos son opcionales
+      case 5: return true;
       default: return true;
     }
+  }
+
+  clearBarrio(): void {
+    this.selectedBarrio = '';
   }
 
   nextStep() {
@@ -156,6 +141,9 @@ export class UserInterestsComponent implements OnInit {
       negative_preferences: negativos,
       preferred_company: this.selectedCompany || null,
       preferred_time: this.selectedTime || null,
+      neighborhood: this.selectedBarrio || null,
+      outing_frequency: this.selectedOutingFrequency || null,
+      spontaneity: this.selectedSpontaneity || null,
       location_permission: this.locationGranted,
       missing_in_city: this.missingInCity.trim() || null
     };

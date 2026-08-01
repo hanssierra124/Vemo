@@ -61,6 +61,11 @@
       <p class="pev-description">{{ event.description }}</p>
     </div>
 
+    <div class="pev-share">
+      <h3 class="pev-share-title">Comparte este evento</h3>
+      <app-share-event [url]="shareUrl" [title]="event.title"></app-share-event>
+    </div>
+
     <div class="pev-footer">
       <p class="pev-footer-note">Este evento es privado. Solo personas con el link pueden verlo.</p>
       <button class="pev-home-btn pev-home-btn--ghost" (click)="goHome()">Explorar más eventos</button>

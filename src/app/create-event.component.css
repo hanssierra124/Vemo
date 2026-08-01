@@ -190,6 +190,7 @@ input[type="file"] {
 .privacy-toggle-label { font-weight: 600; font-size: 15px; color: #1d1d1f; display: block; margin-bottom: 4px; }
 .privacy-toggle-desc { font-size: 13px; color: #86868b; line-height: 1.4; }
 .privacy-password-wrap { margin-top: 8px; }
+.privacy-link-existing app-share-event { display: block; margin-top: 12px; }
 .opt-label { font-size: 11px; font-weight: 500; color: #86868b; background: #eee; border-radius: 4px; padding: 2px 6px; margin-left: 6px; }
 .field-hint { font-size: 12px; color: #86868b; margin-top: 4px; display: block; }
 
@@ -207,6 +208,7 @@ input[type="file"] {
   background: white; border: 1px solid #d2d2d7; border-radius: 10px;
   padding: 12px 14px; margin-bottom: 20px;
 }
+.plr-share { margin-bottom: 20px; }
 .plr-url { flex: 1; font-size: 13px; color: #0071e3; word-break: break-all; text-align: left; }
 .plr-copy-btn {
   padding: 6px 14px; border-radius: 8px; background: #0071e3; color: white;

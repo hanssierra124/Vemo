@@ -187,6 +187,90 @@
       </div>
     </div>
 
+    <!-- SECTION: Perfil del organizador (Centro de Comando) -->
+    <div class="form-section">
+      <h3 class="section-title">Tu perfil como organizador <span class="optional-tag">(opcional)</span></h3>
+      <p class="section-hint">Las mismas preguntas que le hacemos a la comunidad — nos ayudan a conectar mejor tu negocio con la audiencia correcta.</p>
+
+      <div class="input-group">
+        <label>¿Qué te mueve?</label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of interesesDisponibles" class="cat-pill"
+               [class.active]="orgInterests.includes(opt.value)" (click)="toggleOrgInterest(opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>¿Qué prefieres evitar? <span class="optional-tag">(opcional)</span></label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of negativosDisponibles" class="cat-pill"
+               [class.active]="orgNegativePreferences.includes(opt.value)" (click)="toggleOrgNegative(opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Compañía habitual</label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of companyOptions" class="cat-pill"
+               [class.active]="orgPreferredCompany === opt.value" (click)="orgPreferredCompany = (orgPreferredCompany === opt.value ? '' : opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Hora preferida</label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of timeOptions" class="cat-pill"
+               [class.active]="orgPreferredTime === opt.value" (click)="orgPreferredTime = (orgPreferredTime === opt.value ? '' : opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Barrio</label>
+        <select class="barrio-select-verify" [(ngModel)]="orgNeighborhood" name="orgNeighborhood">
+          <option value="">Selecciona un barrio</option>
+          <option *ngFor="let b of barriosDisponibles" [value]="b">{{ b }}</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Espontaneidad</label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of spontaneityOptions" class="cat-pill"
+               [class.active]="orgSpontaneity === opt.value" (click)="orgSpontaneity = (orgSpontaneity === opt.value ? '' : opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Presupuesto</label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of budgetRangeOptions" class="cat-pill"
+               [class.active]="orgBudgetRange === opt.value" (click)="orgBudgetRange = (orgBudgetRange === opt.value ? '' : opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Energía social</label>
+        <div class="cats-grid">
+          <div *ngFor="let opt of socialEnergyOptions" class="cat-pill"
+               [class.active]="orgSocialEnergy === opt.value" (click)="orgSocialEnergy = (orgSocialEnergy === opt.value ? '' : opt.value)">
+            <span class="cat-icon">{{ opt.emoji }}</span> {{ opt.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button type="submit" class="primary-btn" [disabled]="isUploading">
       {{ isUploading ? 'Enviando documentos...' : 'Solicitar Verificación' }}
     </button>
