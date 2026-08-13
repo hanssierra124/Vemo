@@ -1,5 +1,15 @@
 @import 'leaflet/dist/leaflet.css';
 /* You can add global styles to this file, and also import other style files */
+
+/* ═══════════════════════════════════════════════════════
+   RESET RESPONSIVE (base de toda la app)
+
+   `border-box` global: sin esto, cualquier `width: 100%` con
+   padding se pasa del ancho del contenedor — era la causa de que
+   en móvil todo se viera "al límite" o desbordado.
+   ═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
 html, body {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 16px;
@@ -13,7 +23,20 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
 
+  /* `clip` en vez de `hidden`: corta el desborde horizontal sin crear un
+     contenedor de scroll, así `position: sticky` sigue funcionando. */
+  max-width: 100%;
+  overflow-x: clip;
 }
+
+/* Nada de medios que se salgan de su caja. */
+img, video, canvas { max-width: 100%; }
+
+/* Cadenas largas sin espacios (URLs, correos, ids) rompiendo el layout. */
+p, li, td, th, dd, dt, blockquote, figcaption, label, small { overflow-wrap: break-word; }
+
+/* Bloqueo de scroll del fondo mientras el cajón de navegación está abierto. */
+body.vemo-no-scroll { overflow: hidden; }
 
 /* ═══════════════════════════════════════════════════════
    VEMO · DESIGN TOKENS (globales) — fuente única de verdad
@@ -38,7 +61,14 @@ html, body {
   --ff-display: 'Clash Display', 'Inter', sans-serif;
   --ff-serif:   'Instrument Serif', Georgia, serif;
   --ff-ui:      'Inter', 'Clash Display', sans-serif;
+
+  /* Altura del header fijo. Fuente única de verdad: la usa la propia
+     barra y cualquier vista que necesite reservar espacio arriba
+     (`padding-top: calc(var(--vemo-header-h) + N)`). */
+  --vemo-header-h: 90px;
 }
+@media (max-width: 1099px) { :root { --vemo-header-h: 76px; } }
+@media (max-width: 600px)  { :root { --vemo-header-h: 68px; } }
 
 /* Utilidad tipográfica de marca (display) disponible globalmente. */
 .clash-display {
@@ -88,12 +118,17 @@ html, body {
 
 
 
-h1 { font-size: 56px; line-height: 1.2; font-weight: 700; margin-bottom: 0.5em; }
-h2 { font-size: 48px; line-height: 1.2; font-weight: 600; margin-bottom: 0.5em; }
-h3 { font-size: 32px; line-height: 1.2; font-weight: 600; margin-bottom: 0.5em; }
-h4 { font-size: 24px; line-height: 1.4; font-weight: 500; margin-bottom: 0.5em; }
-h5 { font-size: 20px; line-height: 1.4; font-weight: 500; margin-bottom: 0.5em; }
+/* Tipografía fluida: el tamaño de escritorio es el mismo de antes (el tope
+   del clamp), pero en móvil baja sola en vez de desbordar la pantalla. */
+h1 { font-size: clamp(30px, 7.5vw, 56px); line-height: 1.15; font-weight: 700; margin-bottom: 0.5em; }
+h2 { font-size: clamp(26px, 6vw, 48px);   line-height: 1.18; font-weight: 600; margin-bottom: 0.5em; }
+h3 { font-size: clamp(21px, 4.5vw, 32px); line-height: 1.22; font-weight: 600; margin-bottom: 0.5em; }
+h4 { font-size: clamp(18px, 3.4vw, 24px); line-height: 1.35; font-weight: 500; margin-bottom: 0.5em; }
+h5 { font-size: clamp(16px, 2.6vw, 20px); line-height: 1.4;  font-weight: 500; margin-bottom: 0.5em; }
 h6 { font-size: 16px; line-height: 1.5; font-weight: 500; margin-bottom: 0.5em; }
+
+/* Los títulos largos de eventos/organizadores no deben empujar el layout. */
+h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
 
 .tagline {
     font-size: 16px;
@@ -187,6 +222,8 @@ button {
   vertical-align: middle;
   white-space: nowrap;
   word-wrap: break-word;
+  /* Un botón nunca debe ser más ancho que su contenedor. */
+  max-width: 100%;
 }
 
 button:hover {

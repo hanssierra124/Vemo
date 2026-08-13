@@ -55,7 +55,7 @@ type Tab = 'going' | 'finished' | 'cancelled';
     </div>
   `,
   styles: [`
-    .me-wrap { max-width: 720px; margin: 0 auto; padding: 40px 16px 90px; }
+    .me-wrap { max-width: 720px; margin: 0 auto; padding: calc(var(--vemo-header-h, 90px) + 28px) 16px 90px; }
     .me-header { margin-bottom: 22px; }
     .me-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
       background: linear-gradient(135deg,#FF4D80,#FFD700); -webkit-background-clip: text; background-clip: text; color: transparent; }

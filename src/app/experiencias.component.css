@@ -36,7 +36,7 @@
 .ep-cat-chip.active { border-color: var(--deep); color: #a06fff; background: rgba(106,0,255,0.08); }
 
 /* ── GRID ── */
-.ep-grid { padding: 0 6%; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.ep-grid { padding: 0 6%; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 20px; }
 
 /* ── CARD ── */
 .ep-card { cursor: pointer; border-radius: 20px; overflow: hidden; background: rgba(255,255,255,0.02); border: 1px solid var(--border); transition: all 0.4s var(--ease-snap); }

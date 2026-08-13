@@ -437,6 +437,20 @@
 .attend-count { margin: 10px 0 0; color: rgba(255,255,255,0.7); font-size: 13px; }
 .attend-count strong { color: #FFD700; }
 .attend-error { margin: 8px 0 0; color: #ff7a90; font-size: 12px; }
+
+/* Accesos del panel del organizador (analítica + registro express) */
+.org-tools { display: flex; flex-direction: column; gap: 10px; }
+.org-tool-btn { display: block; text-align: center; text-decoration: none; line-height: 1.25; }
+.org-tool-btn--alt {
+  background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.20);
+}
+.org-tool-btn--alt:hover:not(:disabled) {
+  border-color: #FF4D80; color: #FF4D80; box-shadow: none;
+}
+@media (min-width: 620px) {
+  .org-tools { flex-direction: row; }
+  .org-tools .org-tool-btn { flex: 1; }
+}
 .ck-qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .ck-qr-img { width: 220px; height: 220px; border-radius: 14px; background: #fff; padding: 10px; }
 .ck-qr-link { font-size: 11px; color: rgba(255,255,255,0.5); word-break: break-all; text-decoration: none; }
@@ -505,3 +519,46 @@
 }
 .rv-empty { color: rgba(255,255,255,0.45); font-style: italic; padding: 8px 0; }
 .review-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+/* ═══════════════════════════════════════════════════════
+   AJUSTE FINO MÓVIL — el bloque de 992px cubre tablet; aquí
+   se aprieta lo que en celular quedaba rozando los bordes.
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .event-hero { height: 38vh; min-height: 260px; }
+
+  .detail-content-container { margin-top: -48px; padding: 0 12px 90px; }
+  .glass-effect-header { padding: 20px 16px; border-radius: 22px; margin-bottom: 24px; }
+  .content-block { padding: 20px 16px; border-radius: 22px; margin-bottom: 20px; }
+  /* El hover que levanta la tarjeta no aporta nada en táctil */
+  .content-block:hover { transform: none; }
+
+  .event-title-main { margin-bottom: 20px; }
+  .quick-meta-grid { padding-top: 18px; gap: 14px; }
+  .meta-icon { padding: 9px; }
+  .section-tag { font-size: 18px; margin-bottom: 14px; }
+
+  .calendar-btn-group { gap: 10px; }
+  .calendar-chip { flex: 1 1 100%; justify-content: center; }
+  .google-maps-btn-neon { width: 100%; justify-content: center; }
+  .google-maps-btn-neon span, .maps-icon { font-size: 12px; letter-spacing: 0.5px; }
+
+  .organizer-block { padding: 18px 16px; }
+  .organizer-row { flex-wrap: wrap; gap: 10px; }
+  .organizer-cta { margin-left: 0; width: 100%; }
+
+  /* Reseñas: promedio arriba, histograma debajo a ancho completo */
+  .rv-summary { gap: 14px; padding: 14px; }
+  .rv-avg-box { min-width: 0; width: 100%; flex-direction: row; justify-content: center; gap: 10px; }
+  .rv-avg-number { font-size: 32px; }
+  .rv-histogram { min-width: 0; width: 100%; }
+  .rv-form-actions > * { flex: 1 1 auto; }
+
+  .ck-qr-img { width: 180px; height: 180px; }
+}
+
+@media (max-width: 380px) {
+  .detail-content-container { padding-left: 10px; padding-right: 10px; }
+  .glass-effect-header, .content-block { padding: 16px 13px; }
+  .attend-btn { font-size: 14px; padding: 13px 14px; }
+}

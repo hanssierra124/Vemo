@@ -85,7 +85,7 @@ import { ReviewCardComponent } from './shared/Components/review-card/review-card
   styles: [`
     :host { display: block; background-color: var(--ink, #0E0D12); min-height: 100vh;
       background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(106,0,255,0.10), transparent 70%); }
-    .feed-wrap { max-width: 680px; margin: 0 auto; padding: 40px 16px 100px; }
+    .feed-wrap { max-width: 680px; margin: 0 auto; padding: calc(var(--vemo-header-h, 90px) + 28px) 16px 100px; }
 
     .feed-header { margin-bottom: 28px; }
     .feed-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;

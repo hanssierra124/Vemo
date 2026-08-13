@@ -22,34 +22,100 @@
       <p class="wka-sub" *ngIf="event?.location_name">{{ event?.location_name }}</p>
     </header>
 
-    <!-- Link compartible -->
-    <section class="wka-card">
-      <h2 class="wka-card-title">Enlace de registro</h2>
+    <!-- ══════════════════════════════════════════════════════════
+         REPARTIR EL ACCESO — QR para la puerta, link para el chat.
+         ══════════════════════════════════════════════════════════ -->
+    <section class="wka-card wka-card--share">
+      <h2 class="wka-card-title">Reparte el acceso</h2>
       <p class="wka-card-hint">
-        Comparte este enlace con asistentes de último minuto. No está visible
-        en el dashboard del organizador.
+        Imprime el QR para la entrada o manda el link por WhatsApp. Quien lo
+        abra se registra en 3 pasos, sin crear cuenta.
       </p>
-      <div class="wka-share">
-        <input
-          type="text"
-          [value]="shareUrl"
-          readonly
-          aria-label="URL para compartir"
-          class="wka-share-input"
-        >
-        <button
-          type="button"
-          class="wka-btn wka-btn--primary"
-          (click)="copyShareUrl()"
-        >
-          {{ copyOk ? '¡Copiado!' : 'Copiar' }}
-        </button>
+
+      <div class="wka-share-grid">
+        <!-- QR -->
+        <div class="wka-qr-block">
+          <div class="wka-qr-frame" *ngIf="qrDataUrl">
+            <img [src]="qrDataUrl" alt="Código QR del registro express" width="200" height="200">
+          </div>
+          <div class="wka-qr-frame wka-qr-frame--empty" *ngIf="!qrDataUrl && !qrError">
+            <div class="wka-spinner wka-spinner--sm" aria-hidden="true"></div>
+          </div>
+          <p class="wka-error" *ngIf="qrError" role="alert">{{ qrError }}</p>
+
+          <div class="wka-qr-actions">
+            <button
+              type="button"
+              class="wka-btn wka-btn--primary"
+              [disabled]="!qrPrintUrl"
+              (click)="downloadQr()"
+            >
+              <span aria-hidden="true">⬇</span> Descargar QR
+            </button>
+            <button
+              type="button"
+              class="wka-btn wka-btn--ghost"
+              [disabled]="!qrPrintUrl"
+              (click)="printPoster()"
+            >
+              <span aria-hidden="true">🖨</span> Imprimir cartel
+            </button>
+          </div>
+          <p class="wka-qr-note">PNG de 1024px, se ve bien hasta en tamaño cartel.</p>
+        </div>
+
+        <!-- Link + canales -->
+        <div class="wka-link-block">
+          <label class="wka-mini-label" for="wka-share-url">Enlace público</label>
+          <div class="wka-share">
+            <input
+              id="wka-share-url"
+              type="text"
+              [value]="shareUrl"
+              readonly
+              aria-label="URL para compartir"
+              class="wka-share-input"
+              (focus)="$any($event.target).select()"
+            >
+            <button type="button" class="wka-btn wka-btn--primary" (click)="copyShareUrl()">
+              {{ copyOk ? '¡Copiado!' : 'Copiar' }}
+            </button>
+          </div>
+
+          <p class="wka-mini-label wka-mini-label--spaced">Enviar por</p>
+          <div class="wka-channels">
+            <button
+              type="button"
+              class="wka-channel"
+              *ngIf="canShareNatively"
+              (click)="shareNative()"
+            >
+              <span class="wka-channel-icon" aria-hidden="true">↗</span>
+              Compartir
+            </button>
+            <button type="button" class="wka-channel wka-channel--wa" (click)="shareWhatsApp()">
+              <span class="wka-channel-icon" aria-hidden="true">💬</span>
+              WhatsApp
+            </button>
+            <button type="button" class="wka-channel" (click)="shareEmail()">
+              <span class="wka-channel-icon" aria-hidden="true">✉</span>
+              Correo
+            </button>
+          </div>
+
+          <p class="wka-attr-note">
+            Cada canal marca su origen (<code>?src=</code>), así sabes si la
+            gente llegó por el QR de la puerta o por el chat.
+          </p>
+        </div>
       </div>
     </section>
 
-    <!-- Destinatarios de notificación -->
+    <!-- ══════════════════════════════════════════════════════════
+         DESTINATARIOS DE NOTIFICACIÓN
+         ══════════════════════════════════════════════════════════ -->
     <section class="wka-card">
-      <h2 class="wka-card-title">Destinatarios de notificación</h2>
+      <h2 class="wka-card-title">¿Quién recibe el aviso?</h2>
       <p class="wka-card-hint">
         Cada vez que alguien se registre desde el enlace, enviaremos un correo
         automático a estos contactos (seguridad, organización, etc.).
@@ -63,14 +129,17 @@
               id="wka-email"
               name="email"
               type="email"
+              inputmode="email"
               autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
               placeholder="seguridad@evento.com"
               [(ngModel)]="newEmail"
               required
             >
           </div>
           <div class="wka-field">
-            <label for="wka-label">Etiqueta (opcional)</label>
+            <label for="wka-label">Etiqueta <span class="wka-optional">opcional</span></label>
             <input
               id="wka-label"
               name="label"
@@ -109,10 +178,7 @@
         </div>
 
         <ul class="wka-list" *ngIf="recipients.length > 0">
-          <li
-            class="wka-list-item"
-            *ngFor="let r of recipients; trackBy: trackById"
-          >
+          <li class="wka-list-item" *ngFor="let r of recipients; trackBy: trackById">
             <div class="wka-list-text">
               <span class="wka-list-email">{{ r.email }}</span>
               <span class="wka-list-label" *ngIf="r.label">{{ r.label }}</span>
@@ -130,9 +196,44 @@
       </div>
     </section>
 
-    <p class="wka-footer-note">
-      Esta sección no aparece en el dashboard principal. Guarda el enlace si
-      necesitas volver: <code>/registro-express/{{ eventId }}/admin</code>
-    </p>
+    <!-- Acceso al panel: sigue siendo por URL, así que hay que poder guardarla -->
+    <section class="wka-card wka-card--quiet">
+      <h2 class="wka-card-title">Guarda este panel</h2>
+      <p class="wka-card-hint">
+        Esta pantalla no aparece en el dashboard: se entra por URL directa.
+        Copia el enlace y guárdalo donde lo vuelvas a encontrar.
+      </p>
+      <div class="wka-share">
+        <input
+          type="text"
+          [value]="adminUrl"
+          readonly
+          aria-label="URL del panel"
+          class="wka-share-input"
+          (focus)="$any($event.target).select()"
+        >
+        <button type="button" class="wka-btn wka-btn--ghost" (click)="copyAdminUrl()">
+          {{ copyAdminOk ? '¡Copiado!' : 'Copiar' }}
+        </button>
+      </div>
+      <button type="button" class="wka-link-btn" (click)="goToEvent()">
+        ← Volver al evento
+      </button>
+    </section>
   </main>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       CARTEL IMPRIMIBLE — invisible en pantalla; al imprimir es lo
+       único que sale (ver @media print en el CSS).
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="wka-poster" *ngIf="qrPrintUrl" aria-hidden="true">
+    <p class="wka-poster-kicker">VEMO · REGISTRO EXPRESS</p>
+    <h2 class="wka-poster-title">{{ event?.title || 'Evento' }}</h2>
+    <p class="wka-poster-place" *ngIf="event?.location_name">{{ event?.location_name }}</p>
+    <img [src]="qrPrintUrl" alt="" class="wka-poster-qr">
+    <p class="wka-poster-cta">Escanea para registrar tu ingreso</p>
+    <p class="wka-poster-steps">Apunta la cámara · Llena 3 datos · Listo</p>
+    <p class="wka-poster-url">{{ shareUrl }}</p>
+  </div>
+
 </div>

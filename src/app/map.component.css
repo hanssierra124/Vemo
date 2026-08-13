@@ -317,7 +317,7 @@ button { font-family: var(--ff-ui); cursor: pointer; border: none; background: n
 
 /* Emotion matrix */
 .emotion-matrix {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(120px, 100%), 1fr));
   gap: 10px; margin-bottom: 36px;
 }
 .emo-cell {
@@ -1482,7 +1482,7 @@ button { font-family: var(--ff-ui); cursor: pointer; border: none; background: n
 .exp-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,77,128,0.3), transparent); }
 
 .exp-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -1857,4 +1857,20 @@ button { font-family: var(--ff-ui); cursor: pointer; border: none; background: n
   0%   { transform: scale(0.6); opacity: 0.85; }
   70%  { transform: scale(2.4); opacity: 0; }
   100% { transform: scale(2.4); opacity: 0; }
+}
+
+
+/* ── Controles flotantes del mapa en celular ── */
+@media (max-width: 600px) {
+  .map-legend-box {
+    left: 12px;
+    right: 12px;
+    bottom: 20px;
+    min-width: 0;
+    padding: 10px 12px;
+  }
+  .legend-grid { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .legend-title { font-size: 12px; margin-bottom: 6px; }
+  .nearby-panel { left: 12px; right: 12px; width: auto; bottom: 108px; max-height: 44dvh; }
+  .locate-btn { right: 12px; bottom: 108px; }
 }

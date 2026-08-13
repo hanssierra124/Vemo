@@ -1,13 +1,15 @@
-<div class="wkr-page">
+<!-- El padding inferior sólo hace falta cuando existe la barra fija del
+     formulario; en el comprobante y en los estados se quita. -->
+<div class="wkr-page" [class.wkr-page--flat]="stage !== 'form' || loadingEvent || !!eventError">
 
-  <!-- Cargando evento -->
-  <div class="wkr-state" *ngIf="loadingEvent">
+  <!-- ── Cargando evento ── -->
+  <div class="wkr-state" *ngIf="loadingEvent && stage === 'form'">
     <div class="wkr-spinner" aria-hidden="true"></div>
     <p class="wkr-state-text">Cargando información del evento…</p>
   </div>
 
-  <!-- Error al cargar el evento -->
-  <div class="wkr-state" *ngIf="!loadingEvent && eventError">
+  <!-- ── Error al cargar el evento ── -->
+  <div class="wkr-state" *ngIf="!loadingEvent && eventError && stage === 'form'">
     <div class="wkr-state-icon" aria-hidden="true">⚠️</div>
     <h1 class="wkr-state-title">No se pudo abrir el registro</h1>
     <p class="wkr-state-text">{{ eventError }}</p>
@@ -16,29 +18,86 @@
     </button>
   </div>
 
-  <!-- Pantalla de éxito -->
-  <div class="wkr-state wkr-state--success" *ngIf="!loadingEvent && !eventError && state === 'success'">
-    <div class="wkr-success-icon" aria-hidden="true">✓</div>
-    <h1 class="wkr-state-title">¡Registro confirmado!</h1>
-    <p class="wkr-state-text">
-      Avisamos al equipo del evento en tiempo real.
-      <ng-container *ngIf="notifiedCount > 0">
-        Se notificó a <strong>{{ notifiedCount }}</strong>
-        {{ notifiedCount === 1 ? 'contacto' : 'contactos' }}.
-      </ng-container>
-    </p>
-    <div class="wkr-success-actions">
-      <button type="button" class="wkr-btn" (click)="registerAnother()">
-        Registrar otra persona
+  <!-- ══════════════════════════════════════════════════════════
+       COMPROBANTE — lo que el asistente muestra en la puerta.
+       ══════════════════════════════════════════════════════════ -->
+  <main class="wkr-wrap wkr-wrap--pass" *ngIf="stage === 'success' && pass">
+
+    <div class="wkr-success-head">
+      <div class="wkr-success-icon" aria-hidden="true">✓</div>
+      <h1 class="wkr-state-title">¡Registro confirmado!</h1>
+      <p class="wkr-state-text">
+        Guarda este comprobante y muéstralo en la entrada.
+        <ng-container *ngIf="notifiedCount > 0">
+          Avisamos a <strong>{{ notifiedCount }}</strong>
+          {{ notifiedCount === 1 ? 'contacto' : 'contactos' }} del equipo.
+        </ng-container>
+      </p>
+    </div>
+
+    <section class="wkr-pass" aria-labelledby="wkr-pass-title">
+      <div class="wkr-pass-top">
+        <span class="wkr-badge">Registro Express</span>
+        <h2 id="wkr-pass-title" class="wkr-pass-event">{{ pass.eventTitle }}</h2>
+        <p class="wkr-pass-name">{{ pass.fullName }}</p>
+      </div>
+
+      <div class="wkr-pass-perf" aria-hidden="true">
+        <span class="wkr-pass-notch left"></span>
+        <span class="wkr-pass-dashes"></span>
+        <span class="wkr-pass-notch right"></span>
+      </div>
+
+      <div class="wkr-pass-bottom">
+        <div class="wkr-pass-qr" *ngIf="passQr">
+          <img [src]="passQr" alt="Código QR de tu registro" width="180" height="180">
+        </div>
+        <p class="wkr-pass-label">Código de registro</p>
+        <p class="wkr-pass-code">{{ pass.code }}</p>
+        <p class="wkr-pass-date" *ngIf="pass.registeredAt">
+          {{ formatDate(pass.registeredAt) }}
+        </p>
+      </div>
+    </section>
+
+    <div class="wkr-pass-actions">
+      <button type="button" class="wkr-btn wkr-btn--primary" (click)="downloadPass()">
+        <span aria-hidden="true">⬇</span> Guardar comprobante
       </button>
-      <button type="button" class="wkr-btn wkr-btn--ghost" (click)="goHome()">
-        Ir al inicio
+      <button type="button" class="wkr-btn wkr-btn--ghost" (click)="shareEvent()">
+        <span aria-hidden="true">↗</span> Invitar a alguien
       </button>
     </div>
-  </div>
+    <p class="wkr-share-feedback" role="status" *ngIf="shareFeedback">
+      {{ shareFeedback }}
+    </p>
 
-  <!-- Formulario walk-in -->
-  <main class="wkr-wrap" *ngIf="!loadingEvent && !eventError && state !== 'success'">
+    <!-- Conversión: el walk-in es el mejor momento para ganar la cuenta. -->
+    <section class="wkr-convert">
+      <h3 class="wkr-convert-title">Que la próxima vez sea en un toque</h3>
+      <p class="wkr-convert-text">
+        Con tu cuenta Vemo no vuelves a llenar este formulario, sigues a tus
+        organizadores favoritos y te avisamos qué pasa cerca de ti.
+      </p>
+      <button type="button" class="wkr-btn wkr-btn--gold" (click)="createAccount()">
+        Crear mi cuenta con estos datos
+      </button>
+    </section>
+
+    <div class="wkr-secondary-actions">
+      <button type="button" class="wkr-link-btn" (click)="registerAnother()">
+        Registrar a otra persona
+      </button>
+      <a class="wkr-link-btn" routerLink="/home">Explorar Vemo</a>
+    </div>
+  </main>
+
+  <!-- ══════════════════════════════════════════════════════════
+       FORMULARIO — 3 pasos cortos, uno por pantalla.
+       ══════════════════════════════════════════════════════════ -->
+  <main class="wkr-wrap" *ngIf="stage === 'form' && !loadingEvent && !eventError">
+
+    <!-- Cabecera compacta: contexto del evento sin robar pantalla -->
     <header class="wkr-hero" [class.wkr-hero--no-img]="!event?.image_url">
       <img
         *ngIf="event?.image_url as img"
@@ -51,150 +110,327 @@
       <div class="wkr-hero-text">
         <span class="wkr-badge">Registro Express</span>
         <h1 class="wkr-title">{{ event?.title || 'Evento' }}</h1>
-        <p class="wkr-meta" *ngIf="event?.location_name">
-          <span aria-hidden="true">📍</span> {{ event?.location_name }}
-        </p>
-        <p class="wkr-meta" *ngIf="event?.date_event">
-          <span aria-hidden="true">📅</span> {{ formatDate(event?.date_event ?? null) }}
-        </p>
+        <div class="wkr-meta-row">
+          <p class="wkr-meta" *ngIf="event?.location_name">
+            <span aria-hidden="true">📍</span> {{ event?.location_name }}
+          </p>
+          <p class="wkr-meta" *ngIf="event?.date_event">
+            <span aria-hidden="true">📅</span> {{ formatDate(event?.date_event ?? null) }}
+          </p>
+        </div>
       </div>
     </header>
 
-    <section class="wkr-card" aria-labelledby="wkr-form-title">
-      <h2 id="wkr-form-title" class="wkr-card-title">Tus datos</h2>
-      <p class="wkr-card-hint">
-        Completa el formulario para confirmar tu ingreso. El equipo organizador
-        recibirá la notificación en tiempo real.
+    <!-- Progreso -->
+    <div class="wkr-progress">
+      <div
+        class="wkr-progress-bar"
+        role="progressbar"
+        [attr.aria-valuenow]="step"
+        aria-valuemin="1"
+        [attr.aria-valuemax]="totalSteps"
+        [attr.aria-label]="'Paso ' + step + ' de ' + totalSteps"
+      >
+        <span class="wkr-progress-fill" [style.width.%]="progressPct"></span>
+      </div>
+      <p class="wkr-progress-text">
+        Paso {{ step }} de {{ totalSteps }} · menos de un minuto
       </p>
+    </div>
 
-      <form #f="ngForm" (ngSubmit)="submit(f)" class="wkr-form" novalidate>
+    <!-- Borrador recuperado -->
+    <div class="wkr-notice" *ngIf="draftRestored && step === 1" role="status">
+      <span>Recuperamos lo que habías escrito.</span>
+      <button type="button" class="wkr-link-btn" (click)="discardDraft()">
+        Empezar de cero
+      </button>
+    </div>
 
-        <div class="wkr-field">
-          <label for="wkr-name">Nombre completo</label>
-          <input
-            id="wkr-name"
-            name="full_name"
-            type="text"
-            autocomplete="name"
-            required
-            minlength="3"
-            maxlength="120"
-            [(ngModel)]="attendee.full_name"
-            #fullName="ngModel"
-            placeholder="Ej. María Pérez"
-          >
-          <small class="wkr-err" *ngIf="fullName.touched && fullName.invalid">
-            Ingresa tu nombre completo (mínimo 3 caracteres).
-          </small>
-        </div>
+    <section class="wkr-card">
+      <h2 class="wkr-card-title">{{ stepTitle }}</h2>
+      <p class="wkr-card-hint">{{ stepHint }}</p>
 
-        <div class="wkr-row">
+      <form class="wkr-form" (ngSubmit)="step === totalSteps ? submit() : next()" novalidate>
+
+        <!-- ── PASO 1 · IDENTIDAD ── -->
+        <ng-container *ngIf="step === 1">
           <div class="wkr-field">
-            <label for="wkr-doc">Documento</label>
+            <label for="wkr-name">Nombre completo</label>
+            <input
+              id="wkr-name"
+              name="full_name"
+              type="text"
+              autocomplete="name"
+              autocapitalize="words"
+              enterkeyhint="next"
+              maxlength="120"
+              [(ngModel)]="attendee.full_name"
+              (blur)="markTouched('full_name')"
+              [attr.aria-invalid]="showError('full_name')"
+              [class.is-invalid]="showError('full_name')"
+              placeholder="Ej. María Pérez"
+            >
+            <small class="wkr-err" role="alert" *ngIf="showError('full_name')">
+              {{ errorFor('full_name') }}
+            </small>
+          </div>
+
+          <div class="wkr-field">
+            <span class="wkr-field-label">Tipo de documento</span>
+            <div class="wkr-segmented" role="radiogroup" aria-label="Tipo de documento">
+              <button
+                *ngFor="let d of documentTypes"
+                type="button"
+                class="wkr-seg"
+                role="radio"
+                [attr.aria-checked]="attendee.document_type === d.value"
+                [class.chosen]="attendee.document_type === d.value"
+                (click)="attendee.document_type = d.value; markTouched('document_id')"
+              >{{ d.label }}</button>
+            </div>
+          </div>
+
+          <div class="wkr-field">
+            <label for="wkr-doc">Número de documento</label>
             <input
               id="wkr-doc"
               name="document_id"
               type="text"
               inputmode="numeric"
               autocomplete="off"
-              required
-              minlength="4"
+              enterkeyhint="next"
               maxlength="20"
               [(ngModel)]="attendee.document_id"
-              #doc="ngModel"
-              placeholder="C.C. o pasaporte"
+              (blur)="markTouched('document_id')"
+              [attr.aria-invalid]="showError('document_id')"
+              [class.is-invalid]="showError('document_id')"
+              placeholder="Sin puntos ni comas"
             >
-            <small class="wkr-err" *ngIf="doc.touched && doc.invalid">
-              El documento es obligatorio.
+            <small class="wkr-err" role="alert" *ngIf="showError('document_id')">
+              {{ errorFor('document_id') }}
+            </small>
+            <small class="wkr-help">
+              Sólo lo usa el equipo del evento para dejarte entrar.
+            </small>
+          </div>
+        </ng-container>
+
+        <!-- ── PASO 2 · CONTACTO ── -->
+        <ng-container *ngIf="step === 2">
+          <div class="wkr-field">
+            <label for="wkr-phone">Celular / WhatsApp</label>
+            <div class="wkr-input-prefix" [class.is-invalid]="showError('phone')">
+              <span class="wkr-prefix" aria-hidden="true">+57</span>
+              <input
+                id="wkr-phone"
+                name="phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                enterkeyhint="next"
+                maxlength="20"
+                [(ngModel)]="attendee.phone"
+                (blur)="markTouched('phone')"
+                [attr.aria-invalid]="showError('phone')"
+                placeholder="300 123 4567"
+              >
+            </div>
+            <small class="wkr-err" role="alert" *ngIf="showError('phone')">
+              {{ errorFor('phone') }}
+            </small>
+            <small class="wkr-help">
+              Si tu número es de otro país, escríbelo con el indicativo (+52…).
             </small>
           </div>
 
-          <div class="wkr-field wkr-field--narrow">
-            <label for="wkr-age">Edad</label>
+          <div class="wkr-field">
+            <label for="wkr-email">Correo electrónico</label>
             <input
-              id="wkr-age"
-              name="age"
-              type="number"
-              inputmode="numeric"
-              min="13"
-              max="120"
-              [(ngModel)]="attendee.age"
-              #age="ngModel"
-              placeholder="Ej. 22"
+              id="wkr-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              enterkeyhint="next"
+              [(ngModel)]="attendee.email"
+              (blur)="markTouched('email')"
+              [attr.aria-invalid]="showError('email')"
+              [class.is-invalid]="showError('email')"
+              placeholder="tucorreo@ejemplo.com"
             >
-            <small class="wkr-err" *ngIf="age.touched && age.invalid">
-              Edad entre 13 y 120.
+            <small class="wkr-err" role="alert" *ngIf="showError('email')">
+              {{ errorFor('email') }}
             </small>
           </div>
+        </ng-container>
+
+        <!-- ── PASO 3 · CONTEXTO (opcional) + PERMISOS ── -->
+        <ng-container *ngIf="step === 3">
+          <div class="wkr-row">
+            <div class="wkr-field">
+              <label for="wkr-age">Edad <span class="wkr-optional">opcional</span></label>
+              <input
+                id="wkr-age"
+                name="age"
+                type="number"
+                inputmode="numeric"
+                min="13"
+                max="120"
+                [(ngModel)]="attendee.age"
+                (blur)="markTouched('age')"
+                [attr.aria-invalid]="showError('age')"
+                [class.is-invalid]="showError('age')"
+                placeholder="Ej. 22"
+              >
+              <small class="wkr-err" role="alert" *ngIf="showError('age')">
+                {{ errorFor('age') }}
+              </small>
+            </div>
+
+            <div class="wkr-field">
+              <label for="wkr-companions">
+                ¿Cuántos vienen contigo? <span class="wkr-optional">opcional</span>
+              </label>
+              <input
+                id="wkr-companions"
+                name="companions"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="20"
+                [(ngModel)]="attendee.companions"
+                (blur)="markTouched('companions')"
+                [attr.aria-invalid]="showError('companions')"
+                [class.is-invalid]="showError('companions')"
+                placeholder="0"
+              >
+              <small class="wkr-err" role="alert" *ngIf="showError('companions')">
+                {{ errorFor('companions') }}
+              </small>
+            </div>
+          </div>
+
+          <fieldset class="wkr-fieldset">
+            <legend>¿Con quién vienes? <span class="wkr-optional">opcional</span></legend>
+            <div class="wkr-chips">
+              <button
+                *ngFor="let c of companyOptions"
+                type="button"
+                class="wkr-chip"
+                [attr.aria-pressed]="attendee.company_type === c.value"
+                [class.chosen]="attendee.company_type === c.value"
+                (click)="selectCompany(c.value)"
+              >
+                <span aria-hidden="true">{{ c.icon }}</span> {{ c.label }}
+              </button>
+            </div>
+          </fieldset>
+
+          <fieldset class="wkr-fieldset">
+            <legend>¿Cómo te enteraste? <span class="wkr-optional">opcional</span></legend>
+            <div class="wkr-chips">
+              <button
+                *ngFor="let h of heardOptions"
+                type="button"
+                class="wkr-chip"
+                [attr.aria-pressed]="attendee.heard_from === h"
+                [class.chosen]="attendee.heard_from === h"
+                (click)="selectHeardFrom(h)"
+              >{{ h }}</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="wkr-fieldset" *ngIf="categories.length">
+            <legend>¿Qué planes te gustan? <span class="wkr-optional">opcional</span></legend>
+            <div class="wkr-chips">
+              <button
+                *ngFor="let cat of categories"
+                type="button"
+                class="wkr-chip"
+                [attr.aria-pressed]="isInterest(cat.id)"
+                [class.chosen]="isInterest(cat.id)"
+                (click)="toggleInterest(cat.id)"
+              >
+                <span *ngIf="cat.icon" aria-hidden="true">{{ cat.icon }}</span> {{ cat.name }}
+              </button>
+            </div>
+          </fieldset>
+
+          <!-- Permisos: separados y en lenguaje llano -->
+          <div class="wkr-consents">
+            <label class="wkr-checkbox" [class.is-invalid]="showError('accepts_data_policy')">
+              <input
+                type="checkbox"
+                name="accepts_data_policy"
+                [(ngModel)]="attendee.accepts_data_policy"
+                (change)="markTouched('accepts_data_policy')"
+                [attr.aria-invalid]="showError('accepts_data_policy')"
+              >
+              <span>
+                Autorizo el tratamiento de mis datos para el ingreso y la
+                seguridad del evento.
+                <a routerLink="/terminos" target="_blank" rel="noopener">Ver política</a>.
+              </span>
+            </label>
+            <small class="wkr-err" role="alert" *ngIf="showError('accepts_data_policy')">
+              {{ errorFor('accepts_data_policy') }}
+            </small>
+
+            <label class="wkr-checkbox">
+              <input
+                type="checkbox"
+                name="accepts_communications"
+                [(ngModel)]="attendee.accepts_communications"
+              >
+              <span>Quiero enterarme de este y otros eventos del organizador.</span>
+            </label>
+
+            <label class="wkr-checkbox">
+              <input
+                type="checkbox"
+                name="wants_account"
+                [(ngModel)]="attendee.wants_account"
+              >
+              <span>Quiero crear mi cuenta Vemo al terminar (sin repetir datos).</span>
+            </label>
+          </div>
+
+          <p class="wkr-submit-error" *ngIf="submitError" role="alert">
+            {{ submitError }}
+          </p>
+        </ng-container>
+
+        <!-- Barra de acción: fija abajo en móvil, al alcance del pulgar -->
+        <div class="wkr-actions">
+          <button
+            type="button"
+            class="wkr-btn wkr-btn--ghost wkr-btn--back"
+            *ngIf="step > 1"
+            (click)="back()"
+          >
+            Atrás
+          </button>
+
+          <button
+            type="submit"
+            class="wkr-btn wkr-btn--primary"
+            [disabled]="submitting"
+          >
+            <ng-container *ngIf="step < totalSteps">Continuar</ng-container>
+            <ng-container *ngIf="step === totalSteps">
+              {{ submitting ? 'Registrando…' : 'Confirmar mi ingreso' }}
+            </ng-container>
+          </button>
         </div>
-
-        <div class="wkr-field">
-          <label for="wkr-email">Correo electrónico</label>
-          <input
-            id="wkr-email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            required
-            [(ngModel)]="attendee.email"
-            #email="ngModel"
-            placeholder="tucorreo@ejemplo.com"
-          >
-          <small
-            class="wkr-err"
-            *ngIf="email.touched && (email.invalid || !isValidEmail(attendee.email))"
-          >
-            Ingresa un correo válido.
-          </small>
-        </div>
-
-        <div class="wkr-field">
-          <label for="wkr-phone">Teléfono / WhatsApp</label>
-          <input
-            id="wkr-phone"
-            name="phone"
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-            required
-            minlength="7"
-            maxlength="20"
-            [(ngModel)]="attendee.phone"
-            #phone="ngModel"
-            placeholder="Ej. 300 123 4567"
-          >
-          <small class="wkr-err" *ngIf="phone.touched && phone.invalid">
-            Ingresa un teléfono válido (al menos 7 dígitos).
-          </small>
-        </div>
-
-        <label class="wkr-checkbox">
-          <input
-            type="checkbox"
-            name="accepts_communications"
-            [(ngModel)]="attendee.accepts_communications"
-          >
-          <span>Acepto recibir información del evento y futuras ediciones.</span>
-        </label>
-
-        <p class="wkr-submit-error" *ngIf="submitError" role="alert">
-          {{ submitError }}
-        </p>
-
-        <button
-          type="submit"
-          class="wkr-btn wkr-btn--primary"
-          [disabled]="state === 'submitting'"
-        >
-          {{ state === 'submitting' ? 'Registrando…' : 'Confirmar mi ingreso' }}
-        </button>
-
-        <p class="wkr-legal">
-          Al registrarte aceptas que tus datos sean compartidos con el equipo del
-          evento únicamente con fines logísticos y de seguridad.
-        </p>
       </form>
     </section>
+
+    <p class="wkr-legal">
+      Tus datos se comparten con el equipo del evento sólo con fines logísticos
+      y de seguridad. Puedes pedir su eliminación cuando quieras.
+    </p>
   </main>
 
 </div>

@@ -1,5 +1,6 @@
 .blocked-screen {
-  height: 100vh;
+  min-height: 100vh;
+  padding-top: var(--vemo-header-h, 90px);
   display: flex;
   align-items: center;
   justify-content: center;

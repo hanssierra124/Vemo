@@ -1,19 +1,40 @@
 /* ══════════════════════════════════════════════
    CABECERA / HEADER VEMO
+
+   Dos modos, sin puntos intermedios ambiguos:
+   · ≥1100px → barra completa con el pill central.
+   · <1100px → logo + campana + hamburguesa, y las secciones
+     viven en un cajón lateral. Siete enlaces no caben en un
+     móvil por mucho que se encojan; intentarlo era lo que
+     hacía que la barra se saliera de la pantalla.
    ══════════════════════════════════════════════ */
+
+:host {
+  --vh-safe-l: env(safe-area-inset-left, 0px);
+  --vh-safe-r: env(safe-area-inset-right, 0px);
+  --vh-safe-t: env(safe-area-inset-top, 0px);
+  --vh-safe-b: env(safe-area-inset-bottom, 0px);
+}
 
 .vemo-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 90px;
-  padding: 0 4vw;
+  /* La altura vive en styles.css para que las vistas puedan reservar
+     ese espacio sin duplicar el número. */
+  height: var(--vemo-header-h, 90px);
+  padding: 0 max(4vw, calc(14px + var(--vh-safe-l))) 0 max(4vw, calc(14px + var(--vh-safe-l)));
+  padding-right: max(4vw, calc(14px + var(--vh-safe-r)));
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   z-index: 1000;
 }
+/* Con el cajón abierto la barra sube por encima del velo (pero por debajo
+   del cajón) para que la hamburguesa siga siendo tocable y sirva de "cerrar". */
+.vemo-header.menu-open { z-index: 1450; }
 .brand-name {
   font-family: var(--ff-ui);
   font-size: 14px;
@@ -27,7 +48,6 @@
   display: flex;
   flex-direction: column; /* Apila los elementos verticalmente */
   justify-content: center;
-  /* gap: 2px; Opcional: para separar un poco VEMO de BARRANQUILLA */
 }
 
 /* ── TRUCO DE CENTRADO ABSOLUTO ── */
@@ -35,6 +55,7 @@
   flex: 1;
   display: flex;
   align-items: center;
+  min-width: 0; /* deja que el contenido se encoja en vez de desbordar */
 }
 
 .vh-left {
@@ -43,7 +64,8 @@
 
 .vh-right {
   justify-content: flex-end;
-   color: rgb(253, 210, 235);
+  gap: 8px;
+  color: rgb(253, 210, 235);
 }
 
 /* ── LOGO Y CIUDAD (Lado Izquierdo) ── */
@@ -52,13 +74,14 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  min-width: 0;
 }
 
 .vh-logo-wrap img {
   height: 24px;
   width: auto;
+  flex-shrink: 0;
 }
-
 
 .vh-city {
   font-family: var(--ff-ui);
@@ -68,6 +91,7 @@
   color:rgb(184, 24, 85);
   text-transform: uppercase;
   margin-top: 2px;
+  white-space: nowrap;
 }
 
 /* ── NAVEGACIÓN (Centro) ── */
@@ -81,7 +105,7 @@
   border-radius: 100px;
   padding: 6px;
   backdrop-filter: blur(8px);
-  color:aliceblue
+  color: aliceblue;
 }
 
 .vh-link {
@@ -90,12 +114,13 @@
   font-weight: 500;
   color: var(--text-2);
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border-radius: 100px;
   transition: all 0.3s var(--ease-snap);
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .vh-link:hover {
@@ -117,13 +142,14 @@
   color: var(--text-1);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 10px 24px;
+  padding: 10px 22px;
   border-radius: 100px;
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
   transition: all 0.3s var(--ease-snap);
 }
 
@@ -135,85 +161,236 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* ── RESPONSIVE BÁSICO ── */
-@media (max-width: 960px) {
-  .vh-city {
-    display: none;
-  }
-
-  .vh-link {
-    padding: 8px 14px;
-    font-size: 12px;
-  }
-
-  .vh-profile-btn {
-    padding: 8px 18px;
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 600px) {
-  .vh-left, .vh-right {
-    flex: none;
-  }
-
-  .vemo-header {
-    height: 70px;
-    padding: 0 12px;
-    color:  rgb(253, 210, 235);
-    gap: 8px;
-  }
-
-  /* Logo: mantenemos el SVG pero el texto VEMO + ciudad se ocultan para
-     liberar espacio. El logo ya es identificable por sí solo. */
-  .vh-text-group { display: none; }
-  .vh-logo-wrap { gap: 0; }
-  .vh-logo-wrap img { height: 22px; }
-
-  /* Pill central más compacto y sin que se desborde */
-  .vh-center {
-    gap: 0;
-    padding: 4px;
-    border-radius: 100px;
-    flex-shrink: 1;
-    min-width: 0;
-  }
-
-  .vh-link {
-    padding: 7px 10px;
-    font-size: 11px;
-    gap: 5px;
-    white-space: nowrap;
-  }
-  .vh-link svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-  /* Botón "Mi Perfil": solo icono, sin texto */
-  .vh-profile-btn { padding: 8px 10px; gap: 0; }
-  .vh-profile-btn span:last-child { display: none; }
-}
-
-/* En pantallas muy chicas (≤ 380px) ocultamos los textos del nav central
-   y dejamos solo iconos para Explora/Favoritos. "Inicio" queda como texto
-   corto porque no tiene icono. */
-@media (max-width: 380px) {
-  .vh-link { padding: 7px 8px; font-size: 10px; }
-  .vh-link span { display: none; }
-  /* "Inicio" no tiene icono — para que siga clickeable mostramos el texto */
-  .vh-link:first-child { padding: 7px 12px; font-size: 11px; }
-  .vh-link:first-child span { display: inline; }
-}
-
 /* Campana de notificaciones (Fase A5) */
 .vh-bell {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: 50%; color: inherit; text-decoration: none;
+  width: 42px; height: 42px; border-radius: 50%; color: inherit; text-decoration: none;
+  flex-shrink: 0;
   transition: background .15s ease;
 }
 .vh-bell:hover { background: rgba(255, 255, 255, 0.08); }
 .vh-bell.active { color: #FFD700; }
 .vh-badge {
-  position: absolute; top: 2px; right: 0; min-width: 16px; height: 16px; padding: 0 4px;
+  position: absolute; top: 4px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px;
   display: flex; align-items: center; justify-content: center; box-sizing: border-box;
   background: #FF4D80; color: #fff; font-size: 10px; font-weight: 700; line-height: 1;
   border-radius: 10px;
+}
+
+/* ══════════════════════════════════════════════
+   HAMBURGUESA + CAJÓN
+   ══════════════════════════════════════════════ */
+.vh-burger {
+  display: none; /* sólo aparece bajo el breakpoint */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 14px;
+  /* Reset del button global de styles.css */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.vh-burger:hover { background: rgba(255, 77, 128, 0.14); border-color: rgba(255, 77, 128, 0.4); }
+.vh-burger-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+.vh-burger.is-open .vh-burger-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.vh-burger.is-open .vh-burger-bar:nth-child(2) { opacity: 0; }
+.vh-burger.is-open .vh-burger-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.vh-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  background: rgba(6, 5, 10, 0.72);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+.vh-scrim.visible { opacity: 1; visibility: visible; }
+
+.vh-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1500;
+  width: min(86vw, 330px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding:
+    calc(18px + var(--vh-safe-t))
+    calc(16px + var(--vh-safe-r))
+    calc(18px + var(--vh-safe-b))
+    16px;
+  background: #131118;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.55);
+  transform: translateX(100%);
+  visibility: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
+.vh-drawer.open { transform: translateX(0); visibility: visible; }
+
+.vh-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vh-drawer-title {
+  font-family: var(--ff-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.vh-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  color: #fff;
+  cursor: pointer;
+}
+.vh-drawer-close:hover { background: rgba(255, 255, 255, 0.07); }
+
+.vh-drawer-links { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+
+.vh-drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-family: var(--ff-ui);
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.vh-drawer-link svg { flex-shrink: 0; }
+.vh-drawer-link:hover { background: rgba(255, 255, 255, 0.06); color: #fff; text-decoration: none; }
+.vh-drawer-link.active {
+  background: linear-gradient(135deg, rgba(255, 77, 128, 0.20), rgba(106, 0, 255, 0.14));
+  color: #fff;
+  font-weight: 600;
+}
+.vh-drawer-count {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #FF4D80;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.vh-drawer-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vh-drawer-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF4D80, #6A00FF);
+  color: #fff;
+  font-family: var(--ff-ui);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.vh-drawer-cta:hover { text-decoration: none; filter: brightness(1.08); }
+
+/* ══════════════════════════════════════════════
+   BREAKPOINTS
+   ══════════════════════════════════════════════ */
+
+/* Portátiles chicos: apretamos el pill antes de rendirnos */
+@media (max-width: 1280px) {
+  .vh-link { padding: 9px 13px; font-size: 12px; gap: 6px; }
+  .vh-profile-btn { padding: 9px 16px; font-size: 12px; }
+  .vh-city { display: none; }
+}
+
+/* Bajo 1100px las 6-7 secciones ya no caben: cajón lateral */
+@media (max-width: 1099px) {
+  .vh-center { display: none; }
+  .vh-profile-btn { display: none; }
+  .vh-burger { display: inline-flex; }
+  .vh-left, .vh-right { flex: 0 1 auto; }
+}
+
+@media (max-width: 600px) {
+  .vh-text-group { display: none; }
+  .vh-logo-wrap { gap: 0; }
+  .vh-logo-wrap img { height: 22px; }
+  .vh-bell { width: 40px; height: 40px; }
+}
+
+@media (max-width: 360px) {
+  .vh-burger { width: 42px; height: 42px; }
+  .vh-bell { width: 38px; height: 38px; }
+}
+
+/* El cajón a pantalla completa en móviles muy angostos se siente mejor
+   que una tira de 86vw pegada al borde. */
+@media (max-width: 380px) {
+  .vh-drawer { width: 100vw; border-left: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vh-drawer,
+  .vh-scrim,
+  .vh-burger-bar { transition-duration: 0.01ms; }
+  .vh-profile-btn:hover { transform: none; }
+}
+
+/* Impresión: la navegación no aporta nada en papel. */
+@media print {
+  .vemo-header,
+  .vh-scrim,
+  .vh-drawer { display: none !important; }
 }

@@ -54,7 +54,7 @@ import { AppNotification, NotificationPreferences } from './models/notification.
     </div>
   `,
   styles: [`
-    .nt-wrap { max-width: 620px; margin: 0 auto; padding: 40px 16px 90px; }
+    .nt-wrap { max-width: 620px; margin: 0 auto; padding: calc(var(--vemo-header-h, 90px) + 28px) 16px 90px; }
     .nt-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; gap: 12px; }
     .nt-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
       background: linear-gradient(135deg,#FF4D80,#FFD700); -webkit-background-clip: text; background-clip: text; color: transparent; }

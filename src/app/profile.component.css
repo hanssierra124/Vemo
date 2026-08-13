@@ -990,3 +990,64 @@
 .rejected-alert .btn-correction-action:hover {
   background: #ef5350;
 }
+
+/* ═══════════════════════════════════════════════════════
+   AJUSTE FINO MÓVIL (≤600px y ≤400px)
+
+   El bloque de 768px ya cubría tablet; faltaba el tramo de
+   celular real, donde los paneles de 40px de padding y el
+   nombre a 4rem dejaban el contenido pegado a los bordes.
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .profile-page-wrapper { padding: 78px 12px 90px; }
+
+  .glass-panel {
+    padding: 20px 16px;
+    border-radius: 22px;
+    margin-bottom: 24px;
+  }
+
+  .identity-hero { width: 100%; }
+  .avatar-rig { width: 108px; height: 108px; margin-bottom: 20px; }
+  .avatar-core { font-size: 38px; }
+  .user-name { font-size: clamp(1.9rem, 10vw, 2.6rem); margin-bottom: 12px; }
+  .role-badge-container { flex-wrap: wrap; gap: 8px; }
+  .section-title { font-size: 1.25rem; }
+  .deck-header { margin-bottom: 26px; }
+
+  /* Tarjetas de métricas: dos columnas siguen entrando si se aprietan */
+  .metrics-dashboard { gap: 8px; margin-bottom: 22px; }
+  .metric-mini-card { padding: 13px 11px; gap: 9px; border-radius: 16px; }
+  .m-icon { font-size: 19px; }
+  .m-value { font-size: 17px; }
+  .m-label { font-size: 9px; letter-spacing: 0.5px; }
+
+  /* Los dos botones de creación no caben lado a lado */
+  .create-options { flex-direction: column; gap: 12px; max-width: none; }
+  .action-center { margin: 22px 0 34px; }
+
+  /* Tarjetas de admin: la fila horizontal se vuelve bloque */
+  .admin-card { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px; }
+  .card-actions { justify-content: flex-end; }
+  .ev-stats-mini { margin: 0; flex-wrap: wrap; }
+
+  /* Modal de cédula */
+  .cedula-images { grid-template-columns: 1fr; padding: 18px 16px; gap: 12px; }
+  .cedula-modal-header { padding: 20px 16px 0; }
+  .cedula-actions { padding: 0 16px 20px; }
+  .cedula-actions .btn-decision { flex: 1 1 100%; justify-content: center; }
+
+  /* Edición de perfil */
+  .edit-actions { flex-direction: column-reverse; }
+  .edit-actions button { width: 100%; }
+
+  .correction-alert-inner { flex-direction: column; gap: 12px; padding: 16px; }
+  .btn-correction-action { width: 100%; }
+}
+
+@media (max-width: 400px) {
+  .metrics-dashboard { grid-template-columns: 1fr; }
+  .tab-system { grid-template-columns: 1fr; }
+  .profile-page-wrapper { padding-left: 10px; padding-right: 10px; }
+  .glass-panel { padding: 16px 13px; }
+}

@@ -92,7 +92,14 @@
 
         <div class="content-block glass-effect" *ngIf="isEventOwner">
           <h3 class="clash-display section-tag">Panel del organizador</h3>
-          <a class="attend-btn" [routerLink]="['/organizer/event', event.id, 'analytics']">Ver analítica del evento</a>
+          <div class="org-tools">
+            <a class="attend-btn org-tool-btn" [routerLink]="['/organizer/event', event.id, 'analytics']">Ver analítica del evento</a>
+            <a class="attend-btn org-tool-btn org-tool-btn--alt" [routerLink]="['/registro-express', event.id, 'admin']">Registro Express · QR y link</a>
+          </div>
+          <p class="attend-count">
+            El Registro Express deja entrar a quien llega sin cuenta: reparte el QR
+            en la puerta o el link por WhatsApp.
+          </p>
         </div>
 
         <div class="content-block glass-effect" *ngIf="isEventOwner">

@@ -1,29 +1,53 @@
+/* ════════════════════════════════════════════════════════════════
+   REGISTRO EXPRESS · panel del organizador
+
+   Se usa tanto desde el escritorio (preparando el evento) como desde
+   el celular (ya en la puerta, mandando el link por WhatsApp). El
+   layout es una sola columna en móvil y se abre a dos cuando hay
+   espacio, sin cambiar el orden de lectura.
+   ════════════════════════════════════════════════════════════════ */
+
 :host {
   --wka-glow: #FF4D80;
   --wka-deep: #6A00FF;
+  --wka-gold: #FFD700;
   --wka-ink: #0E0D12;
   --wka-surface: #16151B;
+  --wka-surface-2: rgba(255, 255, 255, 0.04);
   --wka-border: rgba(255, 255, 255, 0.10);
   --wka-text-1: #F0F0F0;
   --wka-text-2: rgba(240, 240, 240, 0.65);
   --wka-text-3: rgba(240, 240, 240, 0.40);
   --wka-err: #FF6B6B;
+  --wka-wa: #25D366;
   --wka-ff: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --wka-safe-b: env(safe-area-inset-bottom, 0px);
+  --wka-safe-l: env(safe-area-inset-left, 0px);
+  --wka-safe-r: env(safe-area-inset-right, 0px);
+
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
 .wka-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--wka-ink);
   color: var(--wka-text-1);
   font-family: var(--wka-ff);
-  padding: 18px 14px 80px;
+  padding:
+    calc(var(--vemo-header-h, 90px) + 18px)
+    calc(14px + var(--wka-safe-r))
+    calc(60px + var(--wka-safe-b))
+    calc(14px + var(--wka-safe-l));
 }
 
 /* ── Estados ── */
 .wka-state {
   min-height: 70vh;
+  min-height: 70dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,19 +69,18 @@
   animation: wka-spin 0.9s linear infinite;
   margin-bottom: 12px;
 }
+.wka-spinner--sm { width: 26px; height: 26px; border-width: 2px; margin: 0; }
 @keyframes wka-spin { to { transform: rotate(360deg); } }
 
 /* ── Layout ── */
 .wka-wrap {
-  max-width: 760px;
+  max-width: 860px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
-.wka-head {
-  padding: 6px 4px 0;
-}
+.wka-head { padding: 6px 4px 0; }
 .wka-tag {
   display: inline-block;
   font-size: 11px;
@@ -67,7 +90,7 @@
   color: var(--wka-glow);
   margin-bottom: 6px;
 }
-.wka-title { font-size: clamp(22px, 5.5vw, 30px); font-weight: 700; margin: 0 0 4px; }
+.wka-title { font-size: clamp(21px, 5.5vw, 30px); font-weight: 700; margin: 0 0 4px; line-height: 1.2; }
 .wka-sub { margin: 0; color: var(--wka-text-2); font-size: 14px; }
 
 /* ── Card ── */
@@ -77,10 +100,82 @@
   border-radius: 18px;
   padding: 18px 16px;
 }
-.wka-card-title { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
-.wka-card-hint { font-size: 13px; color: var(--wka-text-2); margin: 0 0 14px; line-height: 1.55; }
+.wka-card--share {
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(106, 0, 255, 0.16), transparent 55%),
+    var(--wka-surface);
+}
+.wka-card--quiet { background: rgba(255, 255, 255, 0.02); }
+.wka-card-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.wka-card-hint { font-size: 13px; color: var(--wka-text-2); margin: 0 0 16px; line-height: 1.55; }
 
-/* ── Share ── */
+.wka-mini-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wka-text-3);
+  margin: 0 0 8px;
+}
+.wka-mini-label--spaced { margin-top: 18px; }
+.wka-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--wka-text-3);
+}
+
+/* ── Bloque de reparto (QR + link) ── */
+.wka-share-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.wka-qr-block { display: flex; flex-direction: column; align-items: center; }
+.wka-qr-frame {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  line-height: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.wka-qr-frame img {
+  display: block;
+  width: 200px;
+  height: 200px;
+  max-width: 52vw;
+  max-height: 52vw;
+}
+.wka-qr-frame--empty {
+  width: 228px;
+  height: 228px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wka-surface-2);
+  box-shadow: none;
+  border: 1px dashed var(--wka-border);
+}
+.wka-qr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 16px;
+}
+.wka-qr-note {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  color: var(--wka-text-3);
+  text-align: center;
+}
+
+.wka-link-block { display: flex; flex-direction: column; }
+
+/* ── Share input ── */
 .wka-share {
   display: flex;
   flex-direction: column;
@@ -88,16 +183,71 @@
 }
 .wka-share-input {
   width: 100%;
-  padding: 12px 14px;
+  min-width: 0;
+  padding: 13px 14px;
   border-radius: 12px;
   border: 1px solid var(--wka-border);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--wka-surface-2);
   color: var(--wka-text-1);
   font-size: 14px;
   font-family: inherit;
   outline: none;
+  text-overflow: ellipsis;
+  min-height: 48px;
 }
-.wka-share-input:focus { border-color: var(--wka-glow); }
+.wka-share-input:focus-visible {
+  border-color: var(--wka-glow);
+  box-shadow: 0 0 0 3px rgba(255, 77, 128, 0.18);
+}
+
+/* ── Canales ── */
+.wka-channels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(96px, 100%), 1fr));
+  gap: 8px;
+}
+.wka-channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 74px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  background: var(--wka-surface-2);
+  border: 1px solid var(--wka-border);
+  color: var(--wka-text-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.18s, color 0.18s, background 0.18s;
+}
+.wka-channel:hover {
+  border-color: var(--wka-glow);
+  color: var(--wka-text-1);
+  background: rgba(255, 77, 128, 0.08);
+}
+.wka-channel:active { transform: scale(0.97); }
+.wka-channel--wa:hover {
+  border-color: var(--wka-wa);
+  background: rgba(37, 211, 102, 0.10);
+}
+.wka-channel-icon { font-size: 20px; line-height: 1; }
+
+.wka-attr-note {
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  color: var(--wka-text-3);
+  line-height: 1.6;
+}
+.wka-attr-note code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
 
 /* ── Form ── */
 .wka-form { display: flex; flex-direction: column; gap: 12px; }
@@ -116,18 +266,23 @@
 }
 .wka-field input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--wka-surface-2);
   border: 1px solid var(--wka-border);
   color: var(--wka-text-1);
-  font-size: 16px;
+  font-size: 16px; /* ≥16px evita el zoom automático de iOS */
   font-family: inherit;
   outline: none;
-  transition: border-color 0.18s, background 0.18s;
+  min-height: 48px;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
 }
 .wka-field input::placeholder { color: var(--wka-text-3); }
-.wka-field input:focus { border-color: var(--wka-glow); background: rgba(255, 255, 255, 0.07); }
+.wka-field input:focus-visible {
+  border-color: var(--wka-glow);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(255, 77, 128, 0.18);
+}
 
 .wka-error {
   background: rgba(255, 107, 107, 0.10);
@@ -137,6 +292,7 @@
   padding: 9px 12px;
   font-size: 13px;
   margin: 0;
+  line-height: 1.5;
 }
 
 /* ── Lista ── */
@@ -156,7 +312,7 @@
   gap: 12px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--wka-surface-2);
   border: 1px solid var(--wka-border);
 }
 .wka-list-text {
@@ -164,6 +320,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 .wka-list-email {
   font-weight: 600;
@@ -171,7 +328,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 60vw;
 }
 .wka-list-label { font-size: 12px; color: var(--wka-text-3); }
 .wka-list-remove {
@@ -186,7 +342,7 @@
   cursor: pointer;
   transition: all 0.18s;
   flex-shrink: 0;
-  min-height: 36px;
+  min-height: 40px;
 }
 .wka-list-remove:hover {
   background: rgba(255, 107, 107, 0.10);
@@ -197,6 +353,7 @@
   font-size: 13px;
   padding: 12px 4px;
   text-align: center;
+  line-height: 1.55;
 }
 
 /* ── Botones ── */
@@ -204,23 +361,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.18s;
-  min-height: 46px;
+  transition: transform 0.15s, background 0.18s, color 0.18s, border-color 0.18s;
+  min-height: 48px;
 }
+.wka-btn:active { transform: scale(0.985); }
 .wka-btn--primary {
   background: var(--wka-glow);
-  color: #000;
+  color: #14060B;
 }
 .wka-btn--primary:hover { background: #ff6b98; }
-.wka-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.wka-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .wka-btn--ghost {
   background: transparent;
   color: var(--wka-text-2);
@@ -228,29 +387,125 @@
 }
 .wka-btn--ghost:hover { color: var(--wka-glow); border-color: var(--wka-glow); }
 
-.wka-footer-note {
-  font-size: 12px;
-  color: var(--wka-text-3);
-  text-align: center;
-  margin: 8px 0 0;
-  line-height: 1.6;
-}
-.wka-footer-note code {
-  background: rgba(255, 255, 255, 0.06);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 11px;
+.wka-link-btn {
+  align-self: flex-start;
+  margin-top: 14px;
+  background: none;
+  border: none;
+  padding: 8px 2px;
+  min-height: 44px;
+  color: var(--wka-glow);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-/* ── Breakpoints (mobile-first) ── */
+/* ── Cartel imprimible: oculto en pantalla ── */
+.wka-poster { display: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   BREAKPOINTS
+   ════════════════════════════════════════════════════════════════ */
 @media (min-width: 560px) {
   .wka-share { flex-direction: row; align-items: stretch; }
   .wka-share-input { flex: 1; }
-  .wka-share .wka-btn { width: auto; min-width: 130px; }
+  .wka-share .wka-btn { width: auto; min-width: 120px; flex-shrink: 0; }
+  .wka-qr-actions { flex-direction: row; max-width: none; }
   .wka-form-row { grid-template-columns: 1fr 1fr; }
-  .wka-form .wka-btn { width: auto; align-self: flex-start; padding-left: 22px; padding-right: 22px; }
+  .wka-form > .wka-btn { width: auto; align-self: flex-start; padding-left: 24px; padding-right: 24px; }
 }
-@media (min-width: 720px) {
+
+@media (min-width: 800px) {
   .wka-page { padding: 36px 24px 100px; }
   .wka-card { padding: 26px 24px; }
+  /* El QR queda fijo a la izquierda y el link ocupa el resto */
+  .wka-share-grid {
+    grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .wka-qr-actions { flex-direction: column; }
+  .wka-qr-frame img { max-width: none; max-height: none; }
+}
+
+@media (max-width: 340px) {
+  .wka-page { padding-left: 10px; padding-right: 10px; }
+  .wka-card { padding: 15px 13px; }
+  .wka-channels { grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wka-btn:active,
+  .wka-channel:active { transform: none; }
+  .wka-spinner { animation-duration: 2s; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   IMPRESIÓN — sale sólo el cartel del QR, en blanco y negro, listo
+   para pegar en la entrada. Nada de la interfaz se imprime.
+   ════════════════════════════════════════════════════════════════ */
+@media print {
+  @page { margin: 12mm; }
+
+  :host { color-scheme: light; }
+  .wka-page {
+    background: #fff !important;
+    color: #000 !important;
+    padding: 0 !important;
+    min-height: 0;
+  }
+  .wka-wrap,
+  .wka-state { display: none !important; }
+
+  .wka-poster {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #000;
+    page-break-inside: avoid;
+  }
+  .wka-poster-kicker {
+    margin: 0 0 6mm;
+    font-size: 12pt;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+  .wka-poster-title {
+    margin: 0 0 3mm;
+    font-size: 30pt;
+    font-weight: 800;
+    line-height: 1.1;
+    max-width: 160mm;
+  }
+  .wka-poster-place {
+    margin: 0 0 8mm;
+    font-size: 13pt;
+    color: #444;
+  }
+  .wka-poster-qr {
+    width: 105mm;
+    height: 105mm;
+    margin: 0 0 8mm;
+  }
+  .wka-poster-cta {
+    margin: 0 0 3mm;
+    font-size: 22pt;
+    font-weight: 800;
+  }
+  .wka-poster-steps {
+    margin: 0 0 8mm;
+    font-size: 13pt;
+    color: #333;
+    letter-spacing: 0.02em;
+  }
+  .wka-poster-url {
+    margin: 0;
+    font-size: 10pt;
+    color: #666;
+    word-break: break-all;
+    max-width: 150mm;
+  }
 }

@@ -115,10 +115,29 @@ export const routes: Routes = [
     loadComponent: () => import('./private-event.component').then(m => m.PrivateEventComponent)
   },
 
-  // 15. REGISTRO EXPRESS (Walk-in) — enlace público oculto.
-  // Panel del organizador para gestionar los correos que reciben la
-  // notificación automática. NO se enlaza desde el dashboard principal:
-  // se accede manualmente por URL.
+  // 15. REGISTRO EXPRESS (Walk-in) — la puerta de entrada del usuario
+  // NO registrado. Es el único flujo de la app que produce datos de una
+  // persona sin cuenta, así que su estructura vive documentada aquí:
+  //
+  //   ┌ /registro-express/:eventId          (público, sin guard)
+  //   │   Wizard de 3 pasos que llena `WalkinAttendee`:
+  //   │     1. Identidad → full_name, document_type, document_id
+  //   │     2. Contacto  → phone, email
+  //   │     3. Contexto  → age, companions, company_type, heard_from,
+  //   │                    interests  + consentimientos (habeas data
+  //   │                    obligatorio, comunicaciones y cuenta opcionales)
+  //   │   `?src=qr|whatsapp|link|taquilla` se captura solo, no se pregunta.
+  //   │   Termina en un comprobante con código + QR y ofrece convertir
+  //   │   el registro en cuenta Vemo (lleva los datos a /auth).
+  //   │
+  //   └ /registro-express/:eventId/admin    (privado, blockGuard)
+  //       Panel del organizador: QR imprimible, link por WhatsApp/correo
+  //       y los correos que reciben el aviso de cada registro.
+  //
+  // Sigue SIN aparecer en el dashboard principal. Su único acceso desde
+  // la interfaz es el "Panel del organizador" del detalle del evento,
+  // visible sólo para el dueño; el panel también permite copiar su
+  // propia URL para guardarla.
   {
     path: 'registro-express/:eventId/admin',
     loadComponent: () =>

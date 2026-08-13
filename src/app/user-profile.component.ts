@@ -78,7 +78,7 @@ import { FollowListComponent } from './shared/Components/follow-list/follow-list
   `,
   styles: [`
     :host { display: block; background-color: var(--ink, #0E0D12); min-height: 100vh; }
-    .up-wrap { max-width: 720px; margin: 0 auto; padding: 0 16px 90px; position: relative; }
+    .up-wrap { max-width: 720px; margin: 0 auto; padding: var(--vemo-header-h, 90px) 16px 90px; position: relative; }
     .up-cover { height: 150px; margin: 0 -16px 0; border-radius: 0 0 24px 24px;
       background: radial-gradient(ellipse 70% 120% at 30% 0%, rgba(255,77,128,0.35), transparent 60%),
                   radial-gradient(ellipse 70% 120% at 80% 10%, rgba(106,0,255,0.35), transparent 60%),

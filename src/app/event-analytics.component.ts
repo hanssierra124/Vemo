@@ -108,13 +108,13 @@ import { EventPrediction } from './models/prediction.model';
     </ng-template>
   `,
   styles: [`
-    .an-wrap { max-width: 860px; margin: 0 auto; padding: 40px 16px 90px; }
+    .an-wrap { max-width: 860px; margin: 0 auto; padding: calc(var(--vemo-header-h, 90px) + 28px) 16px 90px; }
     .an-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
       background: linear-gradient(135deg,#FF4D80,#FFD700); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .an-title { font-size: 34px; color: #fff; margin: 6px 0 4px; line-height: 1.05; }
     .an-back { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; }
     .an-back:hover { color: #FFD700; }
-    .an-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 22px 0; }
+    .an-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); gap: 12px; margin: 22px 0; }
     .an-kpi { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
       padding: 16px; text-align: center; display: flex; flex-direction: column; gap: 3px; }
     .an-kpi b { font-size: 26px; color: #fff; }

@@ -2,7 +2,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0A0A0A 0%, #1a1a2e 50%, #0A0A0A 100%);
   display: flex; justify-content: center; align-items: center;
-  padding: 40px 20px;
+  padding: calc(var(--vemo-header-h, 90px) + 24px) 20px 48px;
   font-family: 'Inter', -apple-system, sans-serif;
 }
 
@@ -50,7 +50,7 @@
 
 /* Interest chips grid */
 .interests-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
   gap: 10px;
 }
 
@@ -101,7 +101,7 @@
 }
 
 .option-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(110px, 100%), 1fr));
   gap: 10px;
 }
 .option-card {
@@ -257,7 +257,7 @@
 @media (max-width: 576px) {
   .onboarding-container { padding: 24px 16px; border-radius: 20px; }
   .step-header h1 { font-size: 22px; }
-  .interests-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .interests-grid { grid-template-columns: repeat(auto-fill, minmax(min(110px, 100%), 1fr)); gap: 8px; }
   .option-grid { grid-template-columns: repeat(2, 1fr); }
   .interest-chip, .option-card { padding: 12px 8px; }
   .nav-buttons { flex-wrap: wrap; }

@@ -49,11 +49,23 @@ export class AuthComponent implements OnInit {
   constructor(private router: Router, private route: ActivatedRoute, private currentUser: CurrentUserService) {}
 
   ngOnInit() {
-    const roleParam = this.route.snapshot.queryParamMap.get('role');
+    const params = this.route.snapshot.queryParamMap;
+
+    const roleParam = params.get('role');
     if (roleParam === 'user' || roleParam === 'organizer') {
       this.role = roleParam;
       this.isLogin = false;
     }
+
+    // Datos que llegan del Registro Express: quien ya los escribió en la
+    // puerta del evento no debería tener que repetirlos para abrir cuenta.
+    const email = params.get('email');
+    const name = params.get('name');
+    const phone = params.get('phone');
+    if (email) this.email = email;
+    if (name) this.username = name;
+    if (phone) this.phone = phone;
+    if (email || name || phone) this.isLogin = false;
   }
 
   validateRegistration(): boolean {

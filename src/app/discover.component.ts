@@ -68,7 +68,7 @@ import { PersonSuggestion, RecommendedEvent } from './models/recommendation.mode
     </div>
   `,
   styles: [`
-    .dc-wrap { max-width: 820px; margin: 0 auto; padding: 40px 16px 90px; }
+    .dc-wrap { max-width: 820px; margin: 0 auto; padding: calc(var(--vemo-header-h, 90px) + 28px) 16px 90px; }
     .dc-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
       background: linear-gradient(135deg,#FF4D80,#FFD700); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .dc-title { font-size: 38px; color: #fff; margin: 6px 0 4px; }
@@ -89,7 +89,7 @@ import { PersonSuggestion, RecommendedEvent } from './models/recommendation.mode
       font-weight: 700; border-radius: 20px; padding: 7px 18px; cursor: pointer; font-size: 12px; }
     .dc-follow.following { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
     .dc-follow:disabled { opacity: 0.6; cursor: not-allowed; }
-    .dc-events { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .dc-events { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 14px; }
     .dc-event { display: flex; flex-direction: column; text-decoration: none; background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; transition: border-color .15s; }
     .dc-event:hover { border-color: rgba(255,77,128,0.4); }

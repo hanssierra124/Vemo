@@ -991,7 +991,7 @@ h1 em, h2 em, h3 em,
 .exp-title { font-family: var(--ff-display); font-size: clamp(32px, 4vw, 52px); font-weight: 400; color: var(--text-1); line-height: 0.95; letter-spacing: -0.02em; }
 .exp-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,77,128,0.3), transparent); }
 
-.exp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.exp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 20px; }
 /* Tarjeta del Explorer: visible por defecto. Animación solo añade un suave
    deslizamiento hacia arriba; si el navegador no procesa la animación
    (cambio de ruta, animaciones desactivadas, etc.) la tarjeta queda

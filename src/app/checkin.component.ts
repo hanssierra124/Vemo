@@ -34,7 +34,8 @@ import { CheckinService } from './checkin.service';
     </div>
   `,
   styles: [`
-    .ck-wrap { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .ck-wrap { min-height: 70vh; display: flex; align-items: center; justify-content: center;
+      padding: calc(var(--vemo-header-h, 90px) + 24px) 24px 40px; }
     .ck-card { max-width: 420px; width: 100%; text-align: center; padding: 36px 28px;
       background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; }
     .ck-icon { width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; display: flex; align-items: center;

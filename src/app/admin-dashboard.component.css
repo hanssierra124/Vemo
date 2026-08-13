@@ -34,7 +34,7 @@
 .admin-main-container {
   width: 90%;
   max-width: 900px; /* Reducido para mayor control visual */
-  padding: 80px 0;
+  padding: calc(var(--vemo-header-h, 90px) + 30px) 0 80px;
   position: relative;
   z-index: 10;
 }
@@ -94,10 +94,9 @@
 /* --- MODAL DE DETALLES --- */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  /* `inset` en vez de 100vw/100vh: 100vw incluye el ancho de la barra de
+     scroll y provocaba desborde horizontal en escritorio. */
+  inset: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   display: flex;
@@ -315,7 +314,7 @@
 .geo-result-err { color: #ffb3c8; }
 .geo-result-stats {
   list-style: none; padding: 0; margin: 10px 0 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 6px;
 }
 .geo-result-stats li { color: rgba(255, 255, 255, 0.7); font-size: 12px; }
 .geo-result-stats strong { color: #fff; font-weight: 700; }
@@ -460,4 +459,30 @@
   .eep-item { flex-direction: row; flex-wrap: wrap; }
   .eep-name { max-width: 100%; }
   .eep-edit-btn { width: 100%; margin-top: 8px; }
+}
+
+/* ── Ajuste fino móvil ── */
+@media (max-width: 768px) {
+  .admin-main-container { width: 100%; padding: calc(var(--vemo-header-h, 90px) + 22px) 14px 60px; }
+  .admin-central-header { margin-bottom: 34px; }
+  .section-title { font-size: clamp(2rem, 8vw, 3.5rem); }
+  .glass-panel { padding: 22px 18px; border-radius: 24px; margin-bottom: 24px; }
+  .request-card-premium:hover { transform: none; }
+  .modal-header h2 { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+  .visual-frame { height: 170px; }
+  .btn-action { padding: 15px; }
+}
+
+@media (max-width: 600px) {
+  .modal-overlay { align-items: flex-end; }
+  .modal-content { width: 100%; max-width: none; max-height: 92dvh; border-radius: 24px 24px 0 0; }
+  .close-modal-btn { top: 12px; right: 12px; }
+  .events-editor-panel, .geo-tools-panel { padding: 18px 14px; border-radius: 16px; }
+  .eep-edit-btn { width: 100%; }
+  .request-inner-header { flex-direction: column; gap: 12px; }
+  .status-indicator { align-self: flex-start; }
+}
+
+@media (max-width: 380px) {
+  .geo-tools-panel, .events-editor-panel { padding: 15px 12px; }
 }

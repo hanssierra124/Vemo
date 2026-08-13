@@ -70,7 +70,7 @@ import { renderSafeMarkdown } from './utils/markdown';
   `,
   styles: [`
     :host { display: block; background-color: #0E0D12; min-height: 100vh; }
-    .mod-wrap { max-width: 760px; margin: 0 auto; padding: 40px 16px 90px; }
+    .mod-wrap { max-width: 760px; margin: 0 auto; padding: calc(var(--vemo-header-h, 90px) + 28px) 16px 90px; }
     .mod-header { margin-bottom: 22px; }
     .mod-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700;
       background: var(--grad-warm, linear-gradient(135deg,#FF4D80,#FFD700));
