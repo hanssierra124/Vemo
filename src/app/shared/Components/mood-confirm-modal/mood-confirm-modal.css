@@ -1,0 +1,50 @@
+.mcm-backdrop {
+  position: fixed; inset: 0; z-index: 30000;
+  background: rgba(6,6,8,0.85);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+
+.mcm-modal {
+  position: relative;
+  width: 100%; max-width: 440px;
+  background: var(--surface, #14131A);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 24px;
+  padding: 32px 28px 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+}
+
+.mcm-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,0.06); border: none; color: rgba(255,255,255,0.7);
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px;
+}
+.mcm-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.mcm-title { font-size: 24px; color: var(--text-1, #F0F0F0); margin: 0 0 6px; text-align: center; }
+.mcm-sub { color: var(--text-2, rgba(240,240,240,0.6)); font-size: 13px; text-align: center; margin: 0 0 24px; }
+
+.mcm-state { text-align: center; color: rgba(255,255,255,0.5); }
+
+.mcm-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.mcm-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 100px;
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  background: rgba(255,255,255,0.03);
+  color: var(--text-1, #F0F0F0);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s ease;
+}
+.mcm-chip:hover:not(:disabled) { border-color: var(--glow, #FF4D80); background: rgba(255,77,128,0.08); transform: translateY(-2px); }
+.mcm-chip:disabled { opacity: 0.6; cursor: wait; }
+.mcm-emoji { font-size: 18px; }
+
+.mcm-empty { text-align: center; color: rgba(255,255,255,0.45); font-style: italic; margin-top: 10px; }
+.mcm-error {
+  margin-top: 16px; text-align: center; font-size: 13px;
+  color: #ff8a9b; background: rgba(255,77,128,0.08); border: 1px solid rgba(255,77,128,0.25);
+  border-radius: 10px; padding: 10px 14px;
+}

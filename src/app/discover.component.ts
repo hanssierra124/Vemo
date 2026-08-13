@@ -8,7 +8,9 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RecommendationService } from './recommendation.service';
 import { SocialService } from './social.service';
-import { PersonSuggestion, RecommendedEvent } from './models/recommendation.model';
+import { CreatorTypesService } from './creator-types.service';
+import { PersonSuggestion, RecommendedEvent, NearbyPlace } from './models/recommendation.model';
+import { CreatorType } from './models/creator-type.model';
 
 @Component({
   selector: 'app-discover',
@@ -43,6 +45,23 @@ import { PersonSuggestion, RecommendedEvent } from './models/recommendation.mode
                 {{ p.followed ? 'Siguiendo' : 'Seguir' }}
               </button>
             </div>
+          </div>
+        </section>
+
+        <!-- Lugares compatibles (Notificaciones inteligentes B.8) -->
+        <section *ngIf="places.length">
+          <h3 class="dc-section clash-display">Lugares compatibles cerca de ti</h3>
+          <div class="dc-people">
+            <a class="dc-person dc-place" *ngFor="let p of places" [routerLink]="['/organizer', p.id]">
+              <span class="dc-avatar" [style.backgroundImage]="p.profile_url ? 'url(' + p.profile_url + ')' : null">
+                <span *ngIf="!p.profile_url">{{ (p.company_name || p.username || '?')[0] }}</span>
+              </span>
+              <span class="dc-name">{{ p.company_name || p.username || 'Lugar' }}</span>
+              <span class="dc-mutual" *ngIf="p.distance_km != null">{{ p.distance_km | number:'1.0-1' }} km</span>
+              <div class="dc-place-tags" *ngIf="p.creator_tags?.length">
+                <span class="dc-place-tag" *ngFor="let t of p.creator_tags">{{ tagLabel(p, t) }}</span>
+              </div>
+            </a>
           </div>
         </section>
 
@@ -106,9 +125,16 @@ import { PersonSuggestion, RecommendedEvent } from './models/recommendation.mode
 export class DiscoverComponent implements OnInit {
   people: (PersonSuggestion & { followed?: boolean; busy?: boolean })[] = [];
   events: RecommendedEvent[] = [];
+  places: NearbyPlace[] = [];
   loading = false;
+  private creatorTypesCatalog: CreatorType[] = [];
 
-  constructor(private recs: RecommendationService, private social: SocialService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private recs: RecommendationService,
+    private social: SocialService,
+    private creatorTypes: CreatorTypesService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   get isLoggedIn(): boolean {
     return !!(localStorage.getItem('vemo_token') || localStorage.getItem('token'));
@@ -121,6 +147,13 @@ export class DiscoverComponent implements OnInit {
     this.recs.eventRecommendations(12).then((r) => { this.events = r.items; }).catch(() => {}).finally(() => {
       this.loading = false; this.cdr.detectChanges();
     });
+    // [] es normal en usuarios nuevos sin historial — no se trata como error.
+    this.recs.nearbyPlaces(8).then((r) => { this.places = r.items; this.cdr.detectChanges(); }).catch(() => {});
+    this.creatorTypes.getCreatorTypes().then((types) => { this.creatorTypesCatalog = types; this.cdr.detectChanges(); });
+  }
+
+  tagLabel(place: NearbyPlace, tagId: string): string {
+    return this.creatorTypes.tagLabel(this.creatorTypesCatalog, place.creator_type, tagId);
   }
 
   async follow(p: PersonSuggestion & { followed?: boolean; busy?: boolean }) {

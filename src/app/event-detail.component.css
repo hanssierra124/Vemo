@@ -470,6 +470,19 @@
 .att-following { font-size: 10px; color: #4ade80; }
 
 /* ══════════════════════════════════════════════════════════════════
+   NOTIFICACIONES INTELIGENTES (B): confirmar mood + resumen
+   ══════════════════════════════════════════════════════════════════ */
+.mood-block { text-align: center; }
+.mood-summary-top { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 14px; }
+.mood-summary-emoji { font-size: 28px; line-height: 1; }
+.mood-summary-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.mood-summary-chip {
+  font-size: 12px; color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px; padding: 6px 12px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
    SISTEMA DE RESEÑAS (F3) — resumen, histograma, formulario media-estrella
    ══════════════════════════════════════════════════════════════════ */
 .rv-summary {

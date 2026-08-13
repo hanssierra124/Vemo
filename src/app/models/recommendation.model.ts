@@ -8,6 +8,16 @@ export interface PersonSuggestion {
   mutual_events: number;
 }
 
+export interface NearbyPlace {
+  id: string;
+  username: string | null;
+  company_name: string | null;
+  profile_url: string | null;
+  creator_type: string | null;
+  creator_tags: string[];
+  distance_km: number;
+}
+
 export interface RecommendedEvent {
   id: string;
   title: string;

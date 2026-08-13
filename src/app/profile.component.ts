@@ -3,13 +3,21 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CreatorTypePicker } from './shared/Components/creator-type-picker/creator-type-picker';
+import { CreatorTypesService } from './creator-types.service';
+import { CreatorType } from './models/creator-type.model';
+import {
+  INTERESES_DISPONIBLES, NEGATIVOS_DISPONIBLES, COMPANY_OPTIONS, TIME_OPTIONS,
+  BARRIOS_DISPONIBLES, OUTING_FREQUENCY_OPTIONS, SPONTANEITY_OPTIONS,
+  BUDGET_RANGE_OPTIONS, TRANSPORT_OPTIONS, SOCIAL_ENERGY_OPTIONS, INTENTION_OPTIONS,
+} from './shared/user-preferences-options';
 
 declare var WidgetCheckout: any;
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CreatorTypePicker],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -48,8 +56,42 @@ export class ProfileComponent implements OnInit {
     public_email: '',
     schedule_weekdays: '',
     schedule_weekends: '',
-    description: ''
+    description: '',
+    creator_type: null as string | null,
+    creator_tags: [] as string[]
   };
+
+  // Creadores de espacios (para pintar los badges en la vista de solo lectura)
+  creatorTypesCatalog: CreatorType[] = [];
+
+  // Editable preferences (rol "user" — "Datos a tomar del usuario")
+  isEditingPreferences = false;
+  editPreferences = {
+    birth_date: '',
+    phone: '',
+    interests: [] as string[],
+    negative_preferences: [] as string[],
+    preferred_company: '' as string,
+    preferred_time: '' as string,
+    neighborhood: '' as string,
+    outing_frequency: '' as string,
+    spontaneity: '' as string,
+    budget_range: '' as string,
+    transport_mode: '' as string,
+    social_energy: '' as string,
+    intention: '' as string,
+  };
+  readonly interesesDisponibles = INTERESES_DISPONIBLES;
+  readonly negativosDisponibles = NEGATIVOS_DISPONIBLES;
+  readonly companyOptions = COMPANY_OPTIONS;
+  readonly timeOptions = TIME_OPTIONS;
+  readonly barriosDisponibles = BARRIOS_DISPONIBLES;
+  readonly outingFrequencyOptions = OUTING_FREQUENCY_OPTIONS;
+  readonly spontaneityOptions = SPONTANEITY_OPTIONS;
+  readonly budgetRangeOptions = BUDGET_RANGE_OPTIONS;
+  readonly transportOptions = TRANSPORT_OPTIONS;
+  readonly socialEnergyOptions = SOCIAL_ENERGY_OPTIONS;
+  readonly intentionOptions = INTENTION_OPTIONS;
 
   // QR
   showQRModal = false;
@@ -63,12 +105,24 @@ export class ProfileComponent implements OnInit {
   wompiPublicKey = 'pub_test_Q5yDA9xoKdePzhSGeVe9HAez7CTSG9IW';
   promotionPrice = 5000000;
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private creatorTypesService: CreatorTypesService
+  ) {}
 
   ngOnInit() {
     this.resetLocalState();
     this.getProfileData();
     this.loadWompiScript();
+    this.creatorTypesService.getCreatorTypes().then(types => {
+      this.creatorTypesCatalog = types;
+      this.cdr.detectChanges();
+    });
+  }
+
+  creatorTagLabel(tagId: string): string {
+    return this.creatorTypesService.tagLabel(this.creatorTypesCatalog, this.userData?.creator_type, tagId);
   }
 
   resetLocalState() {
@@ -200,7 +254,9 @@ export class ProfileComponent implements OnInit {
       public_email: this.userData.public_email || '',
       schedule_weekdays: this.userData.schedule_weekdays || '',
       schedule_weekends: this.userData.schedule_weekends || '',
-      description: this.userData.description || ''
+      description: this.userData.description || '',
+      creator_type: this.userData.creator_type || null,
+      creator_tags: this.userData.creator_tags || []
     };
     this.isEditingProfile = true;
   }
@@ -221,6 +277,67 @@ export class ProfileComponent implements OnInit {
         this.cdr.detectChanges();
       }
     } catch (e) { console.error('Error guardando perfil', e); }
+  }
+
+  // ── EDITABLE PREFERENCES (rol "user") ──
+  startEditPreferences() {
+    this.editPreferences = {
+      birth_date: this.userData.birth_date ? this.userData.birth_date.slice(0, 10) : '',
+      phone: this.userData.phone || '',
+      interests: [...(this.userData.interests || [])],
+      negative_preferences: [...(this.userData.negative_preferences || [])],
+      preferred_company: this.userData.preferred_company || '',
+      preferred_time: this.userData.preferred_time || '',
+      neighborhood: this.userData.neighborhood || '',
+      outing_frequency: this.userData.outing_frequency || '',
+      spontaneity: this.userData.spontaneity || '',
+      budget_range: this.userData.budget_range || '',
+      transport_mode: this.userData.transport_mode || '',
+      social_energy: this.userData.social_energy || '',
+      intention: this.userData.intention || '',
+    };
+    this.isEditingPreferences = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelEditPreferences() { this.isEditingPreferences = false; }
+
+  toggleInList(list: string[], value: string) {
+    const i = list.indexOf(value);
+    if (i === -1) list.push(value); else list.splice(i, 1);
+  }
+
+  selectSingle(field: 'preferred_company' | 'preferred_time' | 'outing_frequency' | 'spontaneity' | 'budget_range' | 'transport_mode' | 'social_energy' | 'intention', value: string) {
+    this.editPreferences[field] = this.editPreferences[field] === value ? '' : value;
+  }
+
+  async savePreferences() {
+    const token = localStorage.getItem('vemo_token') || localStorage.getItem('token');
+    const payload: any = {
+      ...this.editPreferences,
+      birth_date: this.editPreferences.birth_date || null,
+      preferred_company: this.editPreferences.preferred_company || null,
+      preferred_time: this.editPreferences.preferred_time || null,
+      neighborhood: this.editPreferences.neighborhood || null,
+      outing_frequency: this.editPreferences.outing_frequency || null,
+      spontaneity: this.editPreferences.spontaneity || null,
+      budget_range: this.editPreferences.budget_range || null,
+      transport_mode: this.editPreferences.transport_mode || null,
+      social_energy: this.editPreferences.social_energy || null,
+      intention: this.editPreferences.intention || null,
+    };
+    try {
+      const res = await fetch(`${environment.apiUrl}/api/auth/update-profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        Object.assign(this.userData, this.editPreferences);
+        this.isEditingPreferences = false;
+        this.cdr.detectChanges();
+      }
+    } catch (e) { console.error('Error guardando preferencias', e); }
   }
 
   // ── WOMPI ──

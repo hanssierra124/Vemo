@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CurrentUserService } from './current-user.service';
+import { CreatorTypePicker } from './shared/Components/creator-type-picker/creator-type-picker';
 
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CreatorTypePicker],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.css'
 })
@@ -24,6 +25,8 @@ export class AuthComponent implements OnInit {
   // Organizer-specific fields
   whatsapp = '';
   businessType = '';
+  creatorType: string | null = null;
+  creatorTags: string[] = [];
 
   // User-specific fields
   birthDate = '';
@@ -170,6 +173,8 @@ export class AuthComponent implements OnInit {
       if (this.role === 'organizer') {
         body.whatsapp = this.whatsapp;
         body.business_type = this.businessType;
+        if (this.creatorType) body.creator_type = this.creatorType;
+        if (this.creatorTags.length) body.creator_tags = this.creatorTags;
       }
 
       if (this.role === 'user') {

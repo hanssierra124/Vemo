@@ -81,8 +81,53 @@
       </div>
     </div>
 
-    <!-- ===== STEP 4: Location & Feedback ===== -->
+    <!-- ===== STEP 4: Barrio & hábitos de salida ===== -->
     <div class="step-content" *ngIf="currentStep === 4">
+      <div class="step-header">
+        <h1>¿Cómo sales?</h1>
+        <p>Esto es opcional, pero nos ayuda a afinar tus recomendaciones.</p>
+      </div>
+
+      <div class="preference-section">
+        <h3>¿En qué barrio vives?</h3>
+        <select class="barrio-select" [(ngModel)]="selectedBarrio" name="barrio">
+          <option value="">Selecciona tu barrio</option>
+          <option *ngFor="let b of barriosDisponibles" [value]="b">{{ b }}</option>
+        </select>
+        <button *ngIf="selectedBarrio" type="button" class="btn-clear-barrio" (click)="clearBarrio()">
+          ✕ Quitar ubicación
+        </button>
+      </div>
+
+      <div class="preference-section">
+        <h3>¿Con qué frecuencia sales?</h3>
+        <div class="option-grid">
+          <div *ngFor="let opt of outingFrequencyOptions"
+               class="option-card"
+               [class.active]="selectedOutingFrequency === opt.value"
+               (click)="selectedOutingFrequency = opt.value">
+            <span class="option-emoji">{{ opt.emoji }}</span>
+            <span class="option-label">{{ opt.label }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preference-section">
+        <h3>¿Sueles planear mucho tus salidas?</h3>
+        <div class="option-grid">
+          <div *ngFor="let opt of spontaneityOptions"
+               class="option-card"
+               [class.active]="selectedSpontaneity === opt.value"
+               (click)="selectedSpontaneity = opt.value">
+            <span class="option-emoji">{{ opt.emoji }}</span>
+            <span class="option-label">{{ opt.label }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STEP 5: Location & Feedback ===== -->
+    <div class="step-content" *ngIf="currentStep === 5">
       <div class="step-header">
         <h1>Casi listo</h1>
         <p>Un par de cosas más para darte la mejor experiencia.</p>

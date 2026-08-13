@@ -4,11 +4,13 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { smartGeocodeColombian } from './utils/colombian-geocoding';
+import { ShareEventComponent } from './shared/Components/share-event/share-event';
+import { TARGET_COMPANY_OPTIONS, TIME_AVAILABLE_OPTIONS, INTENTION_OPTIONS } from './shared/user-preferences-options';
 
 @Component({
   selector: 'app-create-event',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ShareEventComponent],
   templateUrl: './create-event.component.html',
   styleUrls: ['./create-event.component.css']
 })
@@ -45,6 +47,16 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
     dress_code: '',       // casual, elegante, tematico
     accessibility: false
   };
+
+  // Perfil objetivo del evento (Centro de Comando — campos "**"): mismas
+  // preguntas/dominio que mood_company/mood_time_available/intention del
+  // usuario, para poder cruzarlas en el tablero del organizador.
+  readonly targetCompanyOptions = TARGET_COMPANY_OPTIONS;
+  readonly timeAvailableOptions = TIME_AVAILABLE_OPTIONS;
+  readonly intentionOptions = INTENTION_OPTIONS;
+  targetCompany = '';
+  targetTimeAvailable = '';
+  targetIntention = '';
 
   // Hidden system questions
   systemFields = {
@@ -249,6 +261,10 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
           ? this.safeParse(data.system_fields)
           : data.system_fields;
         if (sf) this.systemFields = { ...this.systemFields, ...sf };
+
+        this.targetCompany = data.target_company || '';
+        this.targetTimeAvailable = data.target_time_available || '';
+        this.targetIntention = data.target_intention || '';
 
         // Privacidad: pre-cargamos el flag para que el toggle aparezca con el
         // estado real. El access_password NO se devuelve (está hasheado en DB);
@@ -517,6 +533,11 @@ export class CreateEventComponent implements OnInit, AfterViewInit {
 
     // System fields
     formData.append('system_fields', JSON.stringify(this.systemFields));
+
+    // Perfil objetivo del evento (Centro de Comando)
+    if (this.targetCompany) formData.append('target_company', this.targetCompany);
+    if (this.targetTimeAvailable) formData.append('target_time_available', this.targetTimeAvailable);
+    if (this.targetIntention) formData.append('target_intention', this.targetIntention);
 
     // Privacidad: enviamos SIEMPRE el flag en modo edición (para que se pueda
     // cambiar de privado a público y viceversa). En modo creación, solo cuando

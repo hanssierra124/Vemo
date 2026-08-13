@@ -1,0 +1,24 @@
+<div class="mcm-backdrop" (click)="close()">
+  <div class="mcm-modal" (click)="$event.stopPropagation()">
+    <button type="button" class="mcm-close" (click)="close()" aria-label="Cerrar">✕</button>
+    <h3 class="mcm-title clash-display">¿Cómo estuvo el ambiente?</h3>
+    <p class="mcm-sub">Cuéntanos cómo se sintió este plan.</p>
+
+    <p class="mcm-state" *ngIf="loading">Cargando…</p>
+
+    <div class="mcm-chips" *ngIf="!loading">
+      <button
+        type="button"
+        class="mcm-chip"
+        *ngFor="let e of emotions"
+        [disabled]="busy"
+        (click)="choose(e)">
+        <span class="mcm-emoji">{{ e.emoji }}</span>
+        <span>{{ e.name }}</span>
+      </button>
+    </div>
+
+    <p class="mcm-empty" *ngIf="!loading && emotions.length === 0">No hay emociones disponibles por ahora.</p>
+    <p class="mcm-error" *ngIf="error">{{ error }}</p>
+  </div>
+</div>

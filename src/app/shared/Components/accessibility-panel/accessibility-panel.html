@@ -1,0 +1,83 @@
+<button
+  type="button"
+  class="a11y-fab"
+  [class.active]="open()"
+  (click)="toggle()"
+  [attr.aria-expanded]="open()"
+  aria-controls="a11y-panel"
+  aria-label="Opciones de accesibilidad">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="4" r="2"/>
+    <path d="M19 7c-2.5 1-4.5 1-7 1s-4.5 0-7-1"/>
+    <path d="M12 8v13"/>
+    <path d="M9 13c-1.2 1.5-2 3.5-2 5.5"/>
+    <path d="M15 13c1.2 1.5 2 3.5 2 5.5"/>
+  </svg>
+</button>
+
+<div id="a11y-panel" class="a11y-panel" *ngIf="open()" role="dialog" aria-label="Accesibilidad avanzada">
+  <div class="a11y-panel-header">
+    <h4>Accesibilidad</h4>
+    <button type="button" class="a11y-close" (click)="close()" aria-label="Cerrar">✕</button>
+  </div>
+
+  <div class="a11y-section">
+    <span class="a11y-label">Modo daltónicos</span>
+    <div class="a11y-options">
+      <button
+        type="button"
+        *ngFor="let opt of colorblindOptions"
+        class="a11y-chip"
+        [class.selected]="a11y.prefs().colorblindMode === opt.value"
+        (click)="a11y.setColorblindMode(opt.value)">
+        {{ opt.label }}
+      </button>
+    </div>
+  </div>
+
+  <div class="a11y-section">
+    <span class="a11y-label">Iluminación</span>
+    <div class="a11y-options">
+      <button
+        type="button"
+        *ngFor="let opt of lightingOptions"
+        class="a11y-chip"
+        [class.selected]="a11y.prefs().lighting === opt.value"
+        (click)="a11y.setLighting(opt.value)">
+        {{ opt.label }}
+      </button>
+    </div>
+  </div>
+
+  <div class="a11y-section a11y-row">
+    <div>
+      <span class="a11y-label">Accesibilidad física</span>
+      <p class="a11y-hint">Botones más grandes, más espacio y foco reforzado.</p>
+    </div>
+    <button
+      type="button"
+      class="a11y-switch"
+      [class.on]="a11y.prefs().physicalMode"
+      (click)="a11y.setPhysicalMode(!a11y.prefs().physicalMode)"
+      [attr.aria-pressed]="a11y.prefs().physicalMode">
+      <span class="a11y-switch-knob"></span>
+    </button>
+  </div>
+
+  <div class="a11y-section a11y-row">
+    <div>
+      <span class="a11y-label">Nivel de ruido visual</span>
+      <p class="a11y-hint">Reduce animaciones, movimiento y estímulos.</p>
+    </div>
+    <button
+      type="button"
+      class="a11y-switch"
+      [class.on]="a11y.prefs().lowStimulation"
+      (click)="a11y.setLowStimulation(!a11y.prefs().lowStimulation)"
+      [attr.aria-pressed]="a11y.prefs().lowStimulation">
+      <span class="a11y-switch-knob"></span>
+    </button>
+  </div>
+
+  <button type="button" class="a11y-reset" (click)="a11y.reset()">Restablecer</button>
+</div>

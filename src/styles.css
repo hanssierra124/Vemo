@@ -257,3 +257,64 @@ button:-webkit-details-marker {
   display: none;
 }
 
+/* ═══════════════════════════════════════════════════════
+   VEMO · ACCESIBILIDAD AVANZADA
+   Clases que aplica AccessibilityService sobre <html> según las
+   preferencias guardadas en localStorage (panel flotante global).
+   ═══════════════════════════════════════════════════════ */
+
+/* Modo daltónicos: no es una simulación (empeoraría la lectura para
+   quien ya tiene dificultad), sino un realce de separación entre los
+   tonos que más se confunden en cada tipo de daltonismo. */
+html.a11y-cb-protanopia { filter: saturate(1.4) hue-rotate(-10deg) contrast(1.05); }
+html.a11y-cb-deuteranopia { filter: saturate(1.4) hue-rotate(10deg) contrast(1.05); }
+html.a11y-cb-tritanopia { filter: saturate(1.3) hue-rotate(25deg) contrast(1.05); }
+
+/* Accesibilidad física: objetivos táctiles más grandes, tipografía
+   base mayor y foco de teclado siempre visible y grueso. */
+html.a11y-physical { font-size: 18px; }
+html.a11y-physical button,
+html.a11y-physical a.vh-link,
+html.a11y-physical .vh-profile-btn,
+html.a11y-physical input,
+html.a11y-physical select,
+html.a11y-physical textarea {
+  min-height: 44px;
+  min-width: 44px;
+}
+html.a11y-physical *:focus-visible {
+  outline: 3px solid var(--glow, #FF4D80) !important;
+  outline-offset: 3px !important;
+}
+
+/* Nivel de ruido visual: apaga animaciones/transiciones y desactiva
+   el auto-scroll o parpadeos decorativos, igual que prefers-reduced-motion
+   pero controlable manualmente sin depender del SO. */
+html.a11y-low-stimulation *,
+html.a11y-low-stimulation *::before,
+html.a11y-low-stimulation *::after {
+  animation-play-state: paused !important;
+  animation-duration: 0.001s !important;
+  transition-duration: 0.001s !important;
+  scroll-behavior: auto !important;
+}
+html.a11y-low-stimulation .noise-canvas,
+html.a11y-low-stimulation .scanline-grid,
+html.a11y-low-stimulation .mouse-glow {
+  display: none !important;
+}
+
+/* Iluminación: ajusta el brillo/contraste general para entornos muy
+   luminosos (pantalla "lavada") o para reducir fatiga visual/fotosensibilidad. */
+html.a11y-lighting-dim { filter: brightness(0.85) contrast(0.97); }
+html.a11y-lighting-bright { filter: brightness(1.18) contrast(1.08); }
+
+/* Si hay dos filtros activos (daltónicos + iluminación) se combinan
+   sumando ambos en una sola pasada para no duplicar `filter` en <html>. */
+html.a11y-cb-protanopia.a11y-lighting-dim { filter: saturate(1.4) hue-rotate(-10deg) contrast(1.02) brightness(0.85); }
+html.a11y-cb-protanopia.a11y-lighting-bright { filter: saturate(1.4) hue-rotate(-10deg) contrast(1.1) brightness(1.18); }
+html.a11y-cb-deuteranopia.a11y-lighting-dim { filter: saturate(1.4) hue-rotate(10deg) contrast(1.02) brightness(0.85); }
+html.a11y-cb-deuteranopia.a11y-lighting-bright { filter: saturate(1.4) hue-rotate(10deg) contrast(1.1) brightness(1.18); }
+html.a11y-cb-tritanopia.a11y-lighting-dim { filter: saturate(1.3) hue-rotate(25deg) contrast(1.02) brightness(0.85); }
+html.a11y-cb-tritanopia.a11y-lighting-bright { filter: saturate(1.3) hue-rotate(25deg) contrast(1.1) brightness(1.18); }
+

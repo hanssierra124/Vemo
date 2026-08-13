@@ -3,11 +3,16 @@ import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CreatorTypePicker } from './shared/Components/creator-type-picker/creator-type-picker';
+import {
+  INTERESES_DISPONIBLES, NEGATIVOS_DISPONIBLES, COMPANY_OPTIONS, TIME_OPTIONS,
+  BARRIOS_DISPONIBLES, SPONTANEITY_OPTIONS, BUDGET_RANGE_OPTIONS, SOCIAL_ENERGY_OPTIONS,
+} from './shared/user-preferences-options';
 
 @Component({
   selector: 'app-organizer-verify',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CreatorTypePicker],
   templateUrl: './organizer-verify.component.html',
   styleUrls: ['./organizer-verify.component.css']
 })
@@ -57,6 +62,31 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
   // Segmentation
   organizerSize: 'pequeno' | 'mediano' | 'grande' = 'pequeno';
 
+  // Creadores de espacios (tipo + tags)
+  creatorType: string | null = null;
+  creatorTags: string[] = [];
+
+  // Perfil del organizador (Centro de Comando — campos "*"): las mismas
+  // preguntas que se le hacen al usuario, para que Vemo pueda cruzar el
+  // perfil del organizador con el de su audiencia.
+  readonly interesesDisponibles = INTERESES_DISPONIBLES;
+  readonly negativosDisponibles = NEGATIVOS_DISPONIBLES;
+  readonly companyOptions = COMPANY_OPTIONS;
+  readonly timeOptions = TIME_OPTIONS;
+  readonly barriosDisponibles = BARRIOS_DISPONIBLES;
+  readonly spontaneityOptions = SPONTANEITY_OPTIONS;
+  readonly budgetRangeOptions = BUDGET_RANGE_OPTIONS;
+  readonly socialEnergyOptions = SOCIAL_ENERGY_OPTIONS;
+
+  orgInterests: string[] = [];
+  orgNegativePreferences: string[] = [];
+  orgPreferredCompany = '';
+  orgPreferredTime = '';
+  orgNeighborhood = '';
+  orgSpontaneity = '';
+  orgBudgetRange = '';
+  orgSocialEnergy = '';
+
   // Verification status (loaded from profile)
   verificationStatus: string | null = null;
   rejectionReason: string | null = null;
@@ -90,8 +120,28 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
         this.rejectionReason = data.user?.rejection_reason || null;
         if (data.user?.company_name) this.companyName = data.user.company_name;
         if (data.user?.nit) this.nit = data.user.nit;
+        if (data.user?.creator_type) this.creatorType = data.user.creator_type;
+        if (data.user?.creator_tags) this.creatorTags = data.user.creator_tags;
+        if (data.user?.interests) this.orgInterests = data.user.interests;
+        if (data.user?.negative_preferences) this.orgNegativePreferences = data.user.negative_preferences;
+        if (data.user?.preferred_company) this.orgPreferredCompany = data.user.preferred_company;
+        if (data.user?.preferred_time) this.orgPreferredTime = data.user.preferred_time;
+        if (data.user?.neighborhood) this.orgNeighborhood = data.user.neighborhood;
+        if (data.user?.spontaneity) this.orgSpontaneity = data.user.spontaneity;
+        if (data.user?.budget_range) this.orgBudgetRange = data.user.budget_range;
+        if (data.user?.social_energy) this.orgSocialEnergy = data.user.social_energy;
       }
     } catch {}
+  }
+
+  toggleOrgInterest(value: string) {
+    const i = this.orgInterests.indexOf(value);
+    if (i === -1) this.orgInterests.push(value); else this.orgInterests.splice(i, 1);
+  }
+
+  toggleOrgNegative(value: string) {
+    const i = this.orgNegativePreferences.indexOf(value);
+    if (i === -1) this.orgNegativePreferences.push(value); else this.orgNegativePreferences.splice(i, 1);
   }
 
   async loadCategories() {
@@ -296,6 +346,16 @@ export class OrganizerVerifyComponent implements OnInit, AfterViewInit {
       if (scheduleJson !== '[]') formData.append('schedule_json', scheduleJson);
       if (this.selectedCategories.length) formData.append('categories', JSON.stringify(this.selectedCategories));
       formData.append('organizer_size', this.organizerSize);
+      if (this.creatorType) formData.append('creator_type', this.creatorType);
+      if (this.creatorTags.length) formData.append('creator_tags', JSON.stringify(this.creatorTags));
+      if (this.orgInterests.length) formData.append('interests', JSON.stringify(this.orgInterests));
+      if (this.orgNegativePreferences.length) formData.append('negative_preferences', JSON.stringify(this.orgNegativePreferences));
+      if (this.orgPreferredCompany) formData.append('preferred_company', this.orgPreferredCompany);
+      if (this.orgPreferredTime) formData.append('preferred_time', this.orgPreferredTime);
+      if (this.orgNeighborhood) formData.append('neighborhood', this.orgNeighborhood);
+      if (this.orgSpontaneity) formData.append('spontaneity', this.orgSpontaneity);
+      if (this.orgBudgetRange) formData.append('budget_range', this.orgBudgetRange);
+      if (this.orgSocialEnergy) formData.append('social_energy', this.orgSocialEnergy);
 
       const res = await fetch(`${environment.apiUrl}/api/organizer/verify`, {
         method: 'POST',

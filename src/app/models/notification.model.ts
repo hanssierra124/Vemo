@@ -2,7 +2,10 @@
 // Modelos de notificaciones (Fase A5).
 // ════════════════════════════════════════════════════════════════════
 export type NotificationType =
-  | 'reminder_7d' | 'reminder_24h' | 'reminder_1h' | 'event_start' | 'generic';
+  | 'reminder_7d' | 'reminder_24h' | 'reminder_1h' | 'event_start'
+  | 'event_decision' | 'verification_decision' | 'event_updated'
+  | 'mood_confirm' | 'nearby_recommendation'
+  | 'generic';
 
 export interface AppNotification {
   id: string;

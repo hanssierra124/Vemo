@@ -3,11 +3,12 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ShareEventComponent } from './shared/Components/share-event/share-event';
 
 @Component({
   selector: 'app-private-event',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ShareEventComponent],
   templateUrl: './private-event.component.html',
   styleUrls: ['./private-event.component.css']
 })
@@ -80,6 +81,11 @@ export class PrivateEventComponent implements OnInit {
       this.checkingPassword = false;
       this.cdr.detectChanges();
     }
+  }
+
+  get shareUrl(): string {
+    if (typeof window === 'undefined' || !this.token) return '';
+    return `${window.location.origin}/eventos/privado/${this.token}`;
   }
 
   formatDate(dateStr: string): string {
