@@ -4,6 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { smartGeocodeColombian } from './utils/colombian-geocoding';
+import { addDarkBasemap } from './utils/dark-basemap';
 
 @Component({
   selector: 'app-map',
@@ -99,10 +100,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       zoom: 13
     });
 
-    this.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CARTO',
-      maxZoom: 20
-    }).addTo(this.map);
+    addDarkBasemap(this.L, this.map);
 
     this.map.on('popupclose', () => { this.clearRoute(); });
 

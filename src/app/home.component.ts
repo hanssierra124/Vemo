@@ -4,6 +4,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FavoritesService } from './favorites.service';
+import { addDarkBasemap } from './utils/dark-basemap';
 
 @Component({
   selector: 'app-home',
@@ -353,9 +354,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       zoomSnap: 0.5
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CARTO', maxZoom: 20
-    }).addTo(this.map);
+    addDarkBasemap(L, this.map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 

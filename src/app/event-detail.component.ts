@@ -19,6 +19,7 @@ import { AttendanceStatus, Attendee } from './models/attendance.model';
 import { Emotion } from './models/emotion.model';
 import { MoodSummary, MoodSummaryItem } from './models/mood.model';
 import { renderSafeMarkdown } from './utils/markdown';
+import { addDarkBasemap } from './utils/dark-basemap';
 
 @Component({
   selector: 'app-event-detail',
@@ -212,9 +213,7 @@ export class EventDetailComponent implements OnInit, AfterViewInit {
     }).setView([lat, lng], zoomLevel);
 
     // 2. Capa oscura nativa (Igual que en el Explorador)
-    this.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© VEMO Map'
-    }).addTo(this.map);
+    addDarkBasemap(this.L, this.map);
 
     // 3. Crear el marcador de Burbuja con la foto del evento
     const bgImage = this.event.image_url || 'assets/placeholder.jpg'; 
